@@ -1,18 +1,26 @@
-#	$OpenBSD: Makefile,v 1.29 2013/12/02 20:41:01 millert Exp $
+# oksh Makefile
 
-PROG=	ksh
-SRCS=	alloc.c c_ksh.c c_sh.c c_test.c c_ulimit.c edit.c emacs.c eval.c \
-	exec.c expr.c history.c io.c jobs.c lex.c mail.c main.c mknod.c \
-	misc.c path.c shf.c syn.c table.c trap.c tree.c tty.c var.c \
-	version.c vi.c
+# OpenBSD defaults
+CC ?= cc
+CFLAGS ?= -O2 -pipe
+PREFIX ?= /usr/local
 
-DEFS=	-Wall
-CFLAGS+=${DEFS} -I. -I${.CURDIR} -I${.CURDIR}/../../lib/libc/gen
-LDFLAGS+=-static
-MAN=	ksh.1 sh.1
+CFLAGS += -Wall
+LDFLAGS += -static
 
-LINKS=	${BINDIR}/ksh ${BINDIR}/rksh
-LINKS+=	${BINDIR}/ksh ${BINDIR}/sh
-MLINKS=	ksh.1 rksh.1
+PROG =	oksh
+OBJS =	alloc.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o emacs.o \
+	eval.o exec.o expr.o history.o io.o jobs.o lex.o mail.o main.o \
+	mknod.o misc.o path.o shf.o syn.o table.o trap.o tree.o tty.o \
+	var.o version.o vi.o
 
-.include <bsd.prog.mk>
+all:	${OBJS}
+	${CC} ${LDFLAGS} -o ${PROG} ${OBJS}
+
+install: all
+	install -c -s -o root -g wheel -m 555 oksh ${PREFIX}/bin
+	install -c -o root -g wheel -m 444 oksh.1 ${PREFIX}/man/man1
+	echo "${PREFIX}/bin/oksh" >> /etc/shells
+
+clean:
+	rm -f ${PROG} *.o *~
