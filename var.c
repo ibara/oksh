@@ -8,7 +8,7 @@
 #include <limits.h>
 #include <stdlib.h>
 
-#ifndef srand_deterministic
+#ifndef __OpenBSD__
 #define srand_deterministic(x) srand(x)
 #endif
 
