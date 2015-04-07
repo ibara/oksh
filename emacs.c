@@ -1,4 +1,4 @@
-/*	$OpenBSD: emacs.c,v 1.48 2013/12/17 16:37:05 deraadt Exp $	*/
+/*	$OpenBSD: emacs.c,v 1.50 2015/03/25 12:10:52 jca Exp $	*/
 
 /*
  *  Emacs-like command line editing and history
@@ -331,7 +331,7 @@ x_emacs(char *buf, size_t len)
 				if (at > k->len)
 					continue;
 
-				if (!bcmp(k->seq, line, at)) {
+				if (memcmp(k->seq, line, at) == 0) {
 					/* sub match */
 					submatch++;
 					if (k->len == at)
@@ -1296,7 +1296,7 @@ kb_match(char *s)
 		if (len > k->len)
 			continue;
 
-		if (!bcmp(k->seq, s, len))
+		if (memcmp(k->seq, s, len) == 0)
 			return (1);
 	}
 
@@ -1503,7 +1503,7 @@ x_init_emacs(void)
 	kb_add(x_comp_list,		NULL, CTRL('['), '=', 0);
 	kb_add(x_del_back,		NULL, CTRL('?'), 0);
 	kb_add(x_del_back,		NULL, CTRL('H'), 0);
-	/* x_del_char not assigned by default */
+	kb_add(x_del_char,		NULL, CTRL('['), '[', '3', '~', 0); /* delete */
 	kb_add(x_del_bword,		NULL, CTRL('['), CTRL('?'), 0);
 	kb_add(x_del_bword,		NULL, CTRL('['), CTRL('H'), 0);
 	kb_add(x_del_bword,		NULL, CTRL('['), 'h', 0);

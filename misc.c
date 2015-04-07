@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.38 2013/11/28 10:33:37 sobrado Exp $	*/
+/*	$OpenBSD: misc.c,v 1.40 2015/03/18 15:12:36 tedu Exp $	*/
 
 /*
  * Miscellaneous functions
@@ -6,7 +6,6 @@
 
 #include "sh.h"
 #include <ctype.h>
-#include <sys/param.h>	/* for MAXPATHLEN */
 #include "charclass.h"
 
 short ctypes [UCHAR_MAX+1];	/* type bits for unsigned char */
@@ -1054,10 +1053,7 @@ strip_nuls(char *buf, int nbytes)
 {
 	char *dst;
 
-	/* nbytes check because some systems (older freebsd's) have a buggy
-	 * memchr()
-	 */
-	if (nbytes && (dst = memchr(buf, '\0', nbytes))) {
+	if ((dst = memchr(buf, '\0', nbytes))) {
 		char *end = buf + nbytes;
 		char *p, *q;
 
@@ -1120,7 +1116,7 @@ reset_nonblock(int fd)
 }
 
 
-/* Like getcwd(), except bsize is ignored if buf is 0 (MAXPATHLEN is used) */
+/* Like getcwd(), except bsize is ignored if buf is 0 (PATH_MAX is used) */
 char *
 ksh_get_wd(char *buf, int bsize)
 {
@@ -1131,8 +1127,8 @@ ksh_get_wd(char *buf, int bsize)
 	 * inject possibly allocated space into the ATEMP area. */
 	/* Assume getcwd() available */
 	if (!buf) {
-		bsize = MAXPATHLEN;
-		b = alloc(MAXPATHLEN + 1, ATEMP);
+		bsize = PATH_MAX;
+		b = alloc(PATH_MAX + 1, ATEMP);
 	} else
 		b = buf;
 

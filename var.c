@@ -8,6 +8,9 @@
 #include <limits.h>
 #include <stdlib.h>
 
+/*
+ * Since no one else has this...
+ */
 #ifndef __OpenBSD__
 #define srand_deterministic(x) srand(x)
 #endif
