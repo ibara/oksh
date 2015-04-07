@@ -23,3 +23,7 @@ License
 -------
 Most files are public domain (see LEGAL).
 A couple are BSD licensed (alloc.c and mknod.c).
+
+Get a tarball
+-------------
+http://homepages.rpi.edu/~callab3/oksh-2.tar.gz
