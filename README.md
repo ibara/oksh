@@ -1,14 +1,14 @@
 oksh
 ====
-ksh(1) from OpenBSD ported to FreeBSD, DragonFly BSD, and NetBSD.
-Might work on other operating systems too but not tested.
+Portable OpenBSD ksh(1).
 
 Why?
 ----
-Sometimes I have to use FreeBSD. I don't like tcsh.
-ksh from OpenBSD is much better. Now FreeBSD users can use it too.
-Later ported to NetBSD. Hopefully a Linux port will come soon.
-Designed to be as minimally invasive as possible.
+Because other operating systems deserve a good shell to use.
+Originally a port of ksh to FreeBSD. The default FreeBSD shell is tcsh.
+No one likes tcsh. DragonFly BSD should also just work.
+Later NetBSD support was added. NetBSD also has a ksh variant so it might be less useful there.
+Other operating system support welcome and appreciated.
 
 Changes
 -------
