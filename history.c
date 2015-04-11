@@ -22,6 +22,13 @@
 # include <sys/mman.h>
 
 /*
+ * Linux...
+ */
+#ifdef __linux__
+#include <sys/file.h>
+#endif
+
+/*
  *	variables for handling the data file
  */
 static int	histfd;

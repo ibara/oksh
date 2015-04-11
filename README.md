@@ -8,6 +8,7 @@ Because other operating systems deserve a good shell to use.
 Originally a port of ksh to FreeBSD. The default FreeBSD shell is tcsh.
 No one likes tcsh. DragonFly BSD should also just work.
 Later NetBSD support was added. NetBSD also has a ksh variant so it might be less useful there.
+Linux support, tested on Slackware, exists.
 Other operating system support welcome and appreciated.
 
 Changes
@@ -21,11 +22,18 @@ Changes
 * Renamed README to README.pdksh
 * Added README.md (this file)
 
+Linux-specific changes
+----------------------
+Adding Linux support was invasive.
+* Added OpenBSD vesions of reallocarray.c, setmode.c, signame.c, strlcat.c, and strlcpy.c, all under #ifdef __linux__
+* Added defines, externs, and includes where needed, under #ifdef __linux__
+* Added OpenBSD <sys/queue.h> header as "queue.h" under #ifdef __linux__ and force Linux to use it
+
 License
 -------
 Most files are public domain (see LEGAL).
-A couple are BSD licensed (alloc.c and mknod.c).
+The rest are BSD or ISC licensed.
 
 Get a tarball
 -------------
-http://homepages.rpi.edu/~callab3/oksh-3.tar.gz
+http://homepages.rpi.edu/~callab3/oksh-4.tar.gz

@@ -6,6 +6,13 @@
 
 #include "sh.h"
 
+/*
+ * Linux again...
+ */
+#ifdef __linux__
+extern const char *const sys_signame;
+#endif
+
 Trap sigtraps[NSIG + 1];
 
 static struct sigaction Sigact_ign, Sigact_trap;

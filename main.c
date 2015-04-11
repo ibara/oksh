@@ -14,6 +14,13 @@
 extern char **environ;
 
 /*
+ * Linux...
+ */
+#ifdef __linux__
+#define MAXLOGNAME LOGIN_NAME_MAX
+#endif
+
+/*
  * global data
  */
 

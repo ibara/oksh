@@ -22,6 +22,13 @@
 #include <sys/resource.h>
 #include "tty.h"
 
+/*
+ * Linux...
+ */
+#ifdef __linux__
+#define CHILD_MAX 80
+#endif
+
 /* Order important! */
 #define PRUNNING	0
 #define PEXITED		1
