@@ -27,7 +27,7 @@ Linux-specific changes
 Adding Linux support was invasive.
 * Added OpenBSD vesions of reallocarray.c, setmode.c, signame.c, strlcat.c, and strlcpy.c, all under #ifdef __linux__
 * Added defines, externs, and includes where needed, under #ifdef __linux__
-* Added OpenBSD <sys/queue.h> header as "queue.h" under #ifdef __linux__ and force Linux to use it
+* Added OpenBSD &lt;sys/queue.h&gt; header as "queue.h" under #ifdef __linux__ and force Linux to use it
 
 License
 -------
