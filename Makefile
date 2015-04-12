@@ -18,9 +18,9 @@ OBJS =	alloc.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o emacs.o \
 # On Linux group is root, on FreeBSD it's wheel.
 GROUP := `uname -s|sed 's/Linux/root/;s/^[^r].*[^t]$\/wheel/'`
 
-# Update /etc/shells at install time only, not after an upgrade.
-FOUND := `grep -w oksh /etc/shells >/dev/null; test $$? -eq 0 && echo \'`
-ETC		= "${PREFIX}/bin/oksh" >> /etc/shells
+# Update /etc/shells once: at install time only, not after an upgrade.
+FOUND := `grep -w oksh /etc/shells >/dev/null; [ $$$? -eq 0 ] && echo \'`
+ETC = "${PREFIX}/bin/oksh" >> /etc/shells
 
 all:	${OBJS}
 	${CC} ${LDFLAGS} -o ${PROG} ${OBJS}
