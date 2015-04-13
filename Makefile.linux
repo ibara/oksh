@@ -1,0 +1,17 @@
+# group in Linux is root
+GROUP = root
+
+# only update /etc/shells at install time, not during update
+UPDATE:= `grep -w oksh /etc/shells > /dev/null;\
+	[ $$? -ne 0 ] && echo "${PREFIX}/bin/oksh" >> /etc/shells`
+
+# make install can only be run by root
+install: all
+ifneq ($(shell whoami),root)
+	@echo make install: ERROR requires su or sudo 
+	@exit 1
+endif
+
+	install -c -s -o root -g ${GROUP} -m 555 oksh ${PREFIX}/bin
+	install -c -o root -g ${GROUP} -m 444 oksh.1 ${PREFIX}/man/man1
+	echo ${UPDATE}
