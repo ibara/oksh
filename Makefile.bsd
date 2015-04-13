@@ -1,0 +1,18 @@
+# group in BSD is wheel
+GROUP = wheel
+SEARCH=	grep -cw "oksh" /etc/shells
+
+install: all
+# check if root (bug)
+.if "`whoami`" == "root"
+	@echo make install: ERROR requires su or sudo 
+	@exit 1
+.endif
+
+	install -c -s -o root -g ${GROUP} -m 555 oksh ${PREFIX}/bin
+	install -c -o root -g ${GROUP} -m 444 oksh.1 ${PREFIX}/man/man1
+
+# update /etc/shells at install time only, not during upgrade
+.if	${SEARCH:sh} == 0
+	echo "${PREFIX}/bin/oksh" >> /etc/shells
+.endif
