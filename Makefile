@@ -15,24 +15,20 @@ OBJS =	alloc.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o emacs.o \
 	var.o version.o vi.o setmode.o signame.o strlcat.o strlcpy.o \
 	reallocarray.o
 
-# On Linux group is root, on FreeBSD it's wheel.
-GROUP := `uname -s|sed 's/Linux/root/;s/^[^r].*[^t]$\/wheel/'`
-
-# Update /etc/shells once: at install time only, not after an upgrade.
-#FOUND := `grep -w oksh /etc/shells >/dev/null; [ $$$? -eq 0 ] && echo \'`
-#ERR := `uname -s|awk "/Linux/{ print  '$$?' }; !/Linux/{ print '$$$?' }"`
-
-#FOUND := `grep -w oksh /etc/shells >/dev/null; [ ${ERR} ? -eq 0 ] && echo \'`
-#ETC = "${PREFIX}/bin/oksh" >> /etc/shells
+# get which platform we are compiling on
+OS := $(shell uname|tr '[A-Z]' '[a-z]'|sed -E 's/.*(bsd|linux)/\1/')
 
 all:	${OBJS}
 	${CC} ${LDFLAGS} -o ${PROG} ${OBJS}
 
-include Makefile.linux
+install: all
+include Makefile.${OS}
 
 #install: all
 #	install -c -s -o root -g ${GROUP} -m 555 oksh ${PREFIX}/bin
 #	install -c -o root -g ${GROUP} -m 444 oksh.1 ${PREFIX}/man/man1
+#FOUND := `grep -w oksh /etc/shells >/dev/null; [ ${ERR} ? -eq 0 ] && echo \'`
+#ETC = "${PREFIX}/bin/oksh" >> /etc/shells
 #	echo ${FOUND}${ETC}${FOUND}
 
 clean:
