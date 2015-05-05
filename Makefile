@@ -16,7 +16,7 @@ OBJS =	alloc.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o emacs.o \
 	reallocarray.o
 
 # get which platform we are compiling on
-OS := $(shell uname|tr '[A-Z]' '[a-z]'|sed -E 's/.*(bsd|linux)/\1/')
+OS != echo `uname` | tr 'A-Z' 'a-z' | sed -E 's/.*(bsd|Linux)/\1/'
 
 all:	${OBJS}
 	${CC} ${LDFLAGS} -o ${PROG} ${OBJS}

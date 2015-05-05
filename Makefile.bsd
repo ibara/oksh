@@ -2,12 +2,12 @@
 GROUP = wheel
 SEARCH=	grep -cw "oksh" /etc/shells
 
+# only install if root
 install: all
-# check if root (bug)
-.if "`whoami`" == "root"
-	@echo make install: ERROR requires su or sudo 
-	@exit 1
-.endif
+	@if [ "`whoami`" != "root" ]; then			\
+		echo make install: ERROR needs su or sudo; 	\
+		exit 1	;					\
+	fi
 
 	install -c -s -o root -g ${GROUP} -m 555 oksh ${PREFIX}/bin
 	install -c -o root -g ${GROUP} -m 444 oksh.1 ${PREFIX}/man/man1
