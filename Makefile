@@ -16,7 +16,7 @@ OBJS =	alloc.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o emacs.o \
 	reallocarray.o
 
 # set OS platform (HACKITY HACK for gmake/bsd make compat)
-OS != echo `uname -o` | tr 'A-Z' 'a-z' | sed -E 's/.*(bsd|linux)/\1/'
+OS != echo `uname 2>/dev/null` | tr 'A-Z' 'a-z' | sed -E 's/.*(bsd|linux)/\1/'
 OS ?= linux
 
 all:	${OBJS}
