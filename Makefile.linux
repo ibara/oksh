@@ -6,9 +6,9 @@ UPDATE:= `grep -w oksh /etc/shells > /dev/null;\
 	[ $$? -ne 0 ] && echo "${PREFIX}/bin/oksh" >> /etc/shells`
 
 # make install can only be run by root
-install: all
+os: all
 ifneq ($(shell whoami),root)
-	@echo make install: ERROR requires su or sudo 
+	@echo ERROR: \'make install\' requires root, su, or sudo
 	@exit 1
 endif
 
