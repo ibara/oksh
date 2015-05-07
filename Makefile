@@ -15,13 +15,15 @@ OBJS =	alloc.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o emacs.o \
 	var.o version.o vi.o setmode.o signame.o strlcat.o strlcpy.o \
 	reallocarray.o
 
+# set OS platform (HACKITY HACK for gmake/bsd make compat)
+OS != echo `uname 2>/dev/null` | tr 'A-Z' 'a-z' | sed -E 's/.*(bsd|linux)/\1/'
+OS ?= linux
+
 all:	${OBJS}
 	${CC} ${LDFLAGS} -o ${PROG} ${OBJS}
 
-install: all
-	install -c -s -o root -g wheel -m 555 oksh ${PREFIX}/bin
-	install -c -o root -g wheel -m 444 oksh.1 ${PREFIX}/man/man1
-	echo "${PREFIX}/bin/oksh" >> /etc/shells
+install: os
+include Makefile.${OS}
 
 clean:
 	rm -f ${PROG} *.o *~
