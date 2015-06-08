@@ -28,11 +28,6 @@
  * SUCH DAMAGE.
  */
 
-/*
- * Linux sucks.
- */
-#ifdef __linux__
-
 #include <signal.h>
 #include <unistd.h>
 
@@ -71,5 +66,3 @@ const char *const sys_signame[NSIG] = {
 	"USR2",		/* SIGUSR2 */
 	"THR",		/* SIGTHR */
 };
-
-#endif /* #ifdef __linux__ */

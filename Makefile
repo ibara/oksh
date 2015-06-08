@@ -1,29 +1,17 @@
-# oksh Makefile
+#	$OpenBSD: Makefile,v 1.29 2013/12/02 20:41:01 millert Exp $
 
-# OpenBSD defaults
-CC ?= cc
-CFLAGS ?= -O2 -pipe
-PREFIX ?= /usr/local
+PROG=	ksh
+SRCS=	alloc.c c_ksh.c c_sh.c c_test.c c_ulimit.c edit.c emacs.c eval.c \
+	exec.c expr.c history.c io.c jobs.c lex.c mail.c main.c mknod.c \
+	misc.c path.c shf.c syn.c table.c trap.c tree.c tty.c var.c \
+	version.c vi.c
 
-CFLAGS += -Wall
-LDFLAGS += -static
+DEFS=	-Wall
+CFLAGS+=${DEFS} -I. -I${.CURDIR} -I${.CURDIR}/../../lib/libc/gen
+MAN=	ksh.1 sh.1
 
-PROG =	oksh
-OBJS =	alloc.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o emacs.o \
-	eval.o exec.o expr.o history.o io.o jobs.o lex.o mail.o main.o \
-	mknod.o misc.o path.o shf.o syn.o table.o trap.o tree.o tty.o \
-	var.o version.o vi.o setmode.o signame.o strlcat.o strlcpy.o \
-	reallocarray.o
+LINKS=	${BINDIR}/ksh ${BINDIR}/rksh
+LINKS+=	${BINDIR}/ksh ${BINDIR}/sh
+MLINKS=	ksh.1 rksh.1
 
-# set OS platform (HACKITY HACK for gmake/bsd make compat)
-OS != echo `uname 2>/dev/null` | tr 'A-Z' 'a-z' | sed -E 's/.*(bsd|linux)/\1/'
-OS ?= linux
-
-all:	${OBJS}
-	${CC} ${LDFLAGS} -o ${PROG} ${OBJS}
-
-install: os
-include Makefile.${OS}
-
-clean:
-	rm -f ${PROG} *.o *~
+.include <bsd.prog.mk>

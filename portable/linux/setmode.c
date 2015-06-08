@@ -33,12 +33,6 @@
  * SUCH DAMAGE.
  */
 
-/*
- * Linux does not have these functions.
- */
-
-#ifdef __linux__
-
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -459,5 +453,3 @@ compress_mode(BITCMD *set)
 		}
 	}
 }
-
-#endif /* #ifdef __linux__ */

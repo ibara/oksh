@@ -5,7 +5,6 @@
  */
 
 #include "sh.h"
-#include <time.h>
 #include <libgen.h>
 #include <ctype.h>
 

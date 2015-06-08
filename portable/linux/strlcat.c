@@ -16,11 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/*
- * glibc sucks.
- */
-#ifdef __linux__
-
 #include <sys/types.h>
 #include <string.h>
 
@@ -58,5 +53,3 @@ strlcat(char *dst, const char *src, size_t dsize)
 
 	return(dlen + (src - osrc));	/* count does not include NUL */
 }
-
-#endif /* #ifdef __linux__ */

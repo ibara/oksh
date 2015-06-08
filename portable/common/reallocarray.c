@@ -15,11 +15,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/*
- * Linux still sucks.
- */
-#ifdef __linux__
-
 #include <sys/types.h>
 #include <errno.h>
 #include <stdint.h>
@@ -41,5 +36,3 @@ reallocarray(void *optr, size_t nmemb, size_t size)
 	}
 	return realloc(optr, size * nmemb);
 }
-
-#endif /* #ifdef __linux__ */

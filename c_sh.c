@@ -11,14 +11,6 @@
 
 static void p_time(struct shf *, int, struct timeval *, int, char *, char *);
 
-/*
- * Linux does not have getmode() or setmode().
- */
-#ifdef __linux__
-extern mode_t getmode(const void *, mode_t);
-extern void *setmode(const char *);
-#endif
-
 /* :, false and true */
 int
 c_label(char **wp)

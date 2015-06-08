@@ -21,13 +21,6 @@
 #include <locale.h>
 #include "edit.h"
 
-/*
- * Linux sucks.
- */
-#ifdef __linux__
-#include "queue.h"
-#endif
-
 static	Area	aedit;
 #define	AEDIT	&aedit		/* area for kill ring and macro defns */
 

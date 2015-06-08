@@ -7,18 +7,10 @@
 #define	EXTERN				/* define EXTERNs in sh.h */
 
 #include "sh.h"
-#include <sys/param.h>
 #include <sys/stat.h>
 #include <pwd.h>
 
 extern char **environ;
-
-/*
- * Linux...
- */
-#ifdef __linux__
-#define MAXLOGNAME LOGIN_NAME_MAX
-#endif
 
 /*
  * global data
@@ -70,7 +62,7 @@ static const char *initcoms [] = {
 	NULL
 };
 
-char username[MAXLOGNAME];
+char username[_PW_NAME_LEN + 1];
 
 #define version_param  (initcoms[2])
 

@@ -6,7 +6,11 @@
 
 #include "sh.h"
 #include <ctype.h>
+#ifdef __OpenBSD__
 #include "charclass.h"
+#else
+#include "portable/common/charclass.h"
+#endif
 
 short ctypes [UCHAR_MAX+1];	/* type bits for unsigned char */
 
@@ -295,19 +299,9 @@ change_flag(enum sh_flag f,
 	if (f == FPRIVILEGED && oldval && !newval) {
 		gid_t gid = getgid();
 
-#ifdef __NetBSD__
-		setgid(gid);
-		setegid(gid);
-#else
 		setresgid(gid, gid, gid);
-#endif
 		setgroups(1, &gid);
-#ifdef __NetBSD__
-		setuid(ksheuid);
-		seteuid(ksheuid);
-#else
 		setresuid(ksheuid, ksheuid, ksheuid);
-#endif
 	} else if (f == FPOSIX && newval) {
 #ifdef BRACE_EXPAND
 		Flag(FBRACEEXPAND) = 0

@@ -33,11 +33,6 @@
  */
 
 /*
- * Linux sucks.
- */
-#ifdef __linux__
-
-/*
  * This file defines five types of data structures: singly-linked lists, 
  * lists, simple queues, tail queues, and circular queues.
  *
@@ -646,5 +641,3 @@ struct {								\
 	_Q_INVALIDATE((elm)->field.cqe_prev);				\
 	_Q_INVALIDATE((elm)->field.cqe_next);				\
 } while (0)
-
-#endif /* #ifdef __linux__ */

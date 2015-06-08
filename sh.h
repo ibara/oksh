@@ -28,6 +28,17 @@
 
 #include <paths.h>
 
+/* oksh portable: system-specific headers */
+#ifdef __linux__
+#include "portable/linux/linux.h"
+#endif
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+#include "portable/freebsd/freebsd.h"
+#endif
+#ifdef __NetBSD__
+#include "portable/netbsd/netbsd.h"
+#endif
+
 /* Find a integer type that is at least 32 bits (or die) - SIZEOF_* defined
  * by autoconf (assumes an 8 bit byte, but I'm not concerned).
  * NOTE: INT32 may end up being more than 32 bits.
@@ -418,9 +429,3 @@ EXTERN	int	x_cols I__(80);	/* tty columns */
 # undef EXTERN
 #endif
 #undef I__
-
-/* Linux-specific additions */
-#ifdef __linux__
-extern size_t strlcat(char *, const char *, size_t);
-extern size_t strlcpy(char *, const char *, size_t);
-#endif
