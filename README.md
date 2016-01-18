@@ -9,6 +9,7 @@ Originally a port of ksh to FreeBSD. The default FreeBSD shell is tcsh.
 No one likes tcsh. DragonFly BSD should also just work.
 Later NetBSD support was added. NetBSD also has a ksh variant so it might be less useful there.
 Linux support, tested on Slackware and Ubuntu, exists.
+Darwin (Mac OS X) supported as well.
 Other operating system support welcome and appreciated.
 
 License
