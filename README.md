@@ -19,4 +19,4 @@ The rest are BSD or ISC licensed.
 
 Get a tarball
 -------------
-http://devio.us/~bcallah/oksh/oksh-5.tar.gz
+http://devio.us/~bcallah/oksh/oksh-6.tar.gz
