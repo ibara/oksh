@@ -38,6 +38,9 @@
 #ifdef __NetBSD__
 #include "portable/netbsd/netbsd.h"
 #endif
+#ifdef __APPLE__
+#include "portable/darwin/darwin.h"
+#endif
 
 /* Find a integer type that is at least 32 bits (or die) - SIZEOF_* defined
  * by autoconf (assumes an 8 bit byte, but I'm not concerned).
