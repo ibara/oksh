@@ -16,7 +16,11 @@
 
 #include "sh.h"
 #include <sys/stat.h>
+#ifdef __linux__
+#include "portable/linux/queue.h"
+#else
 #include <sys/queue.h>
+#endif
 #include <ctype.h>
 #include <locale.h>
 #include "edit.h"
