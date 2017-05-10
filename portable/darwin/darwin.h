@@ -12,3 +12,6 @@
 /* Not really sure on these two, but it seems to work ok. */
 #define setresgid(x, y, z)	setgid(x); setegid(y); setgid(z)
 #define setresuid(x, y, z)	setuid(x); seteuid(y); setuid(z)
+
+long long strtonum(const char *numstr, long long minval, long long maxval,
+		   const char **errstrp);

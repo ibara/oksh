@@ -18,3 +18,5 @@ mode_t	getmode(const void *, mode_t);
 void   *setmode(const char *);
 size_t	strlcat(char *, const char *, size_t);
 size_t	strlcpy(char *, const char *, size_t);
+long long strtonum(const char *numstr, long long minval, long long maxval,
+		   const char **errstrp);

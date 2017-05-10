@@ -3,11 +3,10 @@
 /*
  * lexical analysis and source input
  */
-
-#include "sh.h"
-#include <libgen.h>
 #include <ctype.h>
-
+#include <libgen.h>
+#include <time.h>
+#include "sh.h"
 
 /* Structure to keep track of the lexing state and the various pieces of info
  * needed for each particular state.
@@ -909,7 +908,7 @@ yyerror(const char *fmt, ...)
 	va_start(va, fmt);
 	shf_vfprintf(shl_out, fmt, va);
 	va_end(va);
-	errorf(null);
+	errorf("%s", null);
 }
 
 /*
