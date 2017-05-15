@@ -519,7 +519,7 @@ shell(Source *volatile s, volatile int toplevel)
 		case LSHELL:
 			if (interactive) {
 				if (i == LINTR)
-					shellf(newline);
+					shellf("%s", newline);
 				/* Reset any eof that was read as part of a
 				 * multiline command.
 				 */

@@ -741,7 +741,7 @@ j_resume(const char *cp, int bg)
 		}
 		shprintf("%s%s", p->command, p->next ? "| " : null);
 	}
-	shprintf(newline);
+	shprintf("%s", newline);
 	shf_flush(shl_stdout);
 	if (running)
 		j->state = PRUNNING;

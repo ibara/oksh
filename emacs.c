@@ -863,7 +863,7 @@ kb_find_hist_func(char c)
 	line[0] = c;
 	line[1] = '\0';
 	TAILQ_FOREACH(k, &kblist, entry)
-		if (!strcmp(k->seq, line))
+		if (!strcmp((const char *)k->seq, line))
 			return (k->ftab->xf_func);
 
 	return (x_insert);
@@ -1344,7 +1344,7 @@ kb_add_string(void *func, void *args, char *str)
 	k->ftab = xf;
 	k->args = args ? strdup(args) : NULL;
 
-	strlcpy(k->seq, str, count + 1);
+	strlcpy((char *)k->seq, str, count + 1);
 
 	TAILQ_INSERT_TAIL(&kblist, k, entry);
 
@@ -1377,9 +1377,9 @@ kb_print(struct kb_entry *k)
 {
 	if (!(k->ftab->xf_flags & XF_NOBIND))
 		shprintf("%s = %s\n",
-		    kb_decode(k->seq), k->ftab->xf_name);
+		  kb_decode((const char *)k->seq), k->ftab->xf_name);
 	else if (k->args) {
-		shprintf("%s = ", kb_decode(k->seq));
+	     shprintf("%s = ", kb_decode((const char *)k->seq));
 		shprintf("'%s'\n", kb_decode(k->args));
 	}
 }
@@ -1421,7 +1421,7 @@ x_bind(const char *a1, const char *a2,
 	if (a2 == NULL) {
 		/* print binding */
 		TAILQ_FOREACH(k, &kblist, entry)
-			if (!strcmp(k->seq, in)) {
+			if (!strcmp((const char *)k->seq, in)) {
 				kb_print(k);
 				return (0);
 			}
@@ -1432,7 +1432,7 @@ x_bind(const char *a1, const char *a2,
 	if (strlen(a2) == 0) {
 		/* clear binding */
 		TAILQ_FOREACH_SAFE(k, &kblist, entry, kb)
-			if (!strcmp(k->seq, in)) {
+			if (!strcmp((const char *)k->seq, in)) {
 				kb_del(k);
 				break;
 			}
@@ -1443,7 +1443,7 @@ x_bind(const char *a1, const char *a2,
 	if (macro) {
 		/* delete old mapping */
 		TAILQ_FOREACH_SAFE(k, &kblist, entry, kb)
-			if (!strcmp(k->seq, in)) {
+			if (!strcmp((const char *)k->seq, in)) {
 				kb_del(k);
 				break;
 			}
@@ -1458,7 +1458,7 @@ x_bind(const char *a1, const char *a2,
 		if (!strcmp(x_ftab[i].xf_name, a2)) {
 			/* delete old mapping */
 			TAILQ_FOREACH_SAFE(k, &kblist, entry, kb)
-				if (!strcmp(k->seq, in)) {
+				if (!strcmp((const char *)k->seq, in)) {
 					kb_del(k);
 					break;
 				}

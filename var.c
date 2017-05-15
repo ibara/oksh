@@ -357,7 +357,7 @@ setstr(struct tbl *vq, const char *s, int error_ok)
 	if ((vq->flag & RDONLY) && !no_ro_check) {
 		warningf(true, "%s: is read only", vq->name);
 		if (!error_ok)
-			errorf(null);
+			errorf("%s", null);
 		return 0;
 	}
 	if (!(vq->flag&INTEGER)) { /* string dest */
@@ -711,7 +711,7 @@ typeset(const char *var, Tflag set, Tflag clr, int field, int base)
 			}
 		}
 		if (!ok)
-		    errorf(null);
+		    errorf("%s", null);
 	}
 
 	if (val != NULL) {

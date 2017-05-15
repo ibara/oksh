@@ -240,7 +240,7 @@ printoptions(int verbose)
 		for (i = 0; i < NELEM(options); i++)
 			if (Flag(i) && options[i].name)
 				shprintf(" -o %s", options[i].name);
-		shprintf(newline);
+		shprintf("%s", newline);
 	}
 }
 
@@ -715,7 +715,7 @@ posix_cclass(const unsigned char *pattern, int test, const unsigned char **ep)
 	size_t len;
 	int rval = 0;
 
-	if ((colon = strchr(pattern, ':')) == NULL || colon[1] != MAGIC) {
+	if ((colon = ((const unsigned char *)strchr((const char *)pattern, ':'))) == NULL || colon[1] != MAGIC) {
 		*ep = pattern - 2;
 		return -1;
 	}
@@ -723,7 +723,7 @@ posix_cclass(const unsigned char *pattern, int test, const unsigned char **ep)
 	len = (size_t)(colon - pattern);
 
 	for (cc = cclasses; cc->name != NULL; cc++) {
-		if (!strncmp(pattern, cc->name, len) && cc->name[len] == '\0') {
+		if (!strncmp((const char *)pattern, cc->name, len) && cc->name[len] == '\0') {
 			if (cc->isctype(test))
 				rval = 1;
 			break;
@@ -748,8 +748,8 @@ cclass(const unsigned char *p, int sub)
 		if ((p[0] == MAGIC && p[1] == '[' && p[2] == ':') ||
 		    (p[0] == '[' && p[1] == ':')) {
 			do {
-				const char *pp = p + (*p == MAGIC) + 2;
-				rv = posix_cclass(pp, sub, &p);
+				const char *pp = (const char *)p + (*p == MAGIC) + 2;
+				rv = posix_cclass((const unsigned char *)pp, sub, &p);
 				switch (rv) {
 				case 1:
 					found = 1;
@@ -906,7 +906,7 @@ ksh_getopt(char **argv, Getopt *go, const char *options)
 			    (go->flags & GF_NONAME) ? "" : argv[0],
 			    (go->flags & GF_NONAME) ? "" : ": ", c);
 			if (go->flags & GF_ERROR)
-				bi_errorf(null);
+				bi_errorf("%s", null);
 		}
 		return '?';
 	}
@@ -932,7 +932,7 @@ ksh_getopt(char **argv, Getopt *go, const char *options)
 			    (go->flags & GF_NONAME) ? "" : argv[0],
 			    (go->flags & GF_NONAME) ? "" : ": ", c);
 			if (go->flags & GF_ERROR)
-				bi_errorf(null);
+				bi_errorf("%s", null);
 			return '?';
 		}
 		go->p = 0;
@@ -984,7 +984,7 @@ print_value_quoted(const char *s)
 	}
 	for (p = s; *p; p++) {
 		if (*p == '\'') {
-			shprintf("'\\'" + 1 - inquote);
+			shprintf("%s", "'\\'" + 1 - inquote);
 			inquote = 0;
 		} else {
 			if (!inquote) {

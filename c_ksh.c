@@ -515,7 +515,7 @@ c_whence(char **wp)
 			break;
 		}
 		if (vflag || !ret)
-			shprintf(newline);
+			shprintf("%s", newline);
 	}
 	return ret;
 }
@@ -816,7 +816,7 @@ c_typeset(char **wp)
 							else
 								print_value_quoted(s);
 						}
-						shprintf(newline);
+						shprintf("%s", newline);
 					}
 					/* Only report first `element' of an array with
 					* no set elements.
@@ -906,7 +906,7 @@ c_alias(char **wp)
 					shf_putc('=', shl_stdout);
 					print_value_quoted(ap->val.s);
 				}
-				shprintf(newline);
+				shprintf("%s", newline);
 			}
 	}
 
@@ -930,7 +930,7 @@ c_alias(char **wp)
 					shf_putc('=', shl_stdout);
 					print_value_quoted(ap->val.s);
 				}
-				shprintf(newline);
+				shprintf("%s", newline);
 			} else {
 				shprintf("%s alias not found\n", alias);
 				rv = 1;
@@ -1166,7 +1166,7 @@ c_kill(char **wp)
 		shf_fprintf(shl_out,
 		    "usage: kill [-s signame | -signum | -signame] { job | pid | pgrp } ...\n"
 		    "       kill -l [exit_status ...]\n");
-		bi_errorf(null);
+		bi_errorf("%s", null);
 		return 1;
 	}
 
@@ -1187,7 +1187,7 @@ c_kill(char **wp)
 			for (i = 1; i < NSIG; i++, p = space)
 				if (sigtraps[i].name)
 					shprintf("%s%s", p, sigtraps[i].name);
-			shprintf(newline);
+			shprintf("%s", newline);
 		} else {
 			int w, i;
 			int mess_width;
