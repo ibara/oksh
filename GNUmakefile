@@ -50,7 +50,7 @@ endif
 #
 ifneq ($(UNAME_S),Darwin)
 UPDATE := `grep -w ${PREFIX}/bin/${PROG} /etc/shells > /dev/null;\
-	[ $$? -ne 0] && echo "${PREFIX}/bin/${PROG}" >> /etc/shells`
+	[ $$? -ne 0 ] && echo "${PREFIX}/bin/${PROG}" >> /etc/shells`
 endif
 
 ifneq ($(UNAME_S),Darwin)
