@@ -1,14 +1,10 @@
-/*	$OpenBSD: tree.h,v 1.10 2005/03/28 21:28:22 deraadt Exp $	*/
+/*	$OpenBSD: tree.h,v 1.12 2015/10/15 22:53:50 mmcc Exp $	*/
 
 /*
  * command trees for compile/execute
  */
 
 /* $From: tree.h,v 1.3 1994/05/31 13:34:34 michael Exp $ */
-
-#define	NOBLOCK	((struct op *)NULL)
-#define	NOWORD	((char *)NULL)
-#define	NOWORDS	((char **)NULL)
 
 /*
  * Description of a command or an operation on commands.
@@ -139,3 +135,11 @@ struct ioword {
 #define DB_AND	3		/* && -> -a conversion */
 #define DB_BE	4		/* an inserted -BE */
 #define DB_PAT	5		/* a pattern argument */
+
+void	fptreef(struct shf *, int, const char *, ...);
+char *	snptreef(char *, int, const char *, ...);
+struct op *	tcopy(struct op *, Area *);
+char *	wdcopy(const char *, Area *);
+char *	wdscan(const char *, int);
+char *	wdstrip(const char *);
+void	tfree(struct op *, Area *);

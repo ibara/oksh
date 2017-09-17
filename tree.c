@@ -1,8 +1,10 @@
-/*	$OpenBSD: tree.c,v 1.20 2012/06/27 07:17:19 otto Exp $	*/
+/*	$OpenBSD: tree.c,v 1.27 2015/11/01 15:38:53 mmcc Exp $	*/
 
 /*
  * command tree climbing
  */
+
+#include <string.h>
 
 #include "sh.h"
 
@@ -348,11 +350,6 @@ tputS(char *wp, struct shf *shf)
 		}
 }
 
-/*
- * this is the _only_ way to reliably handle
- * variable args with an ANSI compiler
- */
-/* VARARGS */
 void
 fptreef(struct shf *shf, int indent, const char *fmt, ...)
 {
@@ -363,7 +360,6 @@ fptreef(struct shf *shf, int indent, const char *fmt, ...)
   va_end(va);
 }
 
-/* VARARGS */
 char *
 snptreef(char *s, int n, const char *fmt, ...)
 {
@@ -457,7 +453,7 @@ tcopy(struct op *t, Area *ap)
 	if (t == NULL)
 		return NULL;
 
-	r = (struct op *) alloc(sizeof(struct op), ap);
+	r = alloc(sizeof(struct op), ap);
 
 	r->type = t->type;
 	r->u.evalflags = t->u.evalflags;
@@ -469,8 +465,8 @@ tcopy(struct op *t, Area *ap)
 	else {
 		for (tw = t->vars; *tw++ != NULL; )
 			;
-		rw = r->vars = (char **)
-			alloc((tw - t->vars + 1) * sizeof(*tw), ap);
+		rw = r->vars = areallocarray(NULL, tw - t->vars + 1,
+		    sizeof(*tw), ap);
 		for (tw = t->vars; *tw != NULL; )
 			*rw++ = wdcopy(*tw++, ap);
 		*rw = NULL;
@@ -481,8 +477,8 @@ tcopy(struct op *t, Area *ap)
 	else {
 		for (tw = t->args; *tw++ != NULL; )
 			;
-		rw = r->args = (char **)
-			alloc((tw - t->args + 1) * sizeof(*tw), ap);
+		rw = r->args = areallocarray(NULL, tw - t->args + 1,
+		    sizeof(*tw), ap);
 		for (tw = t->args; *tw != NULL; )
 			*rw++ = wdcopy(*tw++, ap);
 		*rw = NULL;
@@ -565,7 +561,7 @@ wdstrip(const char *wp)
 	struct shf shf;
 	int c;
 
-	shf_sopen((char *) 0, 32, SHF_WR | SHF_DYNAMIC, &shf);
+	shf_sopen(NULL, 32, SHF_WR | SHF_DYNAMIC, &shf);
 
 	/* problems:
 	 *	`...` -> $(...)
@@ -632,20 +628,20 @@ iocopy(struct ioword **iow, Area *ap)
 
 	for (ior = iow; *ior++ != NULL; )
 		;
-	ior = (struct ioword **) alloc((ior - iow + 1) * sizeof(*ior), ap);
+	ior = areallocarray(NULL, ior - iow + 1, sizeof(*ior), ap);
 
 	for (i = 0; iow[i] != NULL; i++) {
 		struct ioword *p, *q;
 
 		p = iow[i];
-		q = (struct ioword *) alloc(sizeof(*p), ap);
+		q = alloc(sizeof(*p), ap);
 		ior[i] = q;
 		*q = *p;
-		if (p->name != (char *) 0)
+		if (p->name != NULL)
 			q->name = wdcopy(p->name, ap);
-		if (p->delim != (char *) 0)
+		if (p->delim != NULL)
 			q->delim = wdcopy(p->delim, ap);
-		if (p->heredoc != (char *) 0)
+		if (p->heredoc != NULL)
 			q->heredoc = str_save(p->heredoc, ap);
 	}
 	ior[i] = NULL;
@@ -665,19 +661,18 @@ tfree(struct op *t, Area *ap)
 	if (t == NULL)
 		return;
 
-	if (t->str != NULL)
-		afree((void*)t->str, ap);
+	afree(t->str, ap);
 
 	if (t->vars != NULL) {
 		for (w = t->vars; *w != NULL; w++)
-			afree((void*)*w, ap);
-		afree((void*)t->vars, ap);
+			afree(*w, ap);
+		afree(t->vars, ap);
 	}
 
 	if (t->args != NULL) {
 		for (w = t->args; *w != NULL; w++)
-			afree((void*)*w, ap);
-		afree((void*)t->args, ap);
+			afree(*w, ap);
+		afree(t->args, ap);
 	}
 
 	if (t->ioact != NULL)
@@ -686,7 +681,7 @@ tfree(struct op *t, Area *ap)
 	tfree(t->left, ap);
 	tfree(t->right, ap);
 
-	afree((void*)t, ap);
+	afree(t, ap);
 }
 
 static	void
@@ -696,13 +691,10 @@ iofree(struct ioword **iow, Area *ap)
 	struct ioword *p;
 
 	for (iop = iow; (p = *iop++) != NULL; ) {
-		if (p->name != NULL)
-			afree((void*)p->name, ap);
-		if (p->delim != NULL)
-			afree((void*)p->delim, ap);
-		if (p->heredoc != NULL)
-			afree((void*)p->heredoc, ap);
-		afree((void*)p, ap);
+		afree(p->name, ap);
+		afree(p->delim, ap);
+		afree(p->heredoc, ap);
+		afree(p, ap);
 	}
 	afree(iow, ap);
 }

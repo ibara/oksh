@@ -1,15 +1,17 @@
-/*	$OpenBSD: mail.c,v 1.17 2013/11/28 10:33:37 sobrado Exp $	*/
+/*	$OpenBSD: mail.c,v 1.22 2015/10/19 14:42:16 mmcc Exp $	*/
 
 /*
  * Mailbox checking code by Robert J. Gibson, adapted for PD ksh by
  * John R. MacMillan
  */
 
-#include "config.h"
-
-#include "sh.h"
 #include <sys/stat.h>
+
+#include <string.h>
 #include <time.h>
+
+#include "config.h"
+#include "sh.h"
 
 #define MBMESSAGE	"you have mail in $_"
 
@@ -89,10 +91,8 @@ mbset(char *p)
 {
 	struct stat	stbuf;
 
-	if (mbox.mb_msg)
-		afree((void *)mbox.mb_msg, APERM);
-	if (mbox.mb_path)
-		afree((void *)mbox.mb_path, APERM);
+	afree(mbox.mb_msg, APERM);
+	afree(mbox.mb_path, APERM);
 	/* Save a copy to protect from export (which munges the string) */
 	mbox.mb_path = str_save(p, APERM);
 	mbox.mb_msg = NULL;
@@ -151,8 +151,8 @@ munset(mbox_t *mlist)
 		mbp = mlist;
 		mlist = mbp->mb_next;
 		if (!mlist)
-			afree((void *)mbp->mb_path, APERM);
-		afree((void *)mbp, APERM);
+			afree(mbp->mb_path, APERM);
+		afree(mbp, APERM);
 	}
 }
 
@@ -162,7 +162,7 @@ mballoc(char *p, char *m)
 	struct stat	stbuf;
 	mbox_t	*mbp;
 
-	mbp = (mbox_t *)alloc(sizeof(mbox_t), APERM);
+	mbp = alloc(sizeof(mbox_t), APERM);
 	mbp->mb_next = NULL;
 	mbp->mb_path = p;
 	mbp->mb_msg = m;

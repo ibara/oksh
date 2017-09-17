@@ -1,14 +1,21 @@
-/*	$OpenBSD: main.c,v 1.55 2015/02/09 09:09:30 jsg Exp $	*/
+/*	$OpenBSD: main.c,v 1.83 2017/08/11 23:10:55 guenther Exp $	*/
 
 /*
  * startup, main loop, environments and error handling
  */
 
-#define	EXTERN				/* define EXTERNs in sh.h */
+#include <sys/stat.h>
+
+#include <errno.h>
+#include <fcntl.h>
+#include <paths.h>
+#include <pwd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "sh.h"
-#include <sys/stat.h>
-#include <pwd.h>
 
 extern char **environ;
 
@@ -21,6 +28,51 @@ static void	remove_temps(struct temp *tp);
 static int	is_restricted(char *name);
 static void	init_username(void);
 
+const char *kshname;
+pid_t	kshpid;
+pid_t	procpid;
+uid_t	ksheuid;
+int	exstat;
+int	subst_exstat;
+const char *safe_prompt;
+
+Area	aperm;
+
+struct env	*genv;
+
+char	shell_flags[FNFLAGS];
+
+char	null[] = "";
+
+int shl_stdout_ok;
+
+unsigned int	ksh_tmout;
+enum tmout_enum	ksh_tmout_state = TMOUT_EXECUTING;
+
+int	really_exit;
+
+int ifs0 = ' ';
+
+volatile sig_atomic_t	trap;
+volatile sig_atomic_t	intrsig;
+volatile sig_atomic_t	fatal_trap;
+
+Getopt	builtin_opt;
+Getopt	user_opt;
+
+struct coproc	coproc;
+sigset_t	sm_default, sm_sigchld;
+
+char	*builtin_argv0;
+int	 builtin_flag;
+
+char	*current_wd;
+int	 current_wd_size;
+
+#ifdef EDIT
+int	x_cols = 80;
+#endif /* EDIT */
+
 /*
  * shell initialization
  */
@@ -32,7 +84,7 @@ static const char initsubs[] = "${PS2=> } ${PS3=#? } ${PS4=+ }";
 static const char *initcoms [] = {
 	"typeset", "-r", "KSH_VERSION", NULL,
 	"typeset", "-x", "SHELL", "PATH", "HOME", NULL,
-	"typeset", "-i", "PPID", NULL,
+	"typeset", "-ir", "PPID", NULL,
 	"typeset", "-i", "OPTIND=1", NULL,
 	"eval", "typeset -i RANDOM MAILCHECK=\"${MAILCHECK-600}\" SECONDS=\"${SECONDS-0}\" TMOUT=\"${TMOUT-0}\"", NULL,
 	"alias",
@@ -50,7 +102,7 @@ static const char *initcoms [] = {
 	  "integer=typeset -i",
 	  "nohup=nohup ",
 	  "local=typeset",
-	  "r=fc -e -",
+	  "r=fc -s",
 	 /* Aliases that are builtin commands in at&t */
 	  "login=exec login",
 	  NULL,
@@ -68,22 +120,20 @@ char username[_PW_NAME_LEN + 1];
 
 /* The shell uses its own variation on argv, to build variables like
  * $0 and $@.
- * If we need to alter argv, allocate a new array first since
- * modifying the original argv will modify ps output.
+ * Allocate a new array since modifying the original argv will modify
+ * ps output.
  */
 static char **
 make_argv(int argc, char *argv[])
 {
 	int i;
-	char **nargv = argv;
+	char **nargv;
 
-	if (strcmp(argv[0], kshname) != 0) {
-		nargv = alloc(sizeof(char *) * (argc + 1), &aperm);
-		nargv[0] = (char *) kshname;
-		for (i = 1; i < argc; i++)
-			nargv[i] = argv[i];
-		nargv[i] = NULL;
-	}
+	nargv = areallocarray(NULL, argc + 1, sizeof(char *), &aperm);
+	nargv[0] = (char *) kshname;
+	for (i = 1; i < argc; i++)
+		nargv[i] = argv[i];
+	nargv[i] = NULL;
 
 	return nargv;
 }
@@ -100,16 +150,15 @@ main(int argc, char *argv[])
 	struct env env;
 	pid_t ppid;
 
-	/* make sure argv[] is sane */
-	if (!*argv) {
-		static const char *empty_argv[] = {
-			"ksh", (char *) 0
-		};
+	kshname = argv[0];
 
-		argv = (char **) empty_argv;
-		argc = 1;
+#ifdef __OpenBSD__
+	if (pledge("stdio rpath wpath cpath fattr flock getpw proc exec tty",
+	    NULL) == -1) {
+		perror("pledge");
+		exit(1);
 	}
-	kshname = *argv;
+#endif
 
 	ainit(&aperm);		/* initialize permanent Area */
 
@@ -117,7 +166,7 @@ main(int argc, char *argv[])
 	memset(&env, 0, sizeof(env));
 	env.type = E_NONE;
 	ainit(&env.area);
-	e = &env;
+	genv = &env;
 	newblock();		/* set up global l->vars and l->funs */
 
 	/* Do this first so output routines (eg, errorf, shellf) can work */
@@ -150,7 +199,7 @@ main(int argc, char *argv[])
 
 	def_path = _PATH_DEFPATH;
 	{
-		size_t len = confstr(_CS_PATH, (char *) 0, 0);
+		size_t len = confstr(_CS_PATH, NULL, 0);
 		char *new;
 
 		if (len > 0) {
@@ -236,7 +285,7 @@ main(int argc, char *argv[])
 		    stat(pwd, &s_pwd) < 0 || stat(".", &s_dot) < 0 ||
 		    s_pwd.st_dev != s_dot.st_dev ||
 		    s_pwd.st_ino != s_dot.st_ino)
-			pwdx = (char *) 0;
+			pwdx = NULL;
 		set_current_wd(pwdx);
 		if (current_wd[0])
 			simplify_path(current_wd);
@@ -266,14 +315,11 @@ main(int argc, char *argv[])
 	{
 		struct tbl *vp = global("PS1");
 
-		/* Set PS1 if it isn't set, or we are root and prompt doesn't
-		 * contain a # or \$ (only in ksh mode).
-		 */
-		if (!(vp->flag & ISSET) ||
-		    (!ksheuid && !strchr(str_val(vp), '#') &&
-		    (Flag(FSH) || !strstr(str_val(vp), "\\$"))))
+		/* Set PS1 if it isn't set */
+		if (!(vp->flag & ISSET)) {
 			/* setstr can't fail here */
 			setstr(vp, safe_prompt, KSH_RETURN_ERROR);
+		}
 	}
 
 	/* Set this before parsing arguments */
@@ -281,7 +327,7 @@ main(int argc, char *argv[])
 
 	/* this to note if monitor is set on command line (see below) */
 	Flag(FMONITOR) = 127;
-	argi = parse_args(argv, OF_CMDLINE, (int *) 0);
+	argi = parse_args(argv, OF_CMDLINE, NULL);
 	if (argi < 0)
 		exit(1);
 
@@ -304,14 +350,13 @@ main(int argc, char *argv[])
 		Flag(FSTDIN) = 1;
 		s = pushs(SSTDIN, ATEMP);
 		s->file = "<stdin>";
-		s->u.shf = shf_fdopen(0, SHF_RD | can_seek(0),
-		    (struct shf *) 0);
+		s->u.shf = shf_fdopen(0, SHF_RD | can_seek(0), NULL);
 		if (isatty(0) && isatty(2)) {
 			Flag(FTALKING) = Flag(FTALKING_I) = 1;
 			/* The following only if isatty(0) */
 			s->flags |= SF_TTY;
 			s->u.shf->flags |= SHF_INTERRUPT;
-			s->file = (char *) 0;
+			s->file = NULL;
 		}
 	}
 
@@ -334,7 +379,7 @@ main(int argc, char *argv[])
 		x_init();
 #endif
 
-	l = e->loc;
+	l = genv->loc;
 	l->argv = make_argv(argc - (argi - 1), &argv[argi - 1]);
 	l->argc = argc - argi;
 	getopts_reset(1);
@@ -352,14 +397,13 @@ main(int argc, char *argv[])
 		warningf(false, "Cannot determine current working directory");
 
 	if (Flag(FLOGIN)) {
-		include(KSH_SYSTEM_PROFILE, 0, (char **) 0, 1);
+		include(KSH_SYSTEM_PROFILE, 0, NULL, 1);
 		if (!Flag(FPRIVILEGED))
-			include(substitute("$HOME/.profile", 0), 0,
-			    (char **) 0, 1);
+			include(substitute("$HOME/.profile", 0), 0, NULL, 1);
 	}
 
 	if (Flag(FPRIVILEGED))
-		include("/etc/suid_profile", 0, (char **) 0, 1);
+		include("/etc/suid_profile", 0, NULL, 1);
 	else if (Flag(FTALKING)) {
 		char *env_file;
 
@@ -373,7 +417,7 @@ main(int argc, char *argv[])
 #endif /* DEFAULT_ENV */
 		env_file = substitute(env_file, DOTILDE);
 		if (*env_file != '\0')
-			include(env_file, 0, (char **) 0, 1);
+			include(env_file, 0, NULL, 1);
 	}
 
 	if (is_restricted(argv[0]) || is_restricted(str_val(global("SHELL"))))
@@ -382,7 +426,7 @@ main(int argc, char *argv[])
 		static const char *const restr_com[] = {
 			"typeset", "-r", "PATH",
 			"ENV", "SHELL",
-			(char *) 0
+			NULL
 		};
 		shcomexec((char **) restr_com);
 		/* After typeset command... */
@@ -429,19 +473,19 @@ include(const char *name, int argc, char **argv, int intr_ok)
 		return -1;
 
 	if (argv) {
-		old_argv = e->loc->argv;
-		old_argc = e->loc->argc;
+		old_argv = genv->loc->argv;
+		old_argc = genv->loc->argc;
 	} else {
-		old_argv = (char **) 0;
+		old_argv = NULL;
 		old_argc = 0;
 	}
 	newenv(E_INCL);
-	i = sigsetjmp(e->jbuf, 0);
+	i = sigsetjmp(genv->jbuf, 0);
 	if (i) {
 		quitenv(s ? s->u.shf : NULL);
 		if (old_argv) {
-			e->loc->argv = old_argv;
-			e->loc->argc = old_argc;
+			genv->loc->argv = old_argv;
+			genv->loc->argc = old_argc;
 		}
 		switch (i) {
 		case LRETURN:
@@ -465,8 +509,8 @@ include(const char *name, int argc, char **argv, int intr_ok)
 		}
 	}
 	if (argv) {
-		e->loc->argv = argv;
-		e->loc->argc = argc;
+		genv->loc->argv = argv;
+		genv->loc->argc = argc;
 	}
 	s = pushs(SFILE, ATEMP);
 	s->u.shf = shf;
@@ -474,8 +518,8 @@ include(const char *name, int argc, char **argv, int intr_ok)
 	i = shell(s, false);
 	quitenv(s->u.shf);
 	if (old_argv) {
-		e->loc->argv = old_argv;
-		e->loc->argc = old_argc;
+		genv->loc->argv = old_argv;
+		genv->loc->argc = old_argc;
 	}
 	return i & 0xff;	/* & 0xff to ensure value not -1 */
 }
@@ -511,7 +555,7 @@ shell(Source *volatile s, volatile int toplevel)
 	newenv(E_PARSE);
 	if (interactive)
 		really_exit = 0;
-	i = sigsetjmp(e->jbuf, 0);
+	i = sigsetjmp(genv->jbuf, 0);
 	if (i) {
 		switch (i) {
 		case LINTR: /* we get here if SIGINT not caught or ignored */
@@ -519,7 +563,7 @@ shell(Source *volatile s, volatile int toplevel)
 		case LSHELL:
 			if (interactive) {
 				if (i == LINTR)
-					shellf("%s", newline);
+					shellf("\n");
 				/* Reset any eof that was read as part of a
 				 * multiline command.
 				 */
@@ -622,18 +666,18 @@ unwind(int i)
 		i = LLEAVE;
 	}
 	while (1) {
-		switch (e->type) {
+		switch (genv->type) {
 		case E_PARSE:
 		case E_FUNC:
 		case E_INCL:
 		case E_LOOP:
 		case E_ERRH:
-			siglongjmp(e->jbuf, i);
+			siglongjmp(genv->jbuf, i);
 			/* NOTREACHED */
 
 		case E_NONE:
 			if (i == LINTR)
-				e->flags |= EF_FAKE_SIGDIE;
+				genv->flags |= EF_FAKE_SIGDIE;
 			/* FALLTHROUGH */
 
 		default:
@@ -654,21 +698,21 @@ newenv(int type)
 {
 	struct env *ep;
 
-	ep = (struct env *) alloc(sizeof(*ep), ATEMP);
+	ep = alloc(sizeof(*ep), ATEMP);
 	ep->type = type;
 	ep->flags = 0;
 	ainit(&ep->area);
-	ep->loc = e->loc;
+	ep->loc = genv->loc;
 	ep->savefd = NULL;
-	ep->oenv = e;
+	ep->oenv = genv;
 	ep->temps = NULL;
-	e = ep;
+	genv = ep;
 }
 
 void
 quitenv(struct shf *shf)
 {
-	struct env *ep = e;
+	struct env *ep = genv;
 	int fd;
 
 	if (ep->oenv && ep->oenv->loc != ep->loc)
@@ -715,7 +759,7 @@ quitenv(struct shf *shf)
 		shf_close(shf);
 	reclaim();
 
-	e = e->oenv;
+	genv = genv->oenv;
 	afree(ep, ATEMP);
 }
 
@@ -732,16 +776,16 @@ cleanup_parents_env(void)
 	 */
 
 	/* close all file descriptors hiding in savefd */
-	for (ep = e; ep; ep = ep->oenv) {
+	for (ep = genv; ep; ep = ep->oenv) {
 		if (ep->savefd) {
 			for (fd = 0; fd < NUFILE; fd++)
 				if (ep->savefd[fd] > 0)
 					close(ep->savefd[fd]);
 			afree(ep->savefd, &ep->area);
-			ep->savefd = (short *) 0;
+			ep->savefd = NULL;
 		}
 	}
-	e->oenv = (struct env *) 0;
+	genv->oenv = NULL;
 }
 
 /* Called just before an execve cleanup stuff temporary files */
@@ -750,7 +794,7 @@ cleanup_proc_env(void)
 {
 	struct env *ep;
 
-	for (ep = e; ep; ep = ep->oenv)
+	for (ep = genv; ep; ep = ep->oenv)
 		remove_temps(ep->temps);
 }
 
@@ -758,9 +802,9 @@ cleanup_proc_env(void)
 static void
 reclaim(void)
 {
-	remove_temps(e->temps);
-	e->temps = NULL;
-	afreeall(&e->area);
+	remove_temps(genv->temps);
+	genv->temps = NULL;
+	afreeall(&genv->area);
 }
 
 static void

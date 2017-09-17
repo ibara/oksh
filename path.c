@@ -1,7 +1,12 @@
-/*	$OpenBSD: path.c,v 1.12 2005/03/30 17:16:37 deraadt Exp $	*/
+/*	$OpenBSD: path.c,v 1.19 2017/09/03 11:52:01 jca Exp $	*/
+
+#include <sys/stat.h>
+
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "sh.h"
-#include <sys/stat.h>
 
 /*
  *	Contains a routine to search a : separated list of
@@ -67,7 +72,7 @@ make_path(const char *cwd, const char *file,
 			for (pend = plist; *pend && *pend != ':'; pend++)
 				;
 			plen = pend - plist;
-			*cdpathp = *pend ? ++pend : (char *) 0;
+			*cdpathp = *pend ? ++pend : NULL;
 		}
 
 		if ((use_cdpath == 0 || !plen || plist[0] != '/') &&
@@ -95,7 +100,7 @@ make_path(const char *cwd, const char *file,
 	memcpy(xp, file, len);
 
 	if (!use_cdpath)
-		*cdpathp = (char *) 0;
+		*cdpathp = NULL;
 
 	return rval;
 }
@@ -116,7 +121,7 @@ simplify_path(char *path)
 	if (!*path)
 		return;
 
-	if ((isrooted = path[0] == '/'))
+	if ((isrooted = (path[0] == '/')))
 		very_start++;
 
 	/* Before			After
@@ -177,7 +182,7 @@ set_current_wd(char *path)
 	int len;
 	char *p = path;
 
-	if (!p && !(p = ksh_get_wd((char *) 0, 0)))
+	if (!p && !(p = ksh_get_wd(NULL, 0)))
 		p = null;
 
 	len = strlen(p) + 1;
@@ -200,7 +205,7 @@ get_phys_path(const char *path)
 	xp = do_phys_path(&xs, xp, path);
 
 	if (!xp)
-		return (char *) 0;
+		return NULL;
 
 	if (Xlength(xs, xp) == 0)
 		Xput(xs, xp, '/');
@@ -215,7 +220,7 @@ do_phys_path(XString *xsp, char *xp, const char *path)
 	const char *p, *q;
 	int len, llen;
 	int savepos;
-	char lbuf[PATH];
+	char lbuf[PATH_MAX];
 
 	Xcheck(*xsp, xp);
 	for (p = path; p; p = q) {
@@ -246,7 +251,7 @@ do_phys_path(XString *xsp, char *xp, const char *path)
 		if (llen < 0) {
 			/* EINVAL means it wasn't a symlink... */
 			if (errno != EINVAL)
-				return (char *) 0;
+				return NULL;
 			continue;
 		}
 		lbuf[llen] = '\0';
@@ -255,31 +260,7 @@ do_phys_path(XString *xsp, char *xp, const char *path)
 		xp = lbuf[0] == '/' ? Xstring(*xsp, xp) :
 		    Xrestpos(*xsp, xp, savepos);
 		if (!(xp = do_phys_path(xsp, xp, lbuf)))
-			return (char *) 0;
+			return NULL;
 	}
 	return xp;
 }
-
-#ifdef	TEST
-
-int
-main(void)
-{
-	int	rv;
-	char	*cp, cdpath[256], pwd[256], file[256], result[256];
-
-	printf("enter CDPATH: "); gets(cdpath);
-	printf("enter PWD: "); gets(pwd);
-	while (1) {
-		if (printf("Enter file: "), gets(file) == 0)
-			return 0;
-		cp = cdpath;
-		do {
-			rv = make_path(pwd, file, &cp, result, sizeof(result));
-			printf("make_path returns (%d), \"%s\" ", rv, result);
-			simplify_path(result);
-			printf("(simpifies to \"%s\")\n", result);
-		} while (cp);
-	}
-}
-#endif	/* TEST */

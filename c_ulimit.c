@@ -1,4 +1,4 @@
-/*	$OpenBSD: c_ulimit.c,v 1.19 2013/11/28 10:33:37 sobrado Exp $	*/
+/*	$OpenBSD: c_ulimit.c,v 1.24 2015/12/14 13:59:42 tb Exp $	*/
 
 /*
 	ulimit -- handle "ulimit" builtin
@@ -18,8 +18,13 @@
 	that was originally under case SYSULIMIT in source file "xec.c".
 */
 
-#include "sh.h"
 #include <sys/resource.h>
+
+#include <ctype.h>
+#include <errno.h>
+#include <string.h>
+
+#include "sh.h"
 
 #define SOFT	0x1
 #define HARD	0x2
@@ -51,7 +56,7 @@ c_ulimit(char **wp)
 #ifdef RLIMIT_VMEM
 		{ "vmemory(kbytes)", RLIMIT_VMEM, 1024, 'v' },
 #endif /* RLIMIT_VMEM */
-		{ (char *) 0 }
+		{ NULL }
 	};
 	static char	options[4 + NELEM(limits) * 2];
 	int		how = SOFT | HARD;

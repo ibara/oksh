@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.33 2013/12/18 13:53:12 millert Exp $	*/
+/*	$OpenBSD: sh.h,v 1.64 2017/09/03 11:52:01 jca Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -10,26 +10,16 @@
 
 /* Start of common headers */
 
-#include <stdio.h>
-#include <sys/types.h>
-#include <setjmp.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdarg.h>
-
-#include <errno.h>
-#include <fcntl.h>
 #include <limits.h>
-
+#include <setjmp.h>
+#include <stdarg.h>
 #include <signal.h>
+#include <stdbool.h>
 
-#include <paths.h>
+/* end of common headers */
 
 /* oksh portable: system-specific headers */
-#ifdef __linux__
+#if defined(__linux__) || defined(__CYGWIN__)
 #include "portable/linux/linux.h"
 #endif
 #if defined(__FreeBSD__) || defined(__DragonFly__)
@@ -42,35 +32,13 @@
 #include "portable/darwin/darwin.h"
 #endif
 
-/* Find a integer type that is at least 32 bits (or die) - SIZEOF_* defined
- * by autoconf (assumes an 8 bit byte, but I'm not concerned).
- * NOTE: INT32 may end up being more than 32 bits.
- */
-# define INT32	int
-
-/* end of common headers */
-
-/* some useful #defines */
-#ifdef EXTERN
-# define I__(i) = i
-#else
-# define I__(i)
-# define EXTERN extern
-# define EXTERN_DEFINED
-#endif
-
-#define EXECSHELL	_PATH_BSHELL
-#define EXECSHELL_STR	"EXECSHELL"
-
 #define	NELEM(a) (sizeof(a) / sizeof((a)[0]))
-#define	sizeofN(type, n) (sizeof(type) * (n))
 #define	BIT(i)	(1<<(i))	/* define bit in flag */
-
-/* Table flag type - needs > 16 and < 32 bits */
-typedef INT32 Tflag;
 
 #define	NUFILE	32		/* Number of user-accessible files */
 #define	FDBASE	10		/* First file usable by Shell */
+
+#define BITS(t)	(CHAR_BIT * sizeof(t))
 
 /* Make MAGIC a char that might be printed to make bugs more obvious, but
  * not a char that is used often.  Also, can't use the high bit as it causes
@@ -78,19 +46,17 @@ typedef INT32 Tflag;
  */
 #define	MAGIC		(7)	/* prefix for *?[!{,} during expand */
 #define ISMAGIC(c)	((unsigned char)(c) == MAGIC)
-#define	NOT		'!'	/* might use ^ (ie, [!...] vs [^..]) */
 
-#define	LINE	2048		/* input line size */
-#define	PATH	1024		/* pathname size (todo: PATH_MAX/pathconf()) */
+#define	LINE	4096		/* input line size */
 
-EXTERN	const char *kshname;	/* $0 */
-EXTERN	pid_t	kshpid;		/* $$, shell pid */
-EXTERN	pid_t	procpid;	/* pid of executing process */
-EXTERN	uid_t	ksheuid;	/* effective uid of shell */
-EXTERN	int	exstat;		/* exit status */
-EXTERN	int	subst_exstat;	/* exit status of last $(..)/`..` */
-EXTERN	const char *safe_prompt; /* safe prompt if PS1 substitution fails */
-EXTERN	char	username[];	/* username for \u prompt expansion */
+extern	const char *kshname;	/* $0 */
+extern	pid_t	kshpid;		/* $$, shell pid */
+extern	pid_t	procpid;	/* pid of executing process */
+extern	uid_t	ksheuid;	/* effective uid of shell */
+extern	int	exstat;		/* exit status */
+extern	int	subst_exstat;	/* exit status of last $(..)/`..` */
+extern	const char *safe_prompt; /* safe prompt if PS1 substitution fails */
+extern	char	username[];	/* username for \u prompt expansion */
 
 /*
  * Area-based allocation built on malloc/free
@@ -99,9 +65,9 @@ typedef struct Area {
 	struct link *freelist;	/* free list */
 } Area;
 
-EXTERN	Area	aperm;		/* permanent object space */
+extern	Area	aperm;		/* permanent object space */
 #define	APERM	&aperm
-#define	ATEMP	&e->area
+#define	ATEMP	&genv->area
 
 #ifdef KSH_DEBUG
 # define kshdebug_init()	kshdebug_init_()
@@ -116,7 +82,7 @@ EXTERN	Area	aperm;		/* permanent object space */
 /*
  * parsing & execution environment
  */
-EXTERN	struct env {
+struct env {
 	short	type;			/* environment type - see below */
 	short	flags;			/* EF_* */
 	Area	area;			/* temporary allocation area */
@@ -125,7 +91,8 @@ EXTERN	struct env {
 	struct	env *oenv;		/* link to previous environment */
 	sigjmp_buf jbuf;		/* long jump back to env creator */
 	struct temp *temps;		/* temp files */
-} *e;
+};
+extern	struct env	*genv;
 
 /* struct env.type values */
 #define	E_NONE	0		/* dummy environment */
@@ -186,7 +153,7 @@ enum sh_flag {
 	FCSHHISTORY,	/* csh-style history enabled */
 #ifdef EMACS
 	FEMACS,		/* emacs command editing */
-	FEMACSUSEMETA,	/* use 8th bit as meta */
+	FEMACSUSEMETA,	/* XXX delete after 6.2 */
 #endif
 	FERREXIT,	/* -e: quit on error */
 #ifdef EMACS
@@ -229,11 +196,9 @@ enum sh_flag {
 
 #define Flag(f)	(shell_flags[(int) (f)])
 
-EXTERN	char shell_flags [FNFLAGS];
+extern	char shell_flags[FNFLAGS];
 
-EXTERN	char	null [] I__("");	/* null value for variable */
-EXTERN	char	space [] I__(" ");
-EXTERN	char	newline [] I__("\n");
+extern	char	null[];	/* null value for variable */
 
 enum temp_type {
 	TT_HEREDOC_EXP,	/* expanded heredoc */
@@ -256,7 +221,7 @@ struct temp {
 #define shl_spare	(&shf_iob[0])	/* for c_read()/c_print() */
 #define shl_stdout	(&shf_iob[1])
 #define shl_out		(&shf_iob[2])
-EXTERN int shl_stdout_ok;
+extern int shl_stdout_ok;
 
 /*
  * trap handlers
@@ -297,9 +262,9 @@ typedef struct trap {
 #define SIGEXIT_	0	/* for trap EXIT */
 #define SIGERR_		NSIG	/* for trap ERR */
 
-EXTERN	volatile sig_atomic_t trap;	/* traps pending? */
-EXTERN	volatile sig_atomic_t intrsig;	/* pending trap interrupts command */
-EXTERN	volatile sig_atomic_t fatal_trap;/* received a fatal signal */
+extern	volatile sig_atomic_t trap;	/* traps pending? */
+extern	volatile sig_atomic_t intrsig;	/* pending trap interrupts command */
+extern	volatile sig_atomic_t fatal_trap;	/* received a fatal signal */
 extern	volatile sig_atomic_t got_sigwinch;
 extern	Trap	sigtraps[NSIG+1];
 
@@ -312,17 +277,17 @@ enum tmout_enum {
 	TMOUT_READING,		/* waiting for input */
 	TMOUT_LEAVING		/* have timed out */
 };
-EXTERN unsigned int ksh_tmout;
-EXTERN enum tmout_enum ksh_tmout_state I__(TMOUT_EXECUTING);
+extern unsigned int ksh_tmout;
+extern enum tmout_enum ksh_tmout_state;
 
 /* For "You have stopped jobs" message */
-EXTERN int really_exit;
+extern int really_exit;
 
 /*
  * fast character classes
  */
 #define	C_ALPHA	 BIT(0)		/* a-z_A-Z */
-#define	C_DIGIT	 BIT(1)		/* 0-9 */
+/* was	C_DIGIT */
 #define	C_LEX1	 BIT(2)		/* \0 \t\n|&;<>() */
 #define	C_VAR1	 BIT(3)		/* *@#!$-? */
 #define	C_IFSWS	 BIT(4)		/* \t \n (IFS white space) */
@@ -335,10 +300,10 @@ extern	short ctypes [];
 
 #define	ctype(c, t)	!!(ctypes[(unsigned char)(c)]&(t))
 #define	letter(c)	ctype(c, C_ALPHA)
-#define	digit(c)	ctype(c, C_DIGIT)
-#define	letnum(c)	ctype(c, C_ALPHA|C_DIGIT)
+#define	digit(c)	isdigit((unsigned char)(c))
+#define	letnum(c)	(ctype(c, C_ALPHA) || isdigit((unsigned char)(c)))
 
-EXTERN int ifs0 I__(' ');	/* for "$*" */
+extern int ifs0;	/* for "$*" */
 
 /* Argument parsing for built-in commands and getopts command */
 
@@ -362,12 +327,12 @@ typedef struct {
 	char		buf[2];	/* for bad option OPTARG value */
 } Getopt;
 
-EXTERN Getopt builtin_opt;	/* for shell builtin commands */
-EXTERN Getopt user_opt;		/* parsing state for getopts builtin command */
+extern Getopt builtin_opt;	/* for shell builtin commands */
+extern Getopt user_opt;		/* parsing state for getopts builtin command */
 
 /* This for co-processes */
 
-typedef INT32 Coproc_id; /* something that won't (realisticly) wrap */
+typedef int Coproc_id; /* something that won't (realistically) wrap */
 struct coproc {
 	int	read;		/* pipe from co-process's stdout */
 	int	readw;		/* other side of read (saved temporarily) */
@@ -376,20 +341,20 @@ struct coproc {
 	int	njobs;		/* number of live jobs using output pipe */
 	void	*job;		/* 0 or job of co-process using input pipe */
 };
-EXTERN struct coproc coproc;
+extern struct coproc coproc;
 
 /* Used in jobs.c and by coprocess stuff in exec.c */
-EXTERN sigset_t		sm_default, sm_sigchld;
+extern sigset_t		sm_default, sm_sigchld;
 
 extern const char ksh_version[];
 
 /* name of called builtin function (used by error functions) */
-EXTERN char	*builtin_argv0;
-EXTERN Tflag	builtin_flag;	/* flags of called builtin (SPEC_BI, etc.) */
+extern char	*builtin_argv0;
+extern int	builtin_flag;	/* flags of called builtin (SPEC_BI, etc.) */
 
 /* current working directory, and size of memory allocated for same */
-EXTERN char	*current_wd;
-EXTERN int	current_wd_size;
+extern char	*current_wd;
+extern int	current_wd_size;
 
 #ifdef EDIT
 /* Minimum required space to work with on a line - if the prompt leaves less
@@ -399,7 +364,7 @@ EXTERN int	current_wd_size;
 /* Minimum allowed value for x_cols: 2 for prompt, 3 for " < " at end of line
  */
 # define MIN_COLS	(2 + MIN_EDIT_SPACE + 3)
-EXTERN	int	x_cols I__(80);	/* tty columns */
+extern	int	x_cols;	/* tty columns */
 #else
 # define x_cols 80		/* for pr_menu(exec.c) */
 #endif
@@ -416,19 +381,244 @@ EXTERN	int	x_cols I__(80);	/* tty columns */
 #define KSH_SYSTEM_PROFILE "/etc/profile"
 
 /* Used by v_evaluate() and setstr() to control action when error occurs */
-#define KSH_UNWIND_ERROR	0	/* unwind the stack (longjmp) */
-#define KSH_RETURN_ERROR	1	/* return 1/0 for success/failure */
+#define KSH_UNWIND_ERROR	0x0	/* unwind the stack (longjmp) */
+#define KSH_RETURN_ERROR	0x1	/* return 1/0 for success/failure */
+#define KSH_IGNORE_RDONLY	0x4	/* ignore the read-only flag */
 
 #include "shf.h"
 #include "table.h"
 #include "tree.h"
 #include "expand.h"
 #include "lex.h"
-#include "proto.h"
 
-/* be sure not to interfere with anyone else's idea about EXTERN */
-#ifdef EXTERN_DEFINED
-# undef EXTERN_DEFINED
-# undef EXTERN
-#endif
-#undef I__
+/* alloc.c */
+Area *	ainit(Area *);
+void	afreeall(Area *);
+void *	alloc(size_t, Area *);
+void *	areallocarray(void *, size_t, size_t, Area *);
+void *	aresize(void *, size_t, Area *);
+void	afree(void *, Area *);
+/* c_ksh.c */
+int	c_cd(char **);
+int	c_pwd(char **);
+int	c_print(char **);
+int	c_whence(char **);
+int	c_command(char **);
+int	c_typeset(char **);
+int	c_alias(char **);
+int	c_unalias(char **);
+int	c_let(char **);
+int	c_jobs(char **);
+int	c_fgbg(char **);
+int	c_kill(char **);
+void	getopts_reset(int);
+int	c_getopts(char **);
+int	c_bind(char **);
+/* c_sh.c */
+int	c_label(char **);
+int	c_shift(char **);
+int	c_umask(char **);
+int	c_dot(char **);
+int	c_wait(char **);
+int	c_read(char **);
+int	c_eval(char **);
+int	c_trap(char **);
+int	c_brkcont(char **);
+int	c_exitreturn(char **);
+int	c_set(char **);
+int	c_unset(char **);
+int	c_ulimit(char **);
+int	c_times(char **);
+int	timex(struct op *, int, volatile int *);
+void	timex_hook(struct op *, char ** volatile *);
+int	c_exec(char **);
+int	c_builtin(char **);
+/* c_test.c */
+int	c_test(char **);
+/* edit.c: most prototypes in edit.h */
+void	x_init(void);
+int	x_read(char *, size_t);
+void	set_editmode(const char *);
+/* emacs.c: most prototypes in edit.h */
+int	x_bind(const char *, const char *, int, int);
+/* eval.c */
+char *	substitute(const char *, int);
+char **	eval(char **, int);
+char *	evalstr(char *cp, int);
+char *	evalonestr(char *cp, int);
+char	*debunk(char *, const char *, size_t);
+void	expand(char *, XPtrV *, int);
+int	glob_str(char *, XPtrV *, int);
+/* exec.c */
+int	execute(struct op * volatile, volatile int, volatile int *);
+int	shcomexec(char **);
+struct tbl * findfunc(const char *, unsigned int, int);
+int	define(const char *, struct op *);
+void	builtin(const char *, int (*)(char **));
+struct tbl *	findcom(const char *, int);
+void	flushcom(int);
+char *	search(const char *, const char *, int, int *);
+int	search_access(const char *, int, int *);
+int	pr_menu(char *const *);
+int	pr_list(char *const *);
+/* expr.c */
+int	evaluate(const char *, long *, int, bool);
+int	v_evaluate(struct tbl *, const char *, volatile int, bool);
+/* history.c */
+void	init_histvec(void);
+void	hist_init(Source *);
+void	hist_finish(void);
+void	histsave(int, const char *, int);
+#ifdef HISTORY
+int	c_fc(char **);
+void	sethistcontrol(const char *);
+void	sethistsize(int);
+void	sethistfile(const char *);
+char **	histpos(void);
+int	histnum(int);
+int	findhist(int, int, const char *, int);
+int	findhistrel(const char *);
+char  **hist_get_newest(int);
+
+#endif /* HISTORY */
+/* io.c */
+void	errorf(const char *, ...)
+	    __attribute__((__noreturn__, __format__ (printf, 1, 2)));
+void	warningf(bool, const char *, ...)
+	    __attribute__((__format__ (printf, 2, 3)));
+void	bi_errorf(const char *, ...)
+	    __attribute__((__format__ (printf, 1, 2)));
+void	internal_errorf(int, const char *, ...)
+	    __attribute__((__format__ (printf, 2, 3)));
+void	error_prefix(int);
+void	shellf(const char *, ...)
+	    __attribute__((__format__ (printf, 1, 2)));
+void	shprintf(const char *, ...)
+	    __attribute__((__format__ (printf, 1, 2)));
+#ifdef KSH_DEBUG
+void	kshdebug_init_(void);
+void	kshdebug_printf_(const char *, ...)
+	    __attribute__((__format__ (printf, 1, 2)));
+void	kshdebug_dump_(const char *, const void *, int);
+#endif /* KSH_DEBUG */
+int	can_seek(int);
+void	initio(void);
+int	ksh_dup2(int, int, int);
+int	savefd(int);
+void	restfd(int, int);
+void	openpipe(int *);
+void	closepipe(int *);
+int	check_fd(char *, int, const char **);
+void	coproc_init(void);
+void	coproc_read_close(int);
+void	coproc_readw_close(int);
+void	coproc_write_close(int);
+int	coproc_getfd(int, const char **);
+void	coproc_cleanup(int);
+struct temp *maketemp(Area *, Temp_type, struct temp **);
+/* jobs.c */
+void	j_init(int);
+void	j_suspend(void);
+void	j_exit(void);
+void	j_change(void);
+int	exchild(struct op *, int, volatile int *, int);
+void	startlast(void);
+int	waitlast(void);
+int	waitfor(const char *, int *);
+int	j_kill(const char *, int);
+int	j_resume(const char *, int);
+int	j_jobs(const char *, int, int);
+int	j_njobs(void);
+void	j_notify(void);
+pid_t	j_async(void);
+int	j_stopped_running(void);
+/* mail.c */
+void	mcheck(void);
+void	mcset(long);
+void	mbset(char *);
+void	mpset(char *);
+/* main.c */
+int	include(const char *, int, char **, int);
+int	command(const char *, int);
+int	shell(Source *volatile, int volatile);
+void	unwind(int) __attribute__((__noreturn__));
+void	newenv(int);
+void	quitenv(struct shf *);
+void	cleanup_parents_env(void);
+void	cleanup_proc_env(void);
+/* misc.c */
+void	setctypes(const char *, int);
+void	initctypes(void);
+char *	ulton(unsigned long, int);
+char *	str_save(const char *, Area *);
+char *	str_nsave(const char *, int, Area *);
+int	option(const char *);
+char *	getoptions(void);
+void	change_flag(enum sh_flag, int, int);
+int	parse_args(char **, int, int *);
+int	getn(const char *, int *);
+int	bi_getn(const char *, int *);
+int	gmatch(const char *, const char *, int);
+int	has_globbing(const char *, const char *);
+const unsigned char *pat_scan(const unsigned char *, const unsigned char *,
+    int);
+void	qsortp(void **, size_t, int (*)(const void *, const void *));
+int	xstrcmp(const void *, const void *);
+void	ksh_getopt_reset(Getopt *, int);
+int	ksh_getopt(char **, Getopt *, const char *);
+void	print_value_quoted(const char *);
+void	print_columns(struct shf *, int, char *(*)(void *, int, char *, int),
+    void *, int, int prefcol);
+int	strip_nuls(char *, int);
+int	blocking_read(int, char *, int);
+int	reset_nonblock(int);
+char	*ksh_get_wd(char *, int);
+/* path.c */
+int	make_path(const char *, const char *, char **, XString *, int *);
+void	simplify_path(char *);
+char	*get_phys_path(const char *);
+void	set_current_wd(char *);
+/* syn.c */
+void	initkeywords(void);
+struct op * compile(Source *);
+/* trap.c */
+void	inittraps(void);
+void	alarm_init(void);
+Trap *	gettrap(const char *, int);
+void	trapsig(int);
+void	intrcheck(void);
+int	fatal_trap_check(void);
+int	trap_pending(void);
+void	runtraps(int intr);
+void	runtrap(Trap *);
+void	cleartraps(void);
+void	restoresigs(void);
+void	settrap(Trap *, char *);
+int	block_pipe(void);
+void	restore_pipe(int);
+int	setsig(Trap *, sig_t, int);
+void	setexecsig(Trap *, int);
+/* var.c */
+void	newblock(void);
+void	popblock(void);
+void	initvar(void);
+struct tbl *	global(const char *);
+struct tbl *	local(const char *, bool);
+char *	str_val(struct tbl *);
+long	intval(struct tbl *);
+int	setstr(struct tbl *, const char *, int);
+struct tbl *setint_v(struct tbl *, struct tbl *, bool);
+void	setint(struct tbl *, long);
+int	getint(struct tbl *, long *, bool);
+struct tbl *typeset(const char *, int, int, int, int);
+void	unset(struct tbl *, int);
+char  * skip_varname(const char *, int);
+char	*skip_wdvarname(const char *, int);
+int	is_wdvarname(const char *, int);
+int	is_wdvarassign(const char *);
+char **	makenv(void);
+void	change_random(void);
+int	array_ref_len(const char *);
+char *	arrayname(const char *);
+void    set_array(const char *, int, char **);
+/* vi.c: see edit.h */

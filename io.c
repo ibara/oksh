@@ -1,12 +1,18 @@
-/*	$OpenBSD: io.c,v 1.25 2014/08/11 20:28:47 guenther Exp $	*/
+/*	$OpenBSD: io.c,v 1.35 2016/03/20 00:01:21 krw Exp $	*/
 
 /*
  * shell buffered IO and formatted output
  */
 
-#include <ctype.h>
-#include "sh.h"
 #include <sys/stat.h>
+
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "sh.h"
 
 static int initio_done;
 
@@ -23,7 +29,7 @@ errorf(const char *fmt, ...)
 
 	shl_stdout_ok = 0;	/* debugging: note that stdout not valid */
 	exstat = 1;
-	if (*fmt) {
+	if (fmt != NULL && *fmt != '\0') {
 		error_prefix(true);
 		va_start(va, fmt);
 		shf_vfprintf(shl_out, fmt, va);
@@ -36,11 +42,11 @@ errorf(const char *fmt, ...)
 
 /* like errorf(), but no unwind is done */
 void
-warningf(int fileline, const char *fmt, ...)
+warningf(bool show_lineno, const char *fmt, ...)
 {
 	va_list va;
 
-	error_prefix(fileline);
+	error_prefix(show_lineno);
 	va_start(va, fmt);
 	shf_vfprintf(shl_out, fmt, va);
 	va_end(va);
@@ -58,7 +64,7 @@ bi_errorf(const char *fmt, ...)
 
 	shl_stdout_ok = 0;	/* debugging: note that stdout not valid */
 	exstat = 1;
-	if (*fmt) {
+	if (fmt != NULL && *fmt != '\0') {
 		error_prefix(true);
 		/* not set when main() calls parse_args() */
 		if (builtin_argv0)
@@ -75,7 +81,7 @@ bi_errorf(const char *fmt, ...)
 	 */
 	if ((builtin_flag & SPEC_BI) ||
 	    (Flag(FPOSIX) && (builtin_flag & KEEPASN))) {
-		builtin_argv0 = (char *) 0;
+		builtin_argv0 = NULL;
 		unwind(LERROR);
 	}
 }
@@ -296,7 +302,7 @@ check_fd(char *name, int mode, const char **emsgp)
 
 	if (isdigit((unsigned char)name[0]) && !name[1]) {
 		fd = name[0] - '0';
-		if ((fl = fcntl(fd = name[0] - '0', F_GETFL, 0)) < 0) {
+		if ((fl = fcntl(fd, F_GETFL)) < 0) {
 			if (emsgp)
 				*emsgp = "bad file descriptor";
 			return -1;
@@ -422,14 +428,14 @@ maketemp(Area *ap, Temp_type type, struct temp **tlist)
 	dir = tmpdir ? tmpdir : "/tmp";
 	/* The 20 + 20 is a paranoid worst case for pid/inc */
 	len = strlen(dir) + 3 + 20 + 20 + 1;
-	tp = (struct temp *) alloc(sizeof(struct temp) + len, ap);
+	tp = alloc(sizeof(struct temp) + len, ap);
 	tp->name = path = (char *) &tp[1];
-	tp->shf = (struct shf *) 0;
+	tp->shf = NULL;
 	tp->type = type;
 	shf_snprintf(path, len, "%s/shXXXXXXXX", dir);
 	fd = mkstemp(path);
 	if (fd >= 0)
-		tp->shf = shf_fdopen(fd, SHF_WR, (struct shf *) 0);
+		tp->shf = shf_fdopen(fd, SHF_WR, NULL);
 	tp->pid = procpid;
 
 	tp->next = *tlist;

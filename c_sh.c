@@ -1,15 +1,25 @@
-/*	$OpenBSD: c_sh.c,v 1.45 2014/08/27 08:26:04 jmc Exp $	*/
+/*	$OpenBSD: c_sh.c,v 1.60 2017/07/22 09:37:21 anton Exp $	*/
 
 /*
  * built-in Bourne commands
  */
 
-#include "sh.h"
+#include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <sys/resource.h>
 
-static void p_time(struct shf *, int, struct timeval *, int, char *, char *);
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "sh.h"
+
+static void p_tv(struct shf *, int, struct timeval *, int, char *, char *);
+static void p_ts(struct shf *, int, struct timespec *, int, char *, char *);
 
 /* :, false and true */
 int
@@ -21,7 +31,7 @@ c_label(char **wp)
 int
 c_shift(char **wp)
 {
-	struct block *l = e->loc;
+	struct block *l = genv->loc;
 	int n;
 	long val;
 	char *arg;
@@ -199,12 +209,12 @@ c_dot(char **wp)
 	/* Set positional parameters? */
 	if (wp[builtin_opt.optind + 1]) {
 		argv = wp + builtin_opt.optind;
-		argv[0] = e->loc->argv[0]; /* preserve $0 */
+		argv[0] = genv->loc->argv[0]; /* preserve $0 */
 		for (argc = 0; argv[argc + 1]; argc++)
 			;
 	} else {
 		argc = 0;
-		argv = (char **) 0;
+		argv = NULL;
 	}
 	i = include(file, argc, argv, 0);
 	if (i < 0) { /* should not happen */
@@ -223,8 +233,8 @@ c_wait(char **wp)
 	if (ksh_getopt(wp, &builtin_opt, null) == '?')
 		return 1;
 	wp += builtin_opt.optind;
-	if (*wp == (char *) 0) {
-		while (waitfor((char *) 0, &sig) >= 0)
+	if (*wp == NULL) {
+		while (waitfor(NULL, &sig) >= 0)
 			;
 		rv = sig;
 	} else {
@@ -323,7 +333,7 @@ c_read(char **wp)
 				if (c == '\0')
 					continue;
 				if (c == EOF && shf_error(shf) &&
-				    shf_errno(shf) == EINTR) {
+				    shf->errno_ == EINTR) {
 					/* Was the offending signal one that
 					 * would normally kill a process?
 					 * If so, pretend the read was killed.
@@ -351,7 +361,7 @@ c_read(char **wp)
 						/* set prompt in case this is
 						 * called from .profile or $ENV
 						 */
-						set_prompt(PS2, (Source *) 0);
+						set_prompt(PS2, NULL);
 						pprompt(prompt, 0);
 					}
 				} else if (c != EOF)
@@ -520,7 +530,7 @@ c_exitreturn(char **wp)
 		/* need to tell if this is exit or return so trap exit will
 		 * work right (POSIX)
 		 */
-		for (ep = e; ep; ep = ep->oenv)
+		for (ep = genv; ep; ep = ep->oenv)
 			if (STOP_RETURN(ep->type)) {
 				how = LRETURN;
 				break;
@@ -542,7 +552,7 @@ int
 c_brkcont(char **wp)
 {
 	int n, quit;
-	struct env *ep, *last_ep = (struct env *) 0;
+	struct env *ep, *last_ep = NULL;
 	char *arg;
 
 	if (ksh_getopt(wp, &builtin_opt, null) == '?')
@@ -561,7 +571,7 @@ c_brkcont(char **wp)
 	}
 
 	/* Stop at E_NONE, E_PARSE, E_FUNC, or E_INCL */
-	for (ep = e; ep && !STOP_BRKCONT(ep->type); ep = ep->oenv)
+	for (ep = genv; ep && !STOP_BRKCONT(ep->type); ep = ep->oenv)
 		if (ep->type == E_LOOP) {
 			if (--quit == 0)
 				break;
@@ -596,7 +606,7 @@ int
 c_set(char **wp)
 {
 	int argi, setargs;
-	struct block *l = e->loc;
+	struct block *l = genv->loc;
 	char **owp = wp;
 
 	if (wp[1] == NULL) {
@@ -614,7 +624,7 @@ c_set(char **wp)
 		while (*++wp != NULL)
 			*wp = str_save(*wp, &l->area);
 		l->argc = wp - owp - 1;
-		l->argv = (char **) alloc(sizeofN(char *, l->argc+2), &l->area);
+		l->argv = areallocarray(NULL, l->argc+2, sizeof(char *), &l->area);
 		for (wp = l->argv; (*wp++ = *owp++) != NULL; )
 			;
 	}
@@ -655,24 +665,40 @@ c_unset(char **wp)
 			}
 			unset(vp, strchr(id, '[') ? 1 : 0);
 		} else {		/* unset function */
-			define(id, (struct op *) NULL);
+			define(id, NULL);
 		}
 	return 0;
 }
 
 static void
-p_time(struct shf *shf, int posix, struct timeval *tv, int width, char *prefix,
+p_tv(struct shf *shf, int posix, struct timeval *tv, int width, char *prefix,
     char *suffix)
 {
 	if (posix)
 		shf_fprintf(shf, "%s%*lld.%02ld%s", prefix ? prefix : "",
 		    width, (long long)tv->tv_sec, tv->tv_usec / 10000, suffix);
 	else
-		shf_fprintf(shf, "%s%*lldm%lld.%02lds%s", prefix ? prefix : "",
+		shf_fprintf(shf, "%s%*lldm%02lld.%02lds%s", prefix ? prefix : "",
 		    width, (long long)tv->tv_sec / 60,
 		    (long long)tv->tv_sec % 60,
 		    tv->tv_usec / 10000, suffix);
 }
+
+static void
+p_ts(struct shf *shf, int posix, struct timespec *ts, int width, char *prefix,
+    char *suffix)
+{
+	if (posix)
+		shf_fprintf(shf, "%s%*lld.%02ld%s", prefix ? prefix : "",
+		    width, (long long)ts->tv_sec, ts->tv_nsec / 10000000,
+		    suffix);
+	else
+		shf_fprintf(shf, "%s%*lldm%02lld.%02lds%s", prefix ? prefix : "",
+		    width, (long long)ts->tv_sec / 60,
+		    (long long)ts->tv_sec % 60,
+		    ts->tv_nsec / 10000000, suffix);
+}
+
 
 int
 c_times(char **wp)
@@ -680,12 +706,12 @@ c_times(char **wp)
 	struct rusage usage;
 
 	(void) getrusage(RUSAGE_SELF, &usage);
-	p_time(shl_stdout, 0, &usage.ru_utime, 0, NULL, " ");
-	p_time(shl_stdout, 0, &usage.ru_stime, 0, NULL, "\n");
+	p_tv(shl_stdout, 0, &usage.ru_utime, 0, NULL, " ");
+	p_tv(shl_stdout, 0, &usage.ru_stime, 0, NULL, "\n");
 
 	(void) getrusage(RUSAGE_CHILDREN, &usage);
-	p_time(shl_stdout, 0, &usage.ru_utime, 0, NULL, " ");
-	p_time(shl_stdout, 0, &usage.ru_stime, 0, NULL, "\n");
+	p_tv(shl_stdout, 0, &usage.ru_utime, 0, NULL, " ");
+	p_tv(shl_stdout, 0, &usage.ru_stime, 0, NULL, "\n");
 
 	return 0;
 }
@@ -701,11 +727,12 @@ timex(struct op *t, int f, volatile int *xerrok)
 #define TF_POSIX	BIT(2)		/* report in posix format */
 	int rv = 0;
 	struct rusage ru0, ru1, cru0, cru1;
-	struct timeval usrtime, systime, tv0, tv1;
+	struct timeval usrtime, systime;
+	struct timespec ts0, ts1, ts2;
 	int tf = 0;
 	extern struct timeval j_usrtime, j_systime; /* computed by j_wait */
 
-	gettimeofday(&tv0, NULL);
+	clock_gettime(CLOCK_MONOTONIC, &ts0);
 	getrusage(RUSAGE_SELF, &ru0);
 	getrusage(RUSAGE_CHILDREN, &cru0);
 	if (t->left) {
@@ -722,7 +749,7 @@ timex(struct op *t, int f, volatile int *xerrok)
 		rv = execute(t->left, f | XTIME, xerrok);
 		if (t->left->type == TCOM)
 			tf |= t->left->str[0];
-		gettimeofday(&tv1, NULL);
+		clock_gettime(CLOCK_MONOTONIC, &ts1);
 		getrusage(RUSAGE_SELF, &ru1);
 		getrusage(RUSAGE_CHILDREN, &cru1);
 	} else
@@ -740,20 +767,20 @@ timex(struct op *t, int f, volatile int *xerrok)
 	}
 
 	if (!(tf & TF_NOREAL)) {
-		timersub(&tv1, &tv0, &tv1);
+		timespecsub(&ts1, &ts0, &ts2);
 		if (tf & TF_POSIX)
-			p_time(shl_out, 1, &tv1, 5, "real ", "\n");
+			p_ts(shl_out, 1, &ts2, 5, "real ", "\n");
 		else
-			p_time(shl_out, 0, &tv1, 5, NULL, " real ");
+			p_ts(shl_out, 0, &ts2, 5, NULL, " real ");
 	}
 	if (tf & TF_POSIX)
-		p_time(shl_out, 1, &usrtime, 5, "user ", "\n");
+		p_tv(shl_out, 1, &usrtime, 5, "user ", "\n");
 	else
-		p_time(shl_out, 0, &usrtime, 5, NULL, " user ");
+		p_tv(shl_out, 0, &usrtime, 5, NULL, " user ");
 	if (tf & TF_POSIX)
-		p_time(shl_out, 1, &systime, 5, "sys  ", "\n");
+		p_tv(shl_out, 1, &systime, 5, "sys  ", "\n");
 	else
-		p_time(shl_out, 0, &systime, 5, NULL, " system\n");
+		p_tv(shl_out, 0, &systime, 5, NULL, " system\n");
 	shf_flush(shl_out);
 
 	return rv;
@@ -799,76 +826,22 @@ c_exec(char **wp)
 	int i;
 
 	/* make sure redirects stay in place */
-	if (e->savefd != NULL) {
+	if (genv->savefd != NULL) {
 		for (i = 0; i < NUFILE; i++) {
-			if (e->savefd[i] > 0)
-				close(e->savefd[i]);
+			if (genv->savefd[i] > 0)
+				close(genv->savefd[i]);
 			/*
 			 * For ksh keep anything > 2 private,
 			 * for sh, let them be (POSIX says what
 			 * happens is unspecified and the bourne shell
 			 * keeps them open).
 			 */
-			if (!Flag(FSH) && i > 2 && e->savefd[i])
+			if (!Flag(FSH) && i > 2 && genv->savefd[i])
 				fcntl(i, F_SETFD, FD_CLOEXEC);
 		}
-		e->savefd = NULL;
+		genv->savefd = NULL;
 	}
 	return 0;
-}
-
-static int
-c_mknod(char **wp)
-{
-	int argc, optc, ismkfifo = 0, ret;
-	char **argv;
-	void *set = NULL;
-	mode_t mode = 0, oldmode = 0;
-
-	while ((optc = ksh_getopt(wp, &builtin_opt, "m:")) != -1) {
-		switch (optc) {
-		case 'm':
-			set = setmode(builtin_opt.optarg);
-			if (set == NULL) {
-				bi_errorf("invalid file mode");
-				return 1;
-			}
-			mode = getmode(set, DEFFILEMODE);
-			free(set);
-			break;
-		default:
-			goto usage;
-		}
-	}
-	argv = &wp[builtin_opt.optind];
-	if (argv[0] == NULL)
-		goto usage;
-	for (argc = 0; argv[argc]; argc++)
-		;
-	if (argc == 2 && argv[1][0] == 'p') {
-		ismkfifo = 1;
-		argc--;
-	} else if (argc != 4)
-		goto usage;
-
-	if (set)
-		oldmode = umask(0);
-	else
-		mode = DEFFILEMODE;
-
-	if (ismkfifo)
-		ret = domkfifo(argc, argv, mode);
-	else
-		ret = domknod(argc, argv, mode);
-
-	if (set)
-		umask(oldmode);
-	return ret;
-usage:
-	builtin_argv0 = NULL;
-	bi_errorf("usage: mknod [-m mode] name b|c major minor");
-	bi_errorf("usage: mknod [-m mode] name p");
-	return 1;
 }
 
 static int
@@ -929,7 +902,6 @@ const struct builtin shbuiltins [] = {
 	{"ulimit", c_ulimit},
 	{"+umask", c_umask},
 	{"*=unset", c_unset},
-	{"mknod", c_mknod},
 	{"suspend", c_suspend},
 	{NULL, NULL}
 };

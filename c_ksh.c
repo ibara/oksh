@@ -1,13 +1,17 @@
-/*	$OpenBSD: c_ksh.c,v 1.34 2013/12/17 16:37:05 deraadt Exp $	*/
+/*	$OpenBSD: c_ksh.c,v 1.51 2017/09/03 11:52:01 jca Exp $	*/
 
 /*
  * built-in Korn commands: c_*
  */
 
-#include "sh.h"
 #include <sys/stat.h>
-#include <ctype.h>
 
+#include <ctype.h>
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "sh.h"
 
 int
 c_cd(char **wp)
@@ -77,7 +81,7 @@ c_cd(char **wp)
 		 * we could try to find another substitution. For now
 		 * we don't
 		 */
-		if ((cp = strstr(current_wd, wp[0])) == (char *) 0) {
+		if ((cp = strstr(current_wd, wp[0])) == NULL) {
 			bi_errorf("bad substitution");
 			return 1;
 		}
@@ -95,11 +99,11 @@ c_cd(char **wp)
 		return 1;
 	}
 
-	Xinit(xs, xp, PATH, ATEMP);
+	Xinit(xs, xp, PATH_MAX, ATEMP);
 	/* xp will have a bogus value after make_path() - set it to 0
 	 * so that if it's used, it will cause a dump
 	 */
-	xp = (char *) 0;
+	xp = NULL;
 
 	cdpath = str_val(global("CDPATH"));
 	do {
@@ -110,15 +114,14 @@ c_cd(char **wp)
 			simplify_path(Xstring(xs, xp));
 			rval = chdir(try = Xstring(xs, xp));
 		}
-	} while (rval < 0 && cdpath != (char *) 0);
+	} while (rval < 0 && cdpath != NULL);
 
 	if (rval < 0) {
 		if (cdnode)
 			bi_errorf("%s: bad directory", dir);
 		else
 			bi_errorf("%s - %s", try, strerror(errno));
-		if (fdir)
-			afree(fdir, ATEMP);
+		afree(fdir, ATEMP);
 		return 1;
 	}
 
@@ -133,7 +136,7 @@ c_cd(char **wp)
 		setstr(oldpwd_s, current_wd, KSH_RETURN_ERROR);
 
 	if (Xstring(xs, xp)[0] != '/') {
-		pwd = (char *) 0;
+		pwd = NULL;
 	} else
 	if (!physical || !(pwd = get_phys_path(Xstring(xs, xp))))
 		pwd = Xstring(xs, xp);
@@ -152,8 +155,7 @@ c_cd(char **wp)
 	if (printpath || cdnode)
 		shprintf("%s\n", pwd);
 
-	if (fdir)
-		afree(fdir, ATEMP);
+	afree(fdir, ATEMP);
 
 	return 0;
 }
@@ -183,11 +185,11 @@ c_pwd(char **wp)
 		return 1;
 	}
 	p = current_wd[0] ? (physical ? get_phys_path(current_wd) : current_wd) :
-	    (char *) 0;
+	    NULL;
 	if (p && access(p, R_OK) < 0)
-		p = (char *) 0;
+		p = NULL;
 	if (!p) {
-		freep = p = ksh_get_wd((char *) 0, 0);
+		freep = p = ksh_get_wd(NULL, 0);
 		if (!p) {
 			bi_errorf("can't get current directory - %s",
 			    strerror(errno));
@@ -195,8 +197,7 @@ c_pwd(char **wp)
 		}
 	}
 	shprintf("%s\n", p);
-	if (freep)
-		afree(freep, ATEMP);
+	afree(freep, ATEMP);
 	return 0;
 }
 
@@ -432,23 +433,23 @@ c_whence(char **wp)
 
 	fcflags = FC_BI | FC_PATH | FC_FUNC;
 	if (!iam_whence) {
-		/* Note that -p on its own is deal with in comexec() */
+		/* Note that -p on its own is dealt with in comexec() */
 		if (pflag)
 			fcflags |= FC_DEFPATH;
-		/* Convert command options to whence options - note that
-		 * command -pV uses a different path search than whence -v
-		 * or whence -pv.  This should be considered a feature.
+		/* Convert command options to whence options.  Note that
+		 * command -pV and command -pv use a different path search
+		 * than whence -v or whence -pv.  This should be considered
+		 * a feature.
 		 */
 		vflag = Vflag;
-	}
-	if (pflag)
+	} else if (pflag)
 		fcflags &= ~(FC_BI | FC_FUNC);
 
 	while ((vflag || ret == 0) && (id = *wp++) != NULL) {
 		tp = NULL;
-		if ((iam_whence || vflag) && !pflag)
+		if (!iam_whence || !pflag)
 			tp = ktsearch(&keywords, id, hash(id));
-		if (!tp && !pflag) {
+		if (!tp && (!iam_whence || !pflag)) {
 			tp = ktsearch(&aliases, id, hash(id));
 			if (tp && !(tp->flag & ISSET))
 				tp = NULL;
@@ -466,8 +467,7 @@ c_whence(char **wp)
 		case CALIAS:
 			if (vflag)
 				shprintf(" is an %salias for ",
-				    (tp->flag & EXPORT) ? "exported " :
-				    null);
+				    (tp->flag & EXPORT) ? "exported " : "");
 			if (!iam_whence && !vflag)
 				shprintf("alias %s=", id);
 			print_value_quoted(tp->val.s);
@@ -491,7 +491,7 @@ c_whence(char **wp)
 		case CSHELL:
 			if (vflag)
 				shprintf(" is a%s shell builtin",
-				    (tp->flag & SPEC_BI) ? " special" : null);
+				    (tp->flag & SPEC_BI) ? " special" : "");
 			break;
 		case CTALIAS:
 		case CEXEC:
@@ -501,7 +501,7 @@ c_whence(char **wp)
 					if (tp->type == CTALIAS)
 						shprintf("a tracked %salias for ",
 						    (tp->flag & EXPORT) ?
-						    "exported " : null);
+						    "exported " : "");
 				}
 				shprintf("%s", tp->val.s);
 			} else {
@@ -515,7 +515,7 @@ c_whence(char **wp)
 			break;
 		}
 		if (vflag || !ret)
-			shprintf("%s", newline);
+			shprintf("\n");
 	}
 	return ret;
 }
@@ -534,16 +534,12 @@ c_command(char **wp)
 int
 c_typeset(char **wp)
 {
-	struct block *l = e->loc;
+	struct block *l;
 	struct tbl *vp, **p;
-	Tflag fset = 0, fclr = 0;
-	int thing = 0, func = 0, local = 0;
+	int fset = 0, fclr = 0, thing = 0, func = 0, local = 0, pflag = 0;
 	const char *options = "L#R#UZ#fi#lprtux";	/* see comment below */
 	char *fieldstr, *basestr;
-	int field, base;
-	int optc;
-	Tflag flag;
-	int pflag = 0;
+	int field, base, optc, flag;
 
 	switch (**wp) {
 	case 'e':		/* export */
@@ -562,7 +558,7 @@ c_typeset(char **wp)
 		break;
 	}
 
-	fieldstr = basestr = (char *) 0;
+	fieldstr = basestr = NULL;
 	builtin_opt.flags |= GF_PLUSOPT;
 	/* at&t ksh seems to have 0-9 as options, which are multiplied
 	 * to get a number that is used with -L, -R, -Z or -i (eg, -1R2
@@ -714,7 +710,7 @@ c_typeset(char **wp)
 	/* list variables and attributes */
 	flag = fset | fclr; /* no difference at this point.. */
 	if (func) {
-		for (l = e->loc; l; l = l->next) {
+		for (l = genv->loc; l; l = l->next) {
 			for (p = ktsort(&l->funs); (vp = *p++); ) {
 				if (flag && (vp->flag & flag) == 0)
 					continue;
@@ -727,7 +723,7 @@ c_typeset(char **wp)
 			}
 		}
 	} else {
-		for (l = e->loc; l; l = l->next) {
+		for (l = genv->loc; l; l = l->next) {
 			for (p = ktsort(&l->vars); (vp = *p++); ) {
 				struct tbl *tvp;
 				int any_set = 0;
@@ -816,7 +812,7 @@ c_typeset(char **wp)
 							else
 								print_value_quoted(s);
 						}
-						shprintf("%s", newline);
+						shprintf("\n");
 					}
 					/* Only report first `element' of an array with
 					* no set elements.
@@ -834,9 +830,8 @@ int
 c_alias(char **wp)
 {
 	struct table *t = &aliases;
-	int rv = 0, rflag = 0, tflag, Uflag = 0, pflag = 0;
-	int prefix = 0;
-	Tflag xflag = 0;
+	int rv = 0, rflag = 0, tflag, Uflag = 0, pflag = 0, prefix = 0;
+	int xflag = 0;
 	int optc;
 
 	builtin_opt.flags |= GF_PLUSOPT;
@@ -882,7 +877,7 @@ c_alias(char **wp)
 	/* "hash -r" means reset all the tracked aliases.. */
 	if (rflag) {
 		static const char *const args[] = {
-			"unalias", "-ta", (const char *) 0
+			"unalias", "-ta", NULL
 		};
 
 		if (!tflag || *wp) {
@@ -906,7 +901,7 @@ c_alias(char **wp)
 					shf_putc('=', shl_stdout);
 					print_value_quoted(ap->val.s);
 				}
-				shprintf("%s", newline);
+				shprintf("\n");
 			}
 	}
 
@@ -930,7 +925,7 @@ c_alias(char **wp)
 					shf_putc('=', shl_stdout);
 					print_value_quoted(ap->val.s);
 				}
-				shprintf("%s", newline);
+				shprintf("\n");
 			} else {
 				shprintf("%s alias not found\n", alias);
 				rv = 1;
@@ -943,10 +938,10 @@ c_alias(char **wp)
 		if ((val && !tflag) || (!val && tflag && !Uflag)) {
 			if (ap->flag&ALLOC) {
 				ap->flag &= ~(ALLOC|ISSET);
-				afree((void*)ap->val.s, APERM);
+				afree(ap->val.s, APERM);
 			}
 			/* ignore values for -t (at&t ksh does this) */
-			newval = tflag ? search(alias, path, X_OK, (int *) 0) :
+			newval = tflag ? search(alias, path, X_OK, NULL) :
 			    val;
 			if (newval) {
 				ap->val.s = str_save(newval, APERM);
@@ -998,7 +993,7 @@ c_unalias(char **wp)
 		}
 		if (ap->flag&ALLOC) {
 			ap->flag &= ~(ALLOC|ISSET);
-			afree((void*)ap->val.s, APERM);
+			afree(ap->val.s, APERM);
 		}
 		ap->flag &= ~(DEFINED|ISSET|EXPORT);
 	}
@@ -1009,7 +1004,7 @@ c_unalias(char **wp)
 		for (ktwalk(&ts, t); (ap = ktnext(&ts)); ) {
 			if (ap->flag&ALLOC) {
 				ap->flag &= ~(ALLOC|ISSET);
-				afree((void*)ap->val.s, APERM);
+				afree(ap->val.s, APERM);
 			}
 			ap->flag &= ~(DEFINED|ISSET|EXPORT);
 		}
@@ -1024,7 +1019,7 @@ c_let(char **wp)
 	int rv = 1;
 	long val;
 
-	if (wp[1] == (char *) 0) /* at&t ksh does this */
+	if (wp[1] == NULL) /* at&t ksh does this */
 		bi_errorf("no arguments");
 	else
 		for (wp++; *wp; wp++)
@@ -1063,7 +1058,7 @@ c_jobs(char **wp)
 		}
 	wp += builtin_opt.optind;
 	if (!*wp) {
-		if (j_jobs((char *) 0, flag, nflag))
+		if (j_jobs(NULL, flag, nflag))
 			rv = 1;
 	} else {
 		for (; *wp; wp++)
@@ -1129,7 +1124,7 @@ kill_fmt_entry(void *arg, int i, char *buf, int buflen)
 int
 c_kill(char **wp)
 {
-	Trap *t = (Trap *) 0;
+	Trap *t = NULL;
 	char *p;
 	int lflag = 0;
 	int i, n, rv, sig;
@@ -1166,7 +1161,7 @@ c_kill(char **wp)
 		shf_fprintf(shl_out,
 		    "usage: kill [-s signame | -signum | -signame] { job | pid | pgrp } ...\n"
 		    "       kill -l [exit_status ...]\n");
-		bi_errorf("%s", null);
+		bi_errorf(NULL);
 		return 1;
 	}
 
@@ -1184,18 +1179,20 @@ c_kill(char **wp)
 			}
 		} else if (Flag(FPOSIX)) {
 			p = null;
-			for (i = 1; i < NSIG; i++, p = space)
+			for (i = 1; i < NSIG; i++, p = " ")
 				if (sigtraps[i].name)
 					shprintf("%s%s", p, sigtraps[i].name);
-			shprintf("%s", newline);
+			shprintf("\n");
 		} else {
-			int w, i;
-			int mess_width;
-			struct kill_info ki;
+			int mess_width = 0, w, i;
+			struct kill_info ki = {
+				.num_width = 1,
+				.name_width = 0,
+			};
 
-			for (i = NSIG, ki.num_width = 1; i >= 10; i /= 10)
+			for (i = NSIG; i >= 10; i /= 10)
 				ki.num_width++;
-			ki.name_width = mess_width = 0;
+
 			for (i = 0; i < NSIG; i++) {
 				w = sigtraps[i].name ? strlen(sigtraps[i].name) :
 				    ki.num_width;
@@ -1276,15 +1273,15 @@ c_getopts(char **wp)
 		return 1;
 	}
 
-	if (e->loc->next == (struct block *) 0) {
+	if (genv->loc->next == NULL) {
 		internal_errorf(0, "c_getopts: no argv");
 		return 1;
 	}
 	/* Which arguments are we parsing... */
-	if (*wp == (char *) 0)
-		wp = e->loc->next->argv;
+	if (*wp == NULL)
+		wp = genv->loc->next->argv;
 	else
-		*--wp = e->loc->next->argv[0];
+		*--wp = genv->loc->next->argv[0];
 
 	/* Check that our saved state won't cause a core dump... */
 	for (argc = 0; wp[argc]; argc++)
@@ -1296,7 +1293,7 @@ c_getopts(char **wp)
 		return 1;
 	}
 
-	user_opt.optarg = (char *) 0;
+	user_opt.optarg = NULL;
 	optc = ksh_getopt(wp, &user_opt, options);
 
 	if (optc >= 0 && optc != '?' && (user_opt.info & GI_PLUS)) {
@@ -1324,7 +1321,7 @@ c_getopts(char **wp)
 	/* Paranoia: ensure no bizarre results. */
 	if (voptarg->flag & INTEGER)
 	    typeset("OPTARG", 0, INTEGER, 0, 0);
-	if (user_opt.optarg == (char *) 0)
+	if (user_opt.optarg == NULL)
 		unset(voptarg, 0);
 	else
 		/* This can't fail (have cleared readonly/integer) */
@@ -1363,7 +1360,7 @@ c_bind(char **wp)
 	wp += builtin_opt.optind;
 
 	if (*wp == NULL)	/* list all */
-		rv = x_bind((char*)NULL, (char*)NULL, 0, list);
+		rv = x_bind(NULL, NULL, 0, list);
 
 	for (; *wp != NULL; wp++) {
 		cp = strchr(*wp, '=');

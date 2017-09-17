@@ -1,13 +1,20 @@
-/*	$OpenBSD: eval.c,v 1.40 2013/09/14 20:09:30 millert Exp $	*/
+/*	$OpenBSD: eval.c,v 1.54 2017/08/27 00:29:04 nayden Exp $	*/
 
 /*
  * Expansion - quoting, separation, substitution, globbing
  */
 
-#include "sh.h"
-#include <pwd.h>
-#include <dirent.h>
 #include <sys/stat.h>
+
+#include <ctype.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include <pwd.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "sh.h"
 
 /*
  * string expansion
@@ -187,7 +194,7 @@ expand(char *cp,	/* input word */
 	doblank = 0;
 	make_magic = 0;
 	word = (f&DOBLANK) ? IFS_WS : IFS_WORD;
-	st_head.next = (SubType *) 0;
+	st_head.next = NULL;
 	st = &st_head;
 
 	while (1) {
@@ -292,9 +299,9 @@ expand(char *cp,	/* input word */
 					if (!st->next) {
 						SubType *newst;
 
-						newst = (SubType *) alloc(
+						newst = alloc(
 						    sizeof(SubType), ATEMP);
-						newst->next = (SubType *) 0;
+						newst->next = NULL;
 						newst->prev = st;
 						st->next = newst;
 					}
@@ -319,7 +326,7 @@ expand(char *cp,	/* input word */
 						 * expected)
 						 */
 						*dp++ = MAGIC;
-						*dp++ = '@' + 0x80;
+						*dp++ = '@' + 0x80U;
 						break;
 					case '=':
 						/* Enabling tilde expansion
@@ -406,7 +413,7 @@ expand(char *cp,	/* input word */
 					 */
 					len = strlen(dp) + 1;
 					setstr(st->var,
-					    debunk((char *) alloc(len, ATEMP),
+					    debunk(alloc(len, ATEMP),
 					    dp, len), KSH_UNWIND_ERROR);
 					x.str = str_val(st->var);
 					type = XSUB;
@@ -600,7 +607,7 @@ expand(char *cp,	/* input word */
 			if (!quote)
 				switch (c) {
 				case '[':
-				case NOT:
+				case '!':
 				case '-':
 				case ']':
 					/* For character classes - doesn't hurt
@@ -700,16 +707,15 @@ varsub(Expand *xp, char *sp, char *word,
 	int slen;
 	char *p;
 	struct tbl *vp;
+	int zero_ok = 0;
 
 	if (sp[0] == '\0')	/* Bad variable name */
 		return -1;
 
-	xp->var = (struct tbl *) 0;
+	xp->var = NULL;
 
 	/* ${#var}, string length or array size */
 	if (sp[0] == '#' && (c = sp[1]) != '\0') {
-		int zero_ok = 0;
-
 		/* Can't have any modifiers for ${#...} */
 		if (*word != CSUBST)
 			return -1;
@@ -726,7 +732,7 @@ varsub(Expand *xp, char *sp, char *word,
 					n++;
 			c = n; /* ksh88/ksh93 go for number, not max index */
 		} else if (c == '*' || c == '@')
-			c = e->loc->argc;
+			c = genv->loc->argc;
 		else {
 			p = str_val(global(sp));
 			zero_ok = p != null;
@@ -772,16 +778,17 @@ varsub(Expand *xp, char *sp, char *word,
 		case '#':
 			return -1;
 		}
-		if (e->loc->argc == 0) {
+		if (genv->loc->argc == 0) {
 			xp->str = null;
 			xp->var = global(sp);
 			state = c == '@' ? XNULLSUB : XSUB;
 		} else {
-			xp->u.strv = (const char **) e->loc->argv + 1;
+			xp->u.strv = (const char **) genv->loc->argv + 1;
 			xp->str = *xp->u.strv++;
 			xp->split = c == '@'; /* $@ */
 			state = XARG;
 		}
+		zero_ok = 1;	/* exempt "$@" and "$*" from 'set -u' */
 	} else {
 		if ((p=strchr(sp,'[')) && (p[1]=='*'||p[1]=='@') && p[2]==']') {
 			XPtrV wv;
@@ -828,7 +835,7 @@ varsub(Expand *xp, char *sp, char *word,
 	    (((stype&0x80) ? *xp->str=='\0' : xp->str==null) ? /* undef? */
 	    c == '=' || c == '-' || c == '?' : c == '+'))
 		state = XBASE;	/* expand word instead of variable value */
-	if (Flag(FNOUNSET) && xp->str == null &&
+	if (Flag(FNOUNSET) && xp->str == null && !zero_ok &&
 	    (ctype(c, C_SUBOP2) || (state != XBASE && c != '+')))
 		errorf("%s: parameter not set", sp);
 	return state;
@@ -861,7 +868,7 @@ comsub(Expand *xp, char *cp)
 
 		if ((io->flag&IOTYPE) != IOREAD)
 			errorf("funny $() command: %s",
-			    snptreef((char *) 0, 32, "%R", io));
+			    snptreef(NULL, 32, "%R", io));
 		shf = shf_open(name = evalstr(io->name, DOTILDE), O_RDONLY, 0,
 			SHF_MAPHI|SHF_CLEXEC);
 		if (shf == NULL)
@@ -871,7 +878,7 @@ comsub(Expand *xp, char *cp)
 	} else {
 		int ofd1, pv[2];
 		openpipe(pv);
-		shf = shf_fdopen(pv[0], SHF_RD, (struct shf *) 0);
+		shf = shf_fdopen(pv[0], SHF_RD, NULL);
 		ofd1 = savefd(1);
 		if (pv[1] != 1) {
 			ksh_dup2(pv[1], 1, false);
@@ -1069,7 +1076,6 @@ globit(XString *xs,	/* dest string */
 		int len;
 		int prefix_len;
 
-		/* xp = *xpp;	   copy_non_glob() may have re-alloc'd xs */
 		*xp = '\0';
 		prefix_len = Xlength(*xs, xp);
 		dirp = opendir(prefix_len ? Xstring(*xs, xp) : ".");
@@ -1100,47 +1106,6 @@ globit(XString *xs,	/* dest string */
 	if (np != NULL)
 		*--np = odirsep;
 }
-
-#if 0
-/* Check if p contains something that needs globbing; if it does, 0 is
- * returned; if not, p is copied into xs/xp after stripping any MAGICs
- */
-static int	copy_non_glob(XString *xs, char **xpp, char *p);
-static int
-copy_non_glob(XString *xs, char **xpp, char *p)
-{
-	char *xp;
-	int len = strlen(p);
-
-	XcheckN(*xs, *xpp, len);
-	xp = *xpp;
-	for (; *p; p++) {
-		if (ISMAGIC(*p)) {
-			int c = *++p;
-
-			if (c == '*' || c == '?')
-				return 0;
-			if (*p == '[') {
-				char *q = p + 1;
-
-				if (ISMAGIC(*q) && q[1] == NOT)
-					q += 2;
-				if (ISMAGIC(*q) && q[1] == ']')
-					q += 2;
-				for (; *q; q++)
-					if (ISMAGIC(*q) && *++q == ']')
-						return 0;
-				/* pass a literal [ through */
-			}
-			/* must be a MAGIC-MAGIC, or MAGIC-!, MAGIC--, etc. */
-		}
-		*xp++ = *p;
-	}
-	*xp = '\0';
-	*xpp = xp;
-	return 1;
-}
-#endif /* 0 */
 
 /* remove MAGIC from string */
 char *
@@ -1190,7 +1155,7 @@ maybe_expand_tilde(char *p, XString *dsp, char **dpp, int isassign)
 	}
 	*tp = '\0';
 	r = (p[0] == EOS || p[0] == CHAR || p[0] == CSUBST) ?
-	    tilde(Xstring(ts, tp)) : (char *) 0;
+	    tilde(Xstring(ts, tp)) : NULL;
 	Xfree(ts, tp);
 	if (r) {
 		while (*r) {
@@ -1226,7 +1191,7 @@ tilde(char *cp)
 		dp = homedir(cp);
 	/* If HOME, PWD or OLDPWD are not set, don't expand ~ */
 	if (dp == null)
-		dp = (char *) 0;
+		dp = NULL;
 	return dp;
 }
 
@@ -1271,7 +1236,7 @@ alt_expand(XPtrV *wp, char *start, char *exp_start, char *end, int fdo)
 
 	/* find matching close brace, if any */
 	if (p) {
-		comma = (char *) 0;
+		comma = NULL;
 		count = 1;
 		for (p += 2; *p && count; p++) {
 			if (ISMAGIC(*p)) {
@@ -1317,7 +1282,7 @@ alt_expand(XPtrV *wp, char *start, char *exp_start, char *end, int fdo)
 				l1 = brace_start - start;
 				l2 = (p - 1) - field_start;
 				l3 = end - brace_end;
-				new = (char *) alloc(l1 + l2 + l3 + 1, ATEMP);
+				new = alloc(l1 + l2 + l3 + 1, ATEMP);
 				memcpy(new, start, l1);
 				memcpy(new + l1, field_start, l2);
 				memcpy(new + l1 + l2, brace_end, l3);

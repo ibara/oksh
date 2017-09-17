@@ -1,4 +1,4 @@
-.\"	$OpenBSD: sh.1,v 1.128 2015/05/04 19:34:13 jmc Exp $
+.\"	$OpenBSD: sh.1,v 1.143 2017/06/01 20:37:38 tb Exp $
 .\"
 .\" Copyright (c) 2015 Jason McIntyre <jmc@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: May 4 2015 $
+.Dd $Mdocdate: June 1 2017 $
 .Dt SH 1
 .Os
 .Sh NAME
@@ -30,22 +30,21 @@ The
 .Nm
 utility is a
 .Em command language interpreter :
-it reads its input,
-breaks it down into parts,
-and then executes those parts.
-Its chief uses are in interfacing between the user and the operating system,
-reading commands on the command line,
-and in chaining together groups of commands in a very flexible manner,
-through a shell script.
+it reads one or more commands,
+either from the command line or from a file
+(a shell script),
+and then sets about executing those commands.
+Thus it is the
+main interface between the user and the operating system.
 .Pp
 This version of
 .Nm
 is actually
 .Nm ksh
 in disguise.
-As such, it will also accept options documented in
+As such, it also supports the features described in
 .Xr ksh 1 .
-This manual page describes only features
+This manual page describes only the parts
 relevant to a POSIX compliant
 .Nm .
 If portability is a concern,
@@ -122,8 +121,6 @@ Do not expand file name patterns.
 When a utility is first executed,
 hash (record) its location
 so that future invocations do not need to search for it.
-Builtins are not hashed, regardless of whether this option is set or not.
-This option is set by default for non-interactive shells.
 .It Fl i
 Enable behaviour convenient for an interactive shell.
 This option is set by default
@@ -214,7 +211,7 @@ are listed below.
 Unless otherwise indicated,
 they exit 0 on success,
 and >0 if an error occurs.
-.Bl -ohang
+.Bl -tag -width 2n
 .It Ic .\& Ar file
 Execute the commands in
 .Ar file ,
@@ -329,6 +326,9 @@ but identify how the shell will interpret it
 Do not invoke
 .Ar command ,
 but identify the pathname the shell will use to run it.
+For aliases, a command to define that alias is printed.
+For shell reserved words, shell functions, and built-in utilities,
+just the name is printed.
 .El
 .Pp
 The exit status is that of
@@ -508,6 +508,14 @@ is a colon,
 .Ev OPTARG
 is set to the unsupported option,
 otherwise an error message is displayed.
+.It Ic hash Op Fl r | Ar utility
+Add
+.Ar utility
+to the hash list
+or remove
+.Pq Fl r
+all utilities from the hash list.
+Without arguments, show the utilities currently hashed.
 .It Ic jobs Oo Fl l | p Oc Op Ar id ...
 Display the status of all jobs in the current shell environment,
 or those selected by
@@ -737,8 +745,6 @@ no change occurs.
 .It Ic times
 Display accumulated process times for the shell (user and system)
 and all child processes (user and system).
-.It Ic true
-Return a true (zero) value.
 .It Ic trap Op Ar action signal ...
 Perform
 .Ar action
@@ -774,6 +780,18 @@ otherwise
 should be a signal name
 (without the SIG prefix)
 or number.
+.It Ic true
+Return a true (zero) value.
+.It Ic type Ar command ...
+For each
+.Ar command ,
+show how the shell would interpret it.
+.It Ic ulimit Op Fl f Ar n
+Limit the maximum size of a file that can be created to
+.Ar n
+blocks.
+Without arguments,
+display the current file size limit.
 .It Ic umask Oo Fl S Oc Op Ar mask
 Set the file mode creation mask to
 .Ar mask .
@@ -939,7 +957,7 @@ at the end of a bigword.
 Move to the start of the current word,
 or the start of the next word if the cursor is currently
 at the start of a word.
-.It Oo Ar count Oc Ns Ic b
+.It Oo Ar count Oc Ns Ic B
 Move to the start of the current bigword,
 or the start of the next bigword if the cursor is currently
 at the start of a bigword.
@@ -1339,7 +1357,7 @@ In that case the shell attempts arithmetic expansion first,
 then attempts command substitution if that fails.
 Or a non-ambiguous version can be used:
 .Pp
-.D1 $( Pf ( Ar command Ns Pf ) \ \&)
+.D1 "$( (" Ns Ar command Ns ") )"
 .Pp
 Arithmetic expansion works similarly,
 with an arithmetic expression being evaluated and substituted.
@@ -1377,7 +1395,7 @@ greater than, and greater than or equal to, respectively.
 The result is 1 if true, or 0 otherwise.
 .It == !=
 Equal (the result is 1 if both arguments are equal, and 0 otherwise)
-and not equal (the result is 1 if both arguments are non-zero, and 0 otherwise),
+and not equal (the result is 0 if both arguments are equal, and 1 otherwise),
 respectively.
 .It &
 Bitwise AND.
@@ -1644,7 +1662,7 @@ where commands are executed in the order given.
 The exit status of a sequential list is that of the last command executed.
 The format for a sequential list is:
 .Pp
-.D1 Ar command\ \& ; Op Ar command ...
+.D1 Ar command No \&; Op Ar command ...
 .Pp
 A series of one or more commands separated by
 .Sq &
@@ -1979,6 +1997,8 @@ The following environment variables affect the execution of
 Colon separated list of directories used by the
 .Ic cd
 command.
+If unset or empty,
+the current working directory is used.
 .It Ev ENV
 Pathname to a file containing commands to be executed
 when an interactive shell is started.
@@ -2073,7 +2093,7 @@ Enable POSIX mode
 The shell's parent process ID.
 Subshells have the same
 .Ev PPID
-as the parent of the current shell.
+as the current shell.
 .It Ev PS1
 User prompt displayed every time an interactive shell
 is ready to read a command.
@@ -2194,9 +2214,6 @@ as well as if its modification time changes.
 This implementation of
 .Nm
 does not provide notification when these files are created.
-.It
-Command substitution occurring within double quotes
-is subject to pathname expansion but should not be.
 .It
 The built-in
 .Ic newgrp

@@ -1,8 +1,10 @@
-/*	$OpenBSD: syn.c,v 1.29 2013/06/03 18:40:05 jca Exp $	*/
+/*	$OpenBSD: syn.c,v 1.38 2015/12/30 09:07:00 tedu Exp $	*/
 
 /*
  * shell parser (C version)
  */
+
+#include <string.h>
 
 #include "sh.h"
 #include "c_test.h"
@@ -47,26 +49,24 @@ static struct nesting_state nesting;	/* \n changed to ; */
 static	int	reject;		/* token(cf) gets symbol again */
 static	int	symbol;		/* yylex value */
 
-#define	REJECT	(reject = 1)
-#define	ACCEPT	(reject = 0)
 #define	token(cf) \
-	((reject) ? (ACCEPT, symbol) : (symbol = yylex(cf)))
+	((reject) ? (reject = false, symbol) : (symbol = yylex(cf)))
 #define	tpeek(cf) \
-	((reject) ? (symbol) : (REJECT, symbol = yylex(cf)))
+	((reject) ? (symbol) : (reject = true, symbol = yylex(cf)))
 
 static void
 yyparse(void)
 {
 	int c;
 
-	ACCEPT;
+	reject = false;
 
 	outtree = c_list(source->type == SSTRING);
 	c = tpeek(0);
 	if (c == 0 && !outtree)
 		outtree = newtp(TEOF);
 	else if (c != '\n' && c != 0)
-		syntaxerr((char *) 0);
+		syntaxerr(NULL);
 }
 
 static struct op *
@@ -78,13 +78,13 @@ pipeline(int cf)
 	if (t != NULL) {
 		while (token(0) == '|') {
 			if ((p = get_command(CONTIN)) == NULL)
-				syntaxerr((char *) 0);
+				syntaxerr(NULL);
 			if (tl == NULL)
-				t = tl = block(TPIPE, t, p, NOWORDS);
+				t = tl = block(TPIPE, t, p, NULL);
 			else
-				tl = tl->right = block(TPIPE, tl->right, p, NOWORDS);
+				tl = tl->right = block(TPIPE, tl->right, p, NULL);
 		}
-		REJECT;
+		reject = true;
 	}
 	return (t);
 }
@@ -99,10 +99,10 @@ andor(void)
 	if (t != NULL) {
 		while ((c = token(0)) == LOGAND || c == LOGOR) {
 			if ((p = pipeline(CONTIN)) == NULL)
-				syntaxerr((char *) 0);
-			t = block(c == LOGAND? TAND: TOR, t, p, NOWORDS);
+				syntaxerr(NULL);
+			t = block(c == LOGAND? TAND: TOR, t, p, NULL);
 		}
-		REJECT;
+		reject = true;
 	}
 	return (t);
 }
@@ -128,19 +128,19 @@ c_list(int multi)
 			break;
 		else if (c == '&' || c == COPROC)
 			p = block(c == '&' ? TASYNC : TCOPROC,
-				  p, NOBLOCK, NOWORDS);
+				  p, NULL, NULL);
 		else if (c != ';')
 			have_sep = 0;
 		if (!t)
 			t = p;
 		else if (!tl)
-			t = tl = block(TLIST, t, p, NOWORDS);
+			t = tl = block(TLIST, t, p, NULL);
 		else
-			tl = tl->right = block(TLIST, tl->right, p, NOWORDS);
+			tl = tl->right = block(TLIST, tl->right, p, NULL);
 		if (!have_sep)
 			break;
 	}
-	REJECT;
+	reject = true;
 	return t;
 }
 
@@ -152,7 +152,7 @@ synio(int cf)
 
 	if (tpeek(cf) != REDIR)
 		return NULL;
-	ACCEPT;
+	reject = false;
 	iop = yylval.iop;
 	ishere = (iop->flag&IOTYPE) == IOHERE;
 	musthave(LWORD, ishere ? HEREDELIM : 0);
@@ -172,7 +172,7 @@ static void
 musthave(int c, int cf)
 {
 	if ((token(cf)) != c)
-		syntaxerr((char *) 0);
+		syntaxerr(NULL);
 }
 
 static struct op *
@@ -185,7 +185,7 @@ nested(int type, int smark, int emark)
 	t = c_list(true);
 	musthave(emark, KEYWORD|ALIAS);
 	nesting_pop(&old_nesting);
-	return (block(type, t, NOBLOCK, NOWORDS));
+	return (block(type, t, NULL, NULL));
 }
 
 static struct op *
@@ -197,23 +197,23 @@ get_command(int cf)
 	XPtrV args, vars;
 	struct nesting_state old_nesting;
 
-	iops = (struct ioword **) alloc(sizeofN(struct ioword *, NUFILE+1),
-	    ATEMP);
+	iops = areallocarray(NULL, NUFILE + 1,
+	    sizeof(struct ioword *), ATEMP);
 	XPinit(args, 16);
 	XPinit(vars, 16);
 
 	syniocf = KEYWORD|ALIAS;
 	switch (c = token(cf|KEYWORD|ALIAS|VARASN)) {
 	default:
-		REJECT;
-		afree((void*) iops, ATEMP);
+		reject = true;
+		afree(iops, ATEMP);
 		XPfree(args);
 		XPfree(vars);
 		return NULL; /* empty line */
 
 	case LWORD:
 	case REDIR:
-		REJECT;
+		reject = true;
 		syniocf &= ~(KEYWORD|ALIAS);
 		t = newtp(TCOM);
 		t->lineno = source->line;
@@ -228,7 +228,7 @@ get_command(int cf)
 				break;
 
 			case LWORD:
-				ACCEPT;
+				reject = false;
 				/* the iopn == 0 and XPsize(vars) == 0 are
 				 * dubious but at&t ksh acts this way
 				 */
@@ -249,14 +249,14 @@ get_command(int cf)
 				 */
 				afree(t, ATEMP);
 				if (XPsize(args) == 0 && XPsize(vars) == 0) {
-					ACCEPT;
+					reject = false;
 					goto Subshell;
 				}
 				/* Must be a function */
 				if (iopn != 0 || XPsize(args) != 1 ||
 				    XPsize(vars) != 0)
-					syntaxerr((char *) 0);
-				ACCEPT;
+					syntaxerr(NULL);
+				reject = false;
 				/*(*/
 				musthave(')', 0);
 				t = function_body(XPptrv(args)[0], false);
@@ -287,7 +287,7 @@ get_command(int cf)
 		/* Leave KEYWORD in syniocf (allow if (( 1 )) then ...) */
 		t = newtp(TCOM);
 		t->lineno = source->line;
-		ACCEPT;
+		reject = false;
 		XPput(args, wdcopy(let_cmd, ATEMP));
 		musthave(LWORD,LETEXPR);
 		XPput(args, yylval.cp);
@@ -297,7 +297,7 @@ get_command(int cf)
 	case DBRACKET: /* [[ .. ]] */
 		/* Leave KEYWORD in syniocf (allow if [[ -n 1 ]] then ...) */
 		t = newtp(TDBRACKET);
-		ACCEPT;
+		reject = false;
 		{
 			Test_env te;
 
@@ -356,9 +356,9 @@ get_command(int cf)
 	case BANG:
 		syniocf &= ~(KEYWORD|ALIAS);
 		t = pipeline(0);
-		if (t == (struct op *) 0)
-			syntaxerr((char *) 0);
-		t = block(TBANG, NOBLOCK, t, NOWORDS);
+		if (t == NULL)
+			syntaxerr(NULL);
+		t = block(TBANG, NULL, t, NULL);
 		break;
 
 	case TIME:
@@ -369,7 +369,7 @@ get_command(int cf)
 			t->str[0] = '\0'; /* TF_* flags */
 			t->str[1] = '\0';
 		}
-		t = block(TTIME, t, NOBLOCK, NOWORDS);
+		t = block(TTIME, t, NULL, NULL);
 		break;
 
 	case FUNCTION:
@@ -385,12 +385,12 @@ get_command(int cf)
 	}
 
 	if (iopn == 0) {
-		afree((void*) iops, ATEMP);
+		afree(iops, ATEMP);
 		t->ioact = NULL;
 	} else {
 		iops[iopn++] = NULL;
-		iops = (struct ioword **) aresize((void*) iops,
-		    sizeofN(struct ioword *, iopn), ATEMP);
+		iops = areallocarray(iops, iopn,
+		    sizeof(struct ioword *), ATEMP);
 		t->ioact = iops;
 	}
 
@@ -424,7 +424,7 @@ dogroup(void)
 	else if (c == '{')
 		c = '}';
 	else
-		syntaxerr((char *) 0);
+		syntaxerr(NULL);
 	list = c_list(true);
 	musthave(c, KEYWORD|ALIAS);
 	return list;
@@ -439,7 +439,7 @@ thenpart(void)
 	t = newtp(0);
 	t->left = c_list(true);
 	if (t->left == NULL)
-		syntaxerr((char *) 0);
+		syntaxerr(NULL);
 	t->right = elsepart();
 	return (t);
 }
@@ -452,7 +452,7 @@ elsepart(void)
 	switch (token(KEYWORD|ALIAS|VARASN)) {
 	case ELSE:
 		if ((t = c_list(true)) == NULL)
-			syntaxerr((char *) 0);
+			syntaxerr(NULL);
 		return (t);
 
 	case ELIF:
@@ -462,7 +462,7 @@ elsepart(void)
 		return (t);
 
 	default:
-		REJECT;
+		reject = true;
 	}
 	return NULL;
 }
@@ -480,7 +480,7 @@ caselist(void)
 	else if (c == '{')
 		c = '}';
 	else
-		syntaxerr((char *) 0);
+		syntaxerr(NULL);
 	t = tl = NULL;
 	while ((tpeek(CONTIN|KEYWORD|ESACONLY)) != c) { /* no ALIAS here */
 		struct op *tc = casepart(c);
@@ -504,12 +504,12 @@ casepart(int endtok)
 	t = newtp(TPAT);
 	c = token(CONTIN|KEYWORD); /* no ALIAS here */
 	if (c != '(')
-		REJECT;
+		reject = true;
 	do {
 		musthave(LWORD, 0);
 		XPput(ptns, yylval.cp);
 	} while ((c = token(0)) == '|');
-	REJECT;
+	reject = true;
 	XPput(ptns, NULL);
 	t->vars = (char **) XPclose(ptns);
 	musthave(')', 0);
@@ -552,12 +552,12 @@ function_body(char *name,
 	 */
 	if (ksh_func) {
 		musthave('{', CONTIN|KEYWORD|ALIAS); /* } */
-		REJECT;
+		reject = true;
 	}
 
-	old_func_parse = e->flags & EF_FUNC_PARSE;
-	e->flags |= EF_FUNC_PARSE;
-	if ((t->left = get_command(CONTIN)) == (struct op *) 0) {
+	old_func_parse = genv->flags & EF_FUNC_PARSE;
+	genv->flags |= EF_FUNC_PARSE;
+	if ((t->left = get_command(CONTIN)) == NULL) {
 		/*
 		 * Probably something like foo() followed by eof or ;.
 		 * This is accepted by sh and ksh88.
@@ -565,18 +565,18 @@ function_body(char *name,
 		 * be used as input), we pretend there is a colon here.
 		 */
 		t->left = newtp(TCOM);
-		t->left->args = (char **) alloc(sizeof(char *) * 2, ATEMP);
-		t->left->args[0] = alloc(sizeof(char) * 3, ATEMP);
+		t->left->args = areallocarray(NULL, 2, sizeof(char *), ATEMP);
+		t->left->args[0] = alloc(3, ATEMP);
 		t->left->args[0][0] = CHAR;
 		t->left->args[0][1] = ':';
 		t->left->args[0][2] = EOS;
-		t->left->args[1] = (char *) 0;
-		t->left->vars = (char **) alloc(sizeof(char *), ATEMP);
-		t->left->vars[0] = (char *) 0;
+		t->left->args[1] = NULL;
+		t->left->vars = alloc(sizeof(char *), ATEMP);
+		t->left->vars[0] = NULL;
 		t->left->lineno = 1;
 	}
 	if (!old_func_parse)
-		e->flags &= ~EF_FUNC_PARSE;
+		genv->flags &= ~EF_FUNC_PARSE;
 
 	return t;
 }
@@ -591,13 +591,13 @@ wordlist(void)
 	/* Posix does not do alias expansion here... */
 	if ((c = token(CONTIN|KEYWORD|ALIAS)) != IN) {
 		if (c != ';') /* non-POSIX, but at&t ksh accepts a ; here */
-			REJECT;
+			reject = true;
 		return NULL;
 	}
 	while ((c = token(0)) == LWORD)
 		XPput(args, yylval.cp);
 	if (c != '\n' && c != ';')
-		syntaxerr((char *) 0);
+		syntaxerr(NULL);
 	XPput(args, NULL);
 	return (char **) XPclose(args);
 }
@@ -682,7 +682,7 @@ syntaxerr(const char *what)
 
 	if (!what)
 		what = "unexpected";
-	REJECT;
+	reject = true;
 	c = token(0);
     Again:
 	switch (c) {
@@ -698,7 +698,7 @@ syntaxerr(const char *what)
 		/* NOTREACHED */
 
 	case LWORD:
-		s = snptreef((char *) 0, 32, "%S", yylval.cp);
+		s = snptreef(NULL, 32, "%S", yylval.cp);
 		break;
 
 	case REDIR:
@@ -743,7 +743,7 @@ newtp(int type)
 {
 	struct op *t;
 
-	t = (struct op *) alloc(sizeof(*t), ATEMP);
+	t = alloc(sizeof(*t), ATEMP);
 	t->type = type;
 	t->u.evalflags = 0;
 	t->args = t->vars = NULL;
@@ -823,7 +823,7 @@ dbtestp_isa(Test_env *te, Test_meta meta)
 {
 	int c = tpeek(ARRAYVAR | (meta == TM_BINOP ? 0 : CONTIN));
 	int uqword = 0;
-	char *save = (char *) 0;
+	char *save = NULL;
 	int ret = 0;
 
 	/* unquoted word? */
@@ -850,7 +850,7 @@ dbtestp_isa(Test_env *te, Test_meta meta)
 	} else /* meta == TM_END */
 		ret = uqword && strcmp(yylval.cp, db_close) == 0;
 	if (ret) {
-		ACCEPT;
+		reject = false;
 		if (meta != TM_END) {
 			if (!save)
 				save = wdcopy(dbtest_tokens[(int) meta], ATEMP);
@@ -866,9 +866,9 @@ dbtestp_getopnd(Test_env *te, Test_op op, int do_eval)
 	int c = tpeek(ARRAYVAR);
 
 	if (c != LWORD)
-		return (const char *) 0;
+		return NULL;
 
-	ACCEPT;
+	reject = false;
 	XPput(*te->pos.av, yylval.cp);
 
 	return null;
@@ -887,7 +887,7 @@ dbtestp_error(Test_env *te, int offset, const char *msg)
 	te->flags |= TEF_ERROR;
 
 	if (offset < 0) {
-		REJECT;
+		reject = true;
 		/* Kludgy to say the least... */
 		symbol = LWORD;
 		yylval.cp = *(XPptrv(*te->pos.av) + XPsize(*te->pos.av) +

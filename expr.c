@@ -1,4 +1,4 @@
-/*	$OpenBSD: expr.c,v 1.24 2014/12/08 14:26:31 otto Exp $	*/
+/*	$OpenBSD: expr.c,v 1.32 2015/12/30 09:07:00 tedu Exp $	*/
 
 /*
  * Korn expression evaluation
@@ -7,9 +7,11 @@
  * todo: better error handling: if in builtin, should be builtin error, etc.
  */
 
-#include "sh.h"
 #include <ctype.h>
+#include <limits.h>
+#include <string.h>
 
+#include "sh.h"
 
 /* The order of these enums is constrained by the order of opinfo[] */
 enum token {
@@ -174,11 +176,11 @@ v_evaluate(struct tbl *vp, const char *expr, volatile int error_ok,
 	curstate.expression = curstate.tokp = expr;
 	curstate.noassign = 0;
 	curstate.arith = arith;
-	curstate.evaling = (struct tbl *) 0;
-	curstate.val = (struct tbl *) 0;
+	curstate.evaling = NULL;
+	curstate.val = NULL;
 
 	newenv(E_ERRH);
-	i = sigsetjmp(e->jbuf, 0);
+	i = sigsetjmp(genv->jbuf, 0);
 	if (i) {
 		/* Clear EXPRINEVAL in of any variables we were playing with */
 		if (curstate.evaling)
@@ -187,7 +189,7 @@ v_evaluate(struct tbl *vp, const char *expr, volatile int error_ok,
 		if (i == LAEXPR) {
 			if (error_ok == KSH_RETURN_ERROR)
 				return 0;
-			errorf("%s", null);
+			errorf(NULL);
 		}
 		unwind(i);
 		/* NOTREACHED */
@@ -203,7 +205,7 @@ v_evaluate(struct tbl *vp, const char *expr, volatile int error_ok,
 	v = intvar(es, evalexpr(es, MAX_PREC));
 
 	if (es->tok != END)
-		evalerr(es, ET_UNEXPECTED, (char *) 0);
+		evalerr(es, ET_UNEXPECTED, NULL);
 
 	if (vp->flag & INTEGER)
 		setint_v(vp, v, es->arith);
@@ -307,7 +309,7 @@ evalexpr(Expr_state *es, enum prec prec)
 			vl = es->val;
 			token(es);
 		} else {
-			evalerr(es, ET_UNEXPECTED, (char *) 0);
+			evalerr(es, ET_UNEXPECTED, NULL);
 			/* NOTREACHED */
 		}
 		if (es->tok == O_PLUSPLUS || es->tok == O_MINUSMINUS) {
@@ -560,7 +562,7 @@ tempvar(void)
 {
 	struct tbl *vp;
 
-	vp = (struct tbl*) alloc(sizeof(struct tbl), ATEMP);
+	vp = alloc(sizeof(struct tbl), ATEMP);
 	vp->flag = ISSET|INTEGER;
 	vp->type = 0;
 	vp->areap = ATEMP;
@@ -588,7 +590,7 @@ intvar(Expr_state *es, struct tbl *vp)
 		vp->flag |= EXPRINEVAL;
 		v_evaluate(vq, str_val(vp), KSH_UNWIND_ERROR, es->arith);
 		vp->flag &= ~EXPRINEVAL;
-		es->evaling = (struct tbl *) 0;
+		es->evaling = NULL;
 	}
 	return vq;
 }

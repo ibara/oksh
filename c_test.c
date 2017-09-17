@@ -1,4 +1,4 @@
-/*	$OpenBSD: c_test.c,v 1.18 2009/03/01 20:11:06 otto Exp $	*/
+/*	$OpenBSD: c_test.c,v 1.23 2015/12/14 13:59:42 tb Exp $	*/
 
 /*
  * test(1); version 7-like  --  author Erik Baalbergen
@@ -9,8 +9,12 @@
  * modified by J.T. Conklin to add POSIX compatibility.
  */
 
-#include "sh.h"
 #include <sys/stat.h>
+
+#include <string.h>
+#include <unistd.h>
+
+#include "sh.h"
 #include "c_test.h"
 
 /* test(1) accepts the following grammar:
@@ -161,7 +165,7 @@ c_test(char **wp)
 				if (!Flag(FPOSIX) && strcmp(opnd1, "-t") == 0)
 				    break;
 				res = (*te.eval)(&te, TO_STNZE, opnd1,
-				    (char *) 0, 1);
+				    NULL, 1);
 				if (invert & 1)
 					res = !res;
 				return !res;
@@ -471,7 +475,7 @@ test_primary(Test_env *te, int do_eval)
 				return 0;
 			}
 
-			return (*te->eval)(te, op, opnd1, (const char *) 0,
+			return (*te->eval)(te, op, opnd1, NULL,
 			    do_eval);
 		}
 	}
@@ -494,7 +498,7 @@ test_primary(Test_env *te, int do_eval)
 		(*te->error)(te, -1, "missing expression operator");
 		return 0;
 	}
-	return (*te->eval)(te, TO_STNZE, opnd1, (const char *) 0, do_eval);
+	return (*te->eval)(te, TO_STNZE, opnd1, NULL, do_eval);
 }
 
 /*
@@ -535,7 +539,7 @@ static const char *
 ptest_getopnd(Test_env *te, Test_op op, int do_eval)
 {
 	if (te->pos.wp >= te->wp_end)
-		return op == TO_FILTT ? "1" : (const char *) 0;
+		return op == TO_FILTT ? "1" : NULL;
 	return *te->pos.wp++;
 }
 
@@ -550,7 +554,7 @@ static void
 ptest_error(Test_env *te, int offset, const char *msg)
 {
 	const char *op = te->pos.wp + offset >= te->wp_end ?
-	    (const char *) 0 : te->pos.wp[offset];
+	    NULL : te->pos.wp[offset];
 
 	te->flags |= TEF_ERROR;
 	if (op)

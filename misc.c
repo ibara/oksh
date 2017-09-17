@@ -1,11 +1,18 @@
-/*	$OpenBSD: misc.c,v 1.40 2015/03/18 15:12:36 tedu Exp $	*/
+/*	$OpenBSD: misc.c,v 1.59 2017/08/30 17:15:36 jca Exp $	*/
 
 /*
  * Miscellaneous functions
  */
 
-#include "sh.h"
 #include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "sh.h"
 #ifdef __OpenBSD__
 #include "charclass.h"
 #else
@@ -45,7 +52,6 @@ initctypes(void)
 	for (c = 'A'; c <= 'Z'; c++)
 		ctypes[c] |= C_ALPHA;
 	ctypes['_'] |= C_ALPHA;
-	setctypes("0123456789", C_DIGIT);
 	setctypes(" \t\n|&;<>()", C_LEX1); /* \0 added automatically */
 	setctypes("*@#!$-?", C_VAR1);
 	setctypes(" \t\n", C_IFSWS);
@@ -123,11 +129,11 @@ const struct option options[] = {
 	{ "braceexpand",  0,		OF_ANY }, /* non-standard */
 #endif
 	{ "bgnice",	  0,		OF_ANY },
-	{ (char *) 0,	'c',	    OF_CMDLINE },
+	{ NULL,	'c',	    OF_CMDLINE },
 	{ "csh-history",  0,		OF_ANY }, /* non-standard */
 #ifdef EMACS
 	{ "emacs",	  0,		OF_ANY },
-	{ "emacs-usemeta",  0,		OF_ANY }, /* non-standard */
+	{ "emacs-usemeta",  0,		OF_ANY }, /* XXX delete after 6.2 */
 #endif
 	{ "errexit",	'e',		OF_ANY },
 #ifdef EMACS
@@ -141,7 +147,7 @@ const struct option options[] = {
 #ifdef JOBS
 	{ "monitor",	'm',		OF_ANY },
 #else /* JOBS */
-	{ (char *) 0,	'm',		     0 }, /* so FMONITOR not ifdef'd */
+	{ NULL,	'm',		     0 }, /* so FMONITOR not ifdef'd */
 #endif /* JOBS */
 	{ "noclobber",	'C',		OF_ANY },
 	{ "noexec",	'n',		OF_ANY },
@@ -171,7 +177,7 @@ const struct option options[] = {
 	/* Anonymous flags: used internally by shell only
 	 * (not visible to user)
 	 */
-	{ (char *) 0,	0,		OF_INTERNAL }, /* FTALKING_I */
+	{ NULL,	0,		OF_INTERNAL }, /* FTALKING_I */
 };
 
 /*
@@ -183,8 +189,13 @@ option(const char *n)
 	int i;
 
 	for (i = 0; i < NELEM(options); i++)
-		if (options[i].name && strcmp(options[i].name, n) == 0)
+		if (options[i].name && strcmp(options[i].name, n) == 0) {
+#ifdef EMACS
+			if (i == FEMACSUSEMETA)
+				warningf(true, "%s: deprecated option", n);
+#endif
 			return i;
+		}
 
 	return -1;
 }
@@ -224,7 +235,11 @@ printoptions(int verbose)
 		/* verbose version */
 		shprintf("Current option settings\n");
 
-		for (i = n = oi.opt_width = 0; i < NELEM(options); i++)
+		for (i = n = oi.opt_width = 0; i < NELEM(options); i++) {
+#ifdef EMACS
+			if (i == FEMACSUSEMETA)
+				continue;
+#endif
 			if (options[i].name) {
 				len = strlen(options[i].name);
 				oi.opts[n].name = options[i].name;
@@ -232,15 +247,23 @@ printoptions(int verbose)
 				if (len > oi.opt_width)
 					oi.opt_width = len;
 			}
+		}
 		print_columns(shl_stdout, n, options_fmt_entry, &oi,
 		    oi.opt_width + 5, 1);
 	} else {
 		/* short version ala ksh93 */
 		shprintf("set");
-		for (i = 0; i < NELEM(options); i++)
-			if (Flag(i) && options[i].name)
-				shprintf(" -o %s", options[i].name);
-		shprintf("%s", newline);
+		for (i = 0; i < NELEM(options); i++) {
+#ifdef EMACS
+			if (i == FEMACSUSEMETA)
+				continue;
+#endif
+			if (options[i].name)
+				shprintf(" %co %s",
+					 Flag(i) ? '-' : '+',
+					 options[i].name);
+		}
+		shprintf("\n");
 	}
 }
 
@@ -326,7 +349,7 @@ parse_args(char **argv,
 	static char cmd_opts[NELEM(options) + 3]; /* o:\0 */
 	static char set_opts[NELEM(options) + 5]; /* Ao;s\0 */
 	char *opts;
-	char *array = (char *) 0;
+	char *array = NULL;
 	Getopt go;
 	int i, optc, set, sortargs = 0, arrayset = 0;
 
@@ -372,7 +395,7 @@ parse_args(char **argv,
 			break;
 
 		case 'o':
-			if (go.optarg == (char *) 0) {
+			if (go.optarg == NULL) {
 				/* lone -o: print options
 				 *
 				 * Note that on the command line, -o requires
@@ -506,7 +529,7 @@ gmatch(const char *s, const char *p, int isfile)
 		int len = pe - p + 1;
 		char tbuf[64];
 		char *t = len <= sizeof(tbuf) ? tbuf :
-		    (char *) alloc(len, ATEMP);
+		    alloc(len, ATEMP);
 		debunk(t, p, len);
 		return !strcmp(t, s);
 	}
@@ -549,7 +572,7 @@ has_globbing(const char *xp, const char *xpe)
 			if (!in_bracket) {
 				saw_glob = 1;
 				in_bracket = 1;
-				if (ISMAGIC(p[1]) && p[2] == NOT)
+				if (ISMAGIC(p[1]) && p[2] == '!')
 					p += 2;
 				if (ISMAGIC(p[1]) && p[2] == ']')
 					p += 2;
@@ -715,7 +738,7 @@ posix_cclass(const unsigned char *pattern, int test, const unsigned char **ep)
 	size_t len;
 	int rval = 0;
 
-	if ((colon = ((const unsigned char *)strchr((const char *)pattern, ':'))) == NULL || colon[1] != MAGIC) {
+	if ((colon = strchr(pattern, ':')) == NULL || colon[1] != MAGIC) {
 		*ep = pattern - 2;
 		return -1;
 	}
@@ -723,7 +746,7 @@ posix_cclass(const unsigned char *pattern, int test, const unsigned char **ep)
 	len = (size_t)(colon - pattern);
 
 	for (cc = cclasses; cc->name != NULL; cc++) {
-		if (!strncmp((const char *)pattern, cc->name, len) && cc->name[len] == '\0') {
+		if (!strncmp(pattern, cc->name, len) && cc->name[len] == '\0') {
 			if (cc->isctype(test))
 				rval = 1;
 			break;
@@ -741,15 +764,15 @@ cclass(const unsigned char *p, int sub)
 	int c, d, rv, not, found = 0;
 	const unsigned char *orig_p = p;
 
-	if ((not = (ISMAGIC(*p) && *++p == NOT)))
+	if ((not = (ISMAGIC(*p) && *++p == '!')))
 		p++;
 	do {
 		/* check for POSIX character class (e.g. [[:alpha:]]) */
 		if ((p[0] == MAGIC && p[1] == '[' && p[2] == ':') ||
 		    (p[0] == '[' && p[1] == ':')) {
 			do {
-				const char *pp = (const char *)p + (*p == MAGIC) + 2;
-				rv = posix_cclass((const unsigned char *)pp, sub, &p);
+				const char *pp = p + (*p == MAGIC) + 2;
+				rv = posix_cclass(pp, sub, &p);
 				switch (rv) {
 				case 1:
 					found = 1;
@@ -811,7 +834,7 @@ pat_scan(const unsigned char *p, const unsigned char *pe, int match_sep)
 		if ((*p & 0x80) && strchr("*+?@! ", *p & 0x7f))
 			nest++;
 	}
-	return (const unsigned char *) 0;
+	return NULL;
 }
 
 /*
@@ -836,7 +859,7 @@ void
 ksh_getopt_reset(Getopt *go, int flags)
 {
 	go->optind = 1;
-	go->optarg = (char *) 0;
+	go->optarg = NULL;
 	go->p = 0;
 	go->flags = flags;
 	go->info = 0;
@@ -884,7 +907,7 @@ ksh_getopt(char **argv, Getopt *go, const char *options)
 			go->info |= GI_MINUSMINUS;
 			return -1;
 		}
-		if (arg == (char *) 0 ||
+		if (arg == NULL ||
 		    ((flag != '-' ) && /* neither a - nor a + (if + allowed) */
 		    (!(go->flags & GF_PLUSOPT) || flag != '+')) ||
 		    (c = arg[1]) == '\0') {
@@ -906,7 +929,7 @@ ksh_getopt(char **argv, Getopt *go, const char *options)
 			    (go->flags & GF_NONAME) ? "" : argv[0],
 			    (go->flags & GF_NONAME) ? "" : ": ", c);
 			if (go->flags & GF_ERROR)
-				bi_errorf("%s", null);
+				bi_errorf(NULL);
 		}
 		return '?';
 	}
@@ -921,7 +944,7 @@ ksh_getopt(char **argv, Getopt *go, const char *options)
 		else if (argv[go->optind])
 			go->optarg = argv[go->optind++];
 		else if (*o == ';')
-			go->optarg = (char *) 0;
+			go->optarg = NULL;
 		else {
 			if (options[0] == ':') {
 				go->buf[0] = c;
@@ -932,7 +955,7 @@ ksh_getopt(char **argv, Getopt *go, const char *options)
 			    (go->flags & GF_NONAME) ? "" : argv[0],
 			    (go->flags & GF_NONAME) ? "" : ": ", c);
 			if (go->flags & GF_ERROR)
-				bi_errorf("%s", null);
+				bi_errorf(NULL);
 			return '?';
 		}
 		go->p = 0;
@@ -951,14 +974,14 @@ ksh_getopt(char **argv, Getopt *go, const char *options)
 				go->optarg = argv[go->optind - 1] + go->p;
 				go->p = 0;
 			} else
-				go->optarg = (char *) 0;
+				go->optarg = NULL;
 		} else {
 			if (argv[go->optind] && (digit(argv[go->optind][0]) ||
 			    !strcmp(argv[go->optind], "unlimited"))) {
 				go->optarg = argv[go->optind++];
 				go->p = 0;
 			} else
-				go->optarg = (char *) 0;
+				go->optarg = NULL;
 		}
 	}
 	return c;
@@ -984,7 +1007,7 @@ print_value_quoted(const char *s)
 	}
 	for (p = s; *p; p++) {
 		if (*p == '\'') {
-			shprintf("%s", "'\\'" + 1 - inquote);
+			shprintf(inquote ? "'\\'" : "\\'");
 			inquote = 0;
 		} else {
 			if (!inquote) {
@@ -1005,7 +1028,7 @@ void
 print_columns(struct shf *shf, int n, char *(*func) (void *, int, char *, int),
     void *arg, int max_width, int prefcol)
 {
-	char *str = (char *) alloc(max_width + 1, ATEMP);
+	char *str = alloc(max_width + 1, ATEMP);
 	int i;
 	int r, c;
 	int rows, cols;
@@ -1043,7 +1066,7 @@ print_columns(struct shf *shf, int n, char *(*func) (void *, int, char *, int),
 				    col_width,
 				    (*func)(arg, i, str, max_width + 1));
 				if (c + 1 < cols)
-					shf_fprintf(shf, "%*s", nspace, null);
+					shf_fprintf(shf, "%*s", nspace, "");
 			}
 		}
 		shf_putchar('\n', shf);
@@ -1109,7 +1132,7 @@ reset_nonblock(int fd)
 {
 	int flags;
 
-	if ((flags = fcntl(fd, F_GETFL, 0)) < 0)
+	if ((flags = fcntl(fd, F_GETFL)) < 0)
 		return -1;
 	if (!(flags & O_NONBLOCK))
 		return 0;

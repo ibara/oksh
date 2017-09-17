@@ -1,4 +1,4 @@
-/*	$OpenBSD: shf.h,v 1.6 2005/12/11 18:53:51 deraadt Exp $	*/
+/*	$OpenBSD: shf.h,v 1.8 2015/12/14 06:09:43 mmcc Exp $	*/
 
 #ifndef SHF_H
 # define SHF_H
@@ -9,15 +9,12 @@
 
 #define SHF_BSIZE	512
 
-#define shf_fileno(shf)	((shf)->fd)
-#define shf_setfileno(shf,nfd)	((shf)->fd = (nfd))
 #define shf_getc(shf) ((shf)->rnleft > 0 ? (shf)->rnleft--, *(shf)->rp++ : \
 			shf_getchar(shf))
 #define shf_putc(c, shf)	((shf)->wnleft == 0 ? shf_putchar((c), (shf)) : \
 				    ((shf)->wnleft--, *(shf)->wp++ = (c)))
 #define shf_eof(shf)		((shf)->flags & SHF_EOF)
 #define shf_error(shf)		((shf)->flags & SHF_ERROR)
-#define shf_errno(shf)		((shf)->errno_)
 #define shf_clearerr(shf)	((shf)->flags &= ~(SHF_EOF | SHF_ERROR))
 
 /* Flags passed to shf_*open() */

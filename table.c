@@ -1,12 +1,29 @@
-/*	$OpenBSD: table.c,v 1.15 2012/02/19 07:52:30 otto Exp $	*/
+/*	$OpenBSD: table.c,v 1.23 2015/11/01 15:38:53 mmcc Exp $	*/
 
 /*
  * dynamic hashed associative table for commands and variables
  */
 
+#include <limits.h>
+#include <stddef.h>
+#include <string.h>
+
 #include "sh.h"
 
 #define	INIT_TBLS	8	/* initial table size (power of 2) */
+
+struct table taliases;	/* tracked aliases */
+struct table builtins;	/* built-in commands */
+struct table aliases;	/* aliases */
+struct table keywords;	/* keywords */
+struct table homedirs;	/* homedir() cache */
+
+char *path;		/* copy of either PATH or def_path */
+const char *def_path;	/* path to use if PATH not set */
+char *tmpdir;		/* TMPDIR value */
+const char *prompt;
+int cur_prompt;		/* PS1 or PS2 */
+int current_lineno;	/* LINENO value */
 
 static void	texpand(struct table *, int);
 static int	tnamecmp(const void *, const void *);
@@ -40,7 +57,7 @@ texpand(struct table *tp, int nsize)
 	struct tbl **ntblp, **otblp = tp->tbls;
 	int osize = tp->size;
 
-	ntblp = (struct tbl**) alloc(sizeofN(struct tbl *, nsize), tp->areap);
+	ntblp = areallocarray(NULL, nsize, sizeof(struct tbl *), tp->areap);
 	for (i = 0; i < nsize; i++)
 		ntblp[i] = NULL;
 	tp->size = nsize;
@@ -58,10 +75,10 @@ texpand(struct table *tp, int nsize)
 				*p = tblp;
 				tp->nfree--;
 			} else if (!(tblp->flag & FINUSE)) {
-				afree((void*)tblp, tp->areap);
+				afree(tblp, tp->areap);
 			}
 		}
-	afree((void*)otblp, tp->areap);
+	afree(otblp, tp->areap);
 }
 
 /* table */
@@ -117,13 +134,13 @@ ktenter(struct table *tp, const char *n, unsigned int h)
 
 	/* create new tbl entry */
 	len = strlen(n) + 1;
-	p = (struct tbl *) alloc(offsetof(struct tbl, name[0]) + len,
+	p = alloc(offsetof(struct tbl, name[0]) + len,
 				 tp->areap);
 	p->flag = 0;
 	p->type = 0;
 	p->areap = tp->areap;
 	p->u2.field = 0;
-	p->u.array = (struct tbl *)0;
+	p->u.array = NULL;
 	memcpy(p->name, n, len);
 
 	/* enter in tp->tbls */
@@ -170,7 +187,8 @@ ktsort(struct table *tp)
 	int i;
 	struct tbl **p, **sp, **dp;
 
-	p = (struct tbl **)alloc(sizeofN(struct tbl *, tp->size+1), ATEMP);
+	p = areallocarray(NULL, tp->size + 1,
+	    sizeof(struct tbl *), ATEMP);
 	sp = tp->tbls;		/* source */
 	dp = p;			/* dest */
 	for (i = 0; i < tp->size; i++)

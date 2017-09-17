@@ -1,13 +1,22 @@
-/*	$OpenBSD: exec.c,v 1.51 2015/04/18 18:28:36 deraadt Exp $	*/
+/*	$OpenBSD: exec.c,v 1.68 2016/12/11 17:49:19 millert Exp $	*/
 
 /*
  * execute command tree
  */
 
+#include <sys/stat.h>
+
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <paths.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
 #include "sh.h"
 #include "c_test.h"
-#include <ctype.h>
-#include <sys/stat.h>
 
 /* Does ps4 get parameter substitutions done? */
 # define PS4_SUBSTITUTE(s)	substitute((s), 0)
@@ -31,9 +40,12 @@ static void	dbteste_error(Test_env *, int, const char *);
  */
 int
 execute(struct op *volatile t,
-    volatile int flags, volatile int *xerrok)		/* if XEXEC don't fork */
+    volatile int flags,		/* if XEXEC don't fork */
+    volatile int *xerrok)	/* inform recursive callers in -e mode that
+				 * short-circuit && or || shouldn't be treated
+				 * as an error */
 {
-	int i, dummy = 0;
+	int i, dummy = 0, save_xerrok = 0;
 	volatile int rv = 0;
 	int pv[2];
 	char ** volatile ap;
@@ -83,7 +95,7 @@ execute(struct op *volatile t,
 				PS4_SUBSTITUTE(str_val(global("PS4"))));
 			for (i = 0; ap[i]; i++)
 				shf_fprintf(shl_out, "%s%s", ap[i],
-				    ap[i + 1] ? space : newline);
+				    ap[i + 1] ? " " : "\n");
 			shf_flush(shl_out);
 		}
 		if (ap[0])
@@ -92,9 +104,9 @@ execute(struct op *volatile t,
 	flags &= ~XTIME;
 
 	if (t->ioact != NULL || t->type == TPIPE || t->type == TCOPROC) {
-		e->savefd = (short *) alloc(sizeofN(short, NUFILE), ATEMP);
+		genv->savefd = areallocarray(NULL, NUFILE, sizeof(short), ATEMP);
 		/* initialize to not redirected */
-		memset(e->savefd, 0, sizeofN(short, NUFILE));
+		memset(genv->savefd, 0, NUFILE * sizeof(short));
 	}
 
 	/* do redirection, to be restored in quitenv() */
@@ -107,7 +119,7 @@ execute(struct op *volatile t,
 				 */
 				if (tp && tp->type == CSHELL &&
 				    (tp->flag & SPEC_BI))
-					errorf("%s", null);
+					errorf(NULL);
 				/* Deal with FERREXIT, quitenv(), etc. */
 				goto Break;
 			}
@@ -125,8 +137,8 @@ execute(struct op *volatile t,
 	case TPIPE:
 		flags |= XFORK;
 		flags &= ~XEXEC;
-		e->savefd[0] = savefd(0);
-		e->savefd[1] = savefd(1);
+		genv->savefd[0] = savefd(0);
+		genv->savefd[1] = savefd(1);
 		while (t->type == TPIPE) {
 			openpipe(pv);
 			(void) ksh_dup2(pv[1], 1, false); /* stdout of curr */
@@ -141,8 +153,8 @@ execute(struct op *volatile t,
 			flags |= XPIPEI;
 			t = t->right;
 		}
-		restfd(1, e->savefd[1]); /* stdout of last */
-		e->savefd[1] = 0; /* no need to re-restore this */
+		restfd(1, genv->savefd[1]); /* stdout of last */
+		genv->savefd[1] = 0; /* no need to re-restore this */
 		/* Let exchild() close 0 in parent, after fork, before wait */
 		i = exchild(t, flags|XPCLOSE, xerrok, 0);
 		if (!(flags&XBGND) && !(flags&XXCOM))
@@ -165,10 +177,10 @@ execute(struct op *volatile t,
 		 * signal handler
 		 */
 		sigprocmask(SIG_BLOCK, &sm_sigchld, &omask);
-		e->type = E_ERRH;
-		i = sigsetjmp(e->jbuf, 0);
+		genv->type = E_ERRH;
+		i = sigsetjmp(genv->jbuf, 0);
 		if (i) {
-			sigprocmask(SIG_SETMASK, &omask, (sigset_t *) 0);
+			sigprocmask(SIG_SETMASK, &omask, NULL);
 			quitenv(NULL);
 			unwind(i);
 			/* NOTREACHED */
@@ -181,8 +193,8 @@ execute(struct op *volatile t,
 		coproc_cleanup(true);
 
 		/* do this before opening pipes, in case these fail */
-		e->savefd[0] = savefd(0);
-		e->savefd[1] = savefd(1);
+		genv->savefd[0] = savefd(0);
+		genv->savefd[1] = savefd(1);
 
 		openpipe(pv);
 		if (pv[0] != 0) {
@@ -190,7 +202,7 @@ execute(struct op *volatile t,
 			close(pv[0]);
 		}
 		coproc.write = pv[1];
-		coproc.job = (void *) 0;
+		coproc.job = NULL;
 
 		if (coproc.readw >= 0)
 			ksh_dup2(coproc.readw, 1, false);
@@ -203,8 +215,8 @@ execute(struct op *volatile t,
 			/* create new coprocess id */
 			++coproc.id;
 		}
-		sigprocmask(SIG_SETMASK, &omask, (sigset_t *) 0);
-		e->type = E_EXEC; /* no more need for error handler */
+		sigprocmask(SIG_SETMASK, &omask, NULL);
+		genv->type = E_EXEC; /* no more need for error handler */
 
 		/* exchild() closes coproc.* in child after fork,
 		 * will also increment coproc.njobs when the
@@ -231,16 +243,14 @@ execute(struct op *volatile t,
 			rv = execute(t->right, flags & XERROK, xerrok);
 		else {
 			flags |= XERROK;
-			if (xerrok)
-				*xerrok = 1;
+			*xerrok = 1;
 		}
 		break;
 
 	case TBANG:
 		rv = !execute(t->right, XERROK, xerrok);
 		flags |= XERROK;
-		if (xerrok)
-			*xerrok = 1;
+		*xerrok = 1;
 		break;
 
 	case TDBRACKET:
@@ -263,13 +273,13 @@ execute(struct op *volatile t,
 	    {
 		volatile bool is_first = true;
 		ap = (t->vars != NULL) ? eval(t->vars, DOBLANK|DOGLOB|DOTILDE) :
-		    e->loc->argv + 1;
-		e->type = E_LOOP;
+		    genv->loc->argv + 1;
+		genv->type = E_LOOP;
 		while (1) {
-			i = sigsetjmp(e->jbuf, 0);
+			i = sigsetjmp(genv->jbuf, 0);
 			if (!i)
 				break;
-			if ((e->flags&EF_BRKCONT_PASS) ||
+			if ((genv->flags&EF_BRKCONT_PASS) ||
 			    (i != LBREAK && i != LCONTIN)) {
 				quitenv(NULL);
 				unwind(i);
@@ -280,10 +290,15 @@ execute(struct op *volatile t,
 		}
 		rv = 0; /* in case of a continue */
 		if (t->type == TFOR) {
+			save_xerrok = *xerrok;
 			while (*ap != NULL) {
 				setstr(global(t->str), *ap++, KSH_UNWIND_ERROR);
+				/* undo xerrok in all iterations except the
+				 * last */
+				*xerrok = save_xerrok;
 				rv = execute(t->left, flags & XERROK, xerrok);
 			}
+			/* ripple xerrok set at final iteration */
 		} else { /* TSELECT */
 			for (;;) {
 				if (!(cp = do_selectargs(ap, is_first))) {
@@ -300,12 +315,12 @@ execute(struct op *volatile t,
 
 	case TWHILE:
 	case TUNTIL:
-		e->type = E_LOOP;
+		genv->type = E_LOOP;
 		while (1) {
-			i = sigsetjmp(e->jbuf, 0);
+			i = sigsetjmp(genv->jbuf, 0);
 			if (!i)
 				break;
-			if ((e->flags&EF_BRKCONT_PASS) ||
+			if ((genv->flags&EF_BRKCONT_PASS) ||
 			    (i != LBREAK && i != LCONTIN)) {
 				quitenv(NULL);
 				unwind(i);
@@ -330,11 +345,13 @@ execute(struct op *volatile t,
 
 	case TCASE:
 		cp = evalstr(t->str, DOTILDE);
-		for (t = t->left; t != NULL && t->type == TPAT; t = t->right)
-		    for (ap = t->vars; *ap; ap++)
-			if ((s = evalstr(*ap, DOTILDE|DOPAT)) &&
-			    gmatch(cp, s, false))
-				goto Found;
+		for (t = t->left; t != NULL && t->type == TPAT; t = t->right) {
+			for (ap = t->vars; *ap; ap++) {
+				if ((s = evalstr(*ap, DOTILDE|DOPAT)) &&
+				    gmatch(cp, s, false))
+					goto Found;
+			}
+		}
 		break;
 	  Found:
 		rv = execute(t->left, flags & XERROK, xerrok);
@@ -372,8 +389,7 @@ execute(struct op *volatile t,
 	quitenv(NULL);		/* restores IO */
 	if ((flags&XEXEC))
 		unwind(LEXIT);	/* exit child */
-	if (rv != 0 && !(flags & XERROK) &&
-	    (xerrok == NULL || !*xerrok)) {
+	if (rv != 0 && !(flags & XERROK) && !*xerrok) {
 		trapsig(SIGERR_);
 		if (Flag(FERREXIT))
 			unwind(LERROR);
@@ -499,7 +515,7 @@ comexec(struct op *t, struct tbl *volatile tp, char **ap, volatile int flags,
 				shf_fprintf(shl_out, "%s",
 				    PS4_SUBSTITUTE(str_val(global("PS4"))));
 			shf_fprintf(shl_out, "%s%s", cp,
-			    t->vars[i + 1] ? space : newline);
+			    t->vars[i + 1] ? " " : "\n");
 			if (!t->vars[i + 1])
 				shf_flush(shl_out);
 		}
@@ -527,8 +543,7 @@ comexec(struct op *t, struct tbl *volatile tp, char **ap, volatile int flags,
 
 	case CFUNC:			/* function call */
 	    {
-		volatile int old_xflag;
-		volatile Tflag old_inuse;
+		volatile int old_xflag, old_inuse;
 		const char *volatile old_kshname;
 
 		if (!(tp->flag & ISSET)) {
@@ -549,7 +564,7 @@ comexec(struct op *t, struct tbl *volatile tp, char **ap, volatile int flags,
 				}
 				break;
 			}
-			if (include(tp->u.fpath, 0, (char **) 0, 0) < 0) {
+			if (include(tp->u.fpath, 0, NULL, 0) < 0) {
 				warningf(true,
 				    "%s: can't open function definition file %s - %s",
 				    cp, tp->u.fpath, strerror(errno));
@@ -575,16 +590,16 @@ comexec(struct op *t, struct tbl *volatile tp, char **ap, volatile int flags,
 			kshname = ap[0];
 		else
 			ap[0] = (char *) kshname;
-		e->loc->argv = ap;
+		genv->loc->argv = ap;
 		for (i = 0; *ap++ != NULL; i++)
 			;
-		e->loc->argc = i - 1;
+		genv->loc->argc = i - 1;
 		/* ksh-style functions handle getopts sanely,
 		 * bourne/posix functions are insane...
 		 */
 		if (tp->flag & FKSH) {
-			e->loc->flags |= BF_DOGETOPTS;
-			e->loc->getopts_state = user_opt;
+			genv->loc->flags |= BF_DOGETOPTS;
+			genv->loc->getopts_state = user_opt;
 			getopts_reset(1);
 		}
 
@@ -594,8 +609,8 @@ comexec(struct op *t, struct tbl *volatile tp, char **ap, volatile int flags,
 		old_inuse = tp->flag & FINUSE;
 		tp->flag |= FINUSE;
 
-		e->type = E_FUNC;
-		i = sigsetjmp(e->jbuf, 0);
+		genv->type = E_FUNC;
+		i = sigsetjmp(genv->jbuf, 0);
 		if (i == 0) {
 			/* seems odd to pass XERROK here, but at&t ksh does */
 			exstat = execute(tp->val.t, flags & XERROK, xerrok);
@@ -689,11 +704,11 @@ scriptexec(struct op *tp, char **ap)
 {
 	char *shell;
 
-	shell = str_val(global(EXECSHELL_STR));
+	shell = str_val(global("EXECSHELL"));
 	if (shell && *shell)
-		shell = search(shell, path, X_OK, (int *) 0);
+		shell = search(shell, path, X_OK, NULL);
 	if (!shell || !*shell)
-		shell = EXECSHELL;
+		shell = _PATH_BSHELL;
 
 	*tp->args-- = tp->str;
 	*tp->args = shell;
@@ -723,9 +738,9 @@ struct tbl *
 findfunc(const char *name, unsigned int h, int create)
 {
 	struct block *l;
-	struct tbl *tp = (struct tbl *) 0;
+	struct tbl *tp = NULL;
 
-	for (l = e->loc; l; l = l->next) {
+	for (l = genv->loc; l; l = l->next) {
 		tp = ktsearch(&l->funs, name, h);
 		if (tp)
 			break;
@@ -733,7 +748,7 @@ findfunc(const char *name, unsigned int h, int create)
 			tp = ktenter(&l->funs, name, h);
 			tp->flag = DEFINED;
 			tp->type = CFUNC;
-			tp->val.t = (struct op *) 0;
+			tp->val.t = NULL;
 			break;
 		}
 	}
@@ -791,7 +806,7 @@ void
 builtin(const char *name, int (*func) (char **))
 {
 	struct tbl *tp;
-	Tflag flag;
+	int flag;
 
 	/* see if any flags should be set for this builtin */
 	for (flag = 0; ; name++) {
@@ -841,7 +856,7 @@ findcom(const char *name, int flags)
 		tp = findfunc(name, h, false);
 		if (tp && !(tp->flag & ISSET)) {
 			if ((fpath = str_val(global("FPATH"))) == null) {
-				tp->u.fpath = (char *) 0;
+				tp->u.fpath = NULL;
 				tp->u2.errno_ = 0;
 			} else
 				tp->u.fpath = search(name, fpath, R_OK,
@@ -898,7 +913,7 @@ findcom(const char *name, int flags)
 		} else if ((flags & FC_FUNC) &&
 		    (fpath = str_val(global("FPATH"))) != null &&
 		    (npath = search(name, fpath, R_OK,
-		    &tp->u2.errno_)) != (char *) 0) {
+		    &tp->u2.errno_)) != NULL) {
 			/* An undocumented feature of at&t ksh is that it
 			 * searches FPATH if a command is not found, even
 			 * if the command hasn't been set up as an autoloaded
@@ -1017,7 +1032,7 @@ call_builtin(struct tbl *tp, char **wp)
 	shf_flush(shl_stdout);
 	shl_stdout_ok = 0;
 	builtin_flag = 0;
-	builtin_argv0 = (char *) 0;
+	builtin_argv0 = NULL;
 	return rv;
 }
 
@@ -1039,13 +1054,13 @@ iosetup(struct ioword *iop, struct tbl *tp)
 
 	/* Used for tracing and error messages to print expanded cp */
 	iotmp = *iop;
-	iotmp.name = (iotype == IOHERE) ? (char *) 0 : cp;
+	iotmp.name = (iotype == IOHERE) ? NULL : cp;
 	iotmp.flag |= IONAMEXP;
 
 	if (Flag(FXTRACE))
 		shellf("%s%s\n",
 		    PS4_SUBSTITUTE(str_val(global("PS4"))),
-		    snptreef((char *) 0, 32, "%R", &iotmp));
+		    snptreef(NULL, 32, "%R", &iotmp));
 
 	switch (iotype) {
 	case IOREAD:
@@ -1089,7 +1104,7 @@ iosetup(struct ioword *iop, struct tbl *tp)
 		    X_OK | ((iop->flag & IORDUP) ? R_OK : W_OK),
 		    &emsg)) < 0) {
 			warningf(true, "%s: %s",
-			    snptreef((char *) 0, 32, "%R", &iotmp), emsg);
+			    snptreef(NULL, 32, "%R", &iotmp), emsg);
 			return -1;
 		}
 		if (u == iop->unit)
@@ -1115,10 +1130,10 @@ iosetup(struct ioword *iop, struct tbl *tp)
 		return -1;
 	}
 	/* Do not save if it has already been redirected (i.e. "cat >x >y"). */
-	if (e->savefd[iop->unit] == 0) {
+	if (genv->savefd[iop->unit] == 0) {
 		/* If these are the same, it means unit was previously closed */
 		if (u == iop->unit)
-			e->savefd[iop->unit] = -1;
+			genv->savefd[iop->unit] = -1;
 		else
 			/* c_exec() assumes e->savefd[fd] set for any
 			 * redirections.  Ask savefd() not to close iop->unit;
@@ -1126,7 +1141,7 @@ iosetup(struct ioword *iop, struct tbl *tp)
 			 * is 2; also means we can't lose the fd (eg, both
 			 * dup2 below and dup2 in restfd() failing).
 			 */
-			e->savefd[iop->unit] = savefd(iop->unit);
+			genv->savefd[iop->unit] = savefd(iop->unit);
 	}
 
 	if (do_close)
@@ -1135,7 +1150,7 @@ iosetup(struct ioword *iop, struct tbl *tp)
 		if (ksh_dup2(u, iop->unit, true) < 0) {
 			warningf(true,
 			    "could not finish (dup) redirection %s: %s",
-			    snptreef((char *) 0, 32, "%R", &iotmp),
+			    snptreef(NULL, 32, "%R", &iotmp),
 			    strerror(errno));
 			if (iotype != IODUP)
 				close(u);
@@ -1172,7 +1187,7 @@ herein(const char *content, int sub)
 	int i;
 
 	/* ksh -c 'cat << EOF' can cause this... */
-	if (content == (char *) 0) {
+	if (content == NULL) {
 		warningf(true, "here document missing");
 		return -2; /* special to iosetup(): don't print error */
 	}
@@ -1180,7 +1195,7 @@ herein(const char *content, int sub)
 	/* Create temp file to hold content (done before newenv so temp
 	 * doesn't get removed too soon).
 	 */
-	h = maketemp(ATEMP, TT_HEREDOC_EXP, &e->temps);
+	h = maketemp(ATEMP, TT_HEREDOC_EXP, &genv->temps);
 	if (!(shf = h->shf) || (fd = open(h->name, O_RDONLY, 0)) < 0) {
 		warningf(true, "can't %s temporary file %s: %s",
 		    !shf ? "create" : "open",
@@ -1192,7 +1207,7 @@ herein(const char *content, int sub)
 
 	osource = source;
 	newenv(E_ERRH);
-	i = sigsetjmp(e->jbuf, 0);
+	i = sigsetjmp(genv->jbuf, 0);
 	if (i) {
 		source = osource;
 		quitenv(shf);
@@ -1232,7 +1247,7 @@ static char *
 do_selectargs(char **ap, bool print_menu)
 {
 	static const char *const read_args[] = {
-		"read", "-r", "REPLY", (char *) 0
+		"read", "-r", "REPLY", NULL
 	};
 	const char *errstr;
 	char *s;
@@ -1250,7 +1265,7 @@ do_selectargs(char **ap, bool print_menu)
 			pr_menu(ap);
 		shellf("%s", str_val(global("PS3")));
 		if (call_builtin(findcom("read", FC_BI), (char **) read_args))
-			return (char *) 0;
+			return NULL;
 		s = str_val(global("REPLY"));
 		if (*s) {
 			i = strtonum(s, 1, argct, &errstr);
@@ -1406,7 +1421,7 @@ dbteste_getopnd(Test_env *te, Test_op op, int do_eval)
 	char *s = *te->pos.wp;
 
 	if (!s)
-		return (char *) 0;
+		return NULL;
 
 	te->pos.wp++;
 

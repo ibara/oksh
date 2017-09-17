@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.h,v 1.13 2013/03/03 19:11:34 guenther Exp $	*/
+/*	$OpenBSD: lex.h,v 1.16 2015/10/10 07:35:16 nicm Exp $	*/
 
 /*
  * Source input, lexer and parser
@@ -47,24 +47,6 @@ struct source {
 #define SF_ALIAS	BIT(1)	/* faking space at end of alias */
 #define SF_ALIASEND	BIT(2)	/* faking space at end of alias */
 #define SF_TTY		BIT(3)	/* type == SSTDIN & it is a tty */
-
-/*
- * states while lexing word
- */
-#define	SBASE	0		/* outside any lexical constructs */
-#define	SWORD	1		/* implicit quoting for substitute() */
-#define	SLETPAREN 2		/* inside (( )), implicit quoting */
-#define	SSQUOTE	3		/* inside '' */
-#define	SDQUOTE	4		/* inside "" */
-#define	SBRACE	5		/* inside ${} */
-#define	SCSPAREN 6		/* inside $() */
-#define	SBQUOTE	7		/* inside `` */
-#define	SASPAREN 8		/* inside $(( )) */
-#define SHEREDELIM 9		/* parsing <<,<<- delimiter */
-#define SHEREDQUOTE 10		/* parsing " in <<,<<- delimiter */
-#define SPATTERN 11		/* parsing *(...|...) pattern (*+?@!) */
-#define STBRACE 12		/* parsing ${..[#%]..} */
-#define	SBRACEQ	13		/* inside "${}" */
 
 typedef union {
 	int	i;
@@ -118,15 +100,23 @@ typedef union {
 
 #define	HERES	10		/* max << in line */
 
-EXTERN	Source *source;		/* yyparse/yylex source */
-EXTERN	YYSTYPE	yylval;		/* result from yylex */
-EXTERN	struct ioword *heres [HERES], **herep;
-EXTERN	char	ident [IDENT+1];
+extern Source  *source;		/* yyparse/yylex source */
+extern YYSTYPE	yylval;		/* result from yylex */
+extern struct ioword *heres[HERES], **herep;
+extern char	ident[IDENT+1];
 
 #ifdef HISTORY
 # define HISTORYSIZE	500	/* size of saved history */
 
-EXTERN	char  **history;	/* saved commands */
-EXTERN	char  **histptr;	/* last history item */
-EXTERN	int	histsize;	/* history size */
+extern char   **history;	/* saved commands */
+extern char   **histptr;	/* last history item */
+extern int	histsize;	/* history size */
+
 #endif /* HISTORY */
+
+int	yylex(int);
+void	yyerror(const char *, ...)
+	    __attribute__((__noreturn__, __format__ (printf, 1, 2)));
+Source * pushs(int, Area *);
+void	set_prompt(int, Source *);
+void	pprompt(const char *, int);

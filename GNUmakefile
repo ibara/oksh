@@ -10,12 +10,11 @@ DOCDIR ?= ${PREFIX}/share/doc/oksh
 INSTALL = /usr/bin/install
 
 CFLAGS ?= -O2 -pipe
-CFLAGS += -Wall
+CFLAGS += -Wall -DEMACS -DVI
 
 OBJS =	alloc.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o emacs.o eval.o \
-	exec.o expr.o history.o io.o jobs.o lex.o mail.o main.o mknod.o \
-	misc.o path.o shf.o syn.o table.o trap.o tree.o tty.o var.o \
-	version.o vi.o
+	exec.o expr.o history.o io.o jobs.o lex.o mail.o main.o misc.o \
+	path.o shf.o syn.o table.o trap.o tree.o tty.o var.o version.o vi.o
 
 #
 # Portability stuff.
@@ -25,7 +24,8 @@ ifeq ($(UNAME_S),Linux)
 GROUP =	root
 OBJS +=	portable/common/reallocarray.o portable/linux/setmode.o \
 	portable/linux/signame.o portable/linux/strlcat.o \
-	portable/linux/strlcpy.o portable/common/strtonum.o
+	portable/linux/strlcpy.o portable/common/strtonum.o \
+	portable/linux/unvis.o portable/linux/vis.o
 else ifeq ($(UNAME_S),FreeBSD)
 GROUP =	bin
 OBJS +=	portable/common/reallocarray.o
@@ -38,6 +38,11 @@ OBJS += portable/common/reallocarray.o
 else ifeq ($(UNAME_S),Darwin)
 GROUP =	bin
 OBJS += portable/common/reallocarray.o portable/common/strtonum.o
+else ifeq ($(findstring CYGWIN,$(UNAME_S)),CYGWIN)
+OBJS +=	portable/common/reallocarray.o portable/linux/setmode.o \
+	portable/linux/signame.o portable/linux/strlcat.o \
+	portable/linux/strlcpy.o portable/common/strtonum.o \
+	portable/linux/unvis.o portable/linux/vis.o
 endif
 
 #
@@ -59,14 +64,18 @@ oksh: ${OBJS}
 endif
 
 install: all
-ifneq ($(UNAME_S),Darwin)
-	${INSTALL} -c -s -o root -g ${GROUP} -m 555 ${PROG} ${PREFIX}/bin
-	${INSTALL} -c -s -o root -g ${GROUP} -m 444 oksh.1 ${MANDIR}/man1/${PROG}.1
-	echo ${UPDATE}
-else
+ifeq ($(UNAME_S),Darwin)
 	@mkdir -p ${PREFIX}/bin ${MANDIR}/man1
 	${INSTALL} -m 755 ${PROG} ${PREFIX}/bin
 	${INSTALL} -m 644 ${PROG}.1 ${MANDIR}/man1
+else ifeq ($(findstring CYGWIN,$(UNAME_S)),CYGWIN)
+	@mkdir -p ${PREFIX}/bin ${MANDIR}/man1
+	${INSTALL} -c -s -m 555 ${PROG} ${PREFIX}/bin
+	${INSTALL} -c -m 444 oksh.1 ${MANDIR}/man1/${PROG}.1
+else
+	${INSTALL} -c -s -o root -g ${GROUP} -m 555 ${PROG} ${PREFIX}/bin
+	${INSTALL} -c -o root -g ${GROUP} -m 444 oksh.1 ${MANDIR}/man1/${PROG}.1
+	echo ${UPDATE}
 endif
 
 clean:

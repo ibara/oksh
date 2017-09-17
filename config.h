@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.h,v 1.14 2011/03/14 21:20:00 okan Exp $	*/
+/*	$OpenBSD: config.h,v 1.16 2017/08/01 14:30:05 deraadt Exp $	*/
 
 /* config.h.  NOT generated automatically. */
 
@@ -10,12 +10,6 @@
 
 #ifndef CONFIG_H
 #define CONFIG_H
-
-/* Include emacs editing? */
-#define EMACS 1
-
-/* Include vi editing? */
-#define VI 1
 
 /* Include job control? */
 #define JOBS 1
@@ -32,9 +26,6 @@
 /* Specify default $ENV? */
 /* #undef DEFAULT_ENV */
 
-/* The number of bytes in a int.  */
-#define SIZEOF_INT 4
-
 /*
  * End of configuration stuff for PD ksh.
  */
@@ -43,13 +34,6 @@
 # define	EDIT
 #else
 # undef		EDIT
-#endif
-
-/* Super small configuration-- no editing. */
-#if defined(EDIT) && defined(NOEDIT)
-# undef EDIT
-# undef EMACS
-# undef VI
 #endif
 
 /* Editing implies history */

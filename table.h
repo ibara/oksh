@@ -1,4 +1,4 @@
-/*	$OpenBSD: table.h,v 1.8 2012/02/19 07:52:30 otto Exp $	*/
+/*	$OpenBSD: table.h,v 1.12 2017/08/30 17:08:45 jca Exp $	*/
 
 /* $From: table.h,v 1.3 1994/05/31 13:34:34 michael Exp $ */
 
@@ -13,7 +13,7 @@ struct table {
 };
 
 struct tbl {			/* table item */
-	Tflag	flag;		/* flags */
+	int	flag;		/* flags */
 	int	type;		/* command type (see below), base (if INTEGER),
 				 * or offset from val.s of value (if EXPORT) */
 	Area	*areap;		/* area to allocate from */
@@ -136,12 +136,11 @@ struct tstate {
 	struct tbl **next;
 };
 
-
-EXTERN	struct table taliases;	/* tracked aliases */
-EXTERN	struct table builtins;	/* built-in commands */
-EXTERN	struct table aliases;	/* aliases */
-EXTERN	struct table keywords;	/* keywords */
-EXTERN	struct table homedirs;	/* homedir() cache */
+extern	struct table taliases;	/* tracked aliases */
+extern	struct table builtins;	/* built-in commands */
+extern	struct table aliases;	/* aliases */
+extern	struct table keywords;	/* keywords */
+extern	struct table homedirs;	/* homedir() cache */
 
 struct builtin {
 	const char   *name;
@@ -161,23 +160,33 @@ extern const struct builtin shbuiltins [], kshbuiltins [];
 #define	V_MAILPATH		6
 #define	V_MAILCHECK		7
 #define	V_RANDOM		8
-#define V_HISTSIZE		9
-#define V_HISTFILE		10
-#define V_VISUAL		11
-#define V_EDITOR		12
-#define V_COLUMNS		13
-#define V_POSIXLY_CORRECT	14
-#define V_TMOUT			15
-#define V_TMPDIR		16
-#define V_LINENO		17
+#define	V_HISTCONTROL		9
+#define	V_HISTSIZE		10
+#define	V_HISTFILE		11
+#define	V_VISUAL		12
+#define	V_EDITOR		13
+#define	V_COLUMNS		14
+#define	V_POSIXLY_CORRECT	15
+#define	V_TMOUT			16
+#define	V_TMPDIR		17
+#define	V_LINENO		18
 
 /* values for set_prompt() */
 #define PS1	0		/* command */
 #define PS2	1		/* command continuation */
 
-EXTERN char *path;		/* copy of either PATH or def_path */
-EXTERN const char *def_path;	/* path to use if PATH not set */
-EXTERN char *tmpdir;		/* TMPDIR value */
-EXTERN const char *prompt;
-EXTERN int cur_prompt;		/* PS1 or PS2 */
-EXTERN int current_lineno;	/* LINENO value */
+extern char *path;		/* copy of either PATH or def_path */
+extern const char *def_path;	/* path to use if PATH not set */
+extern char *tmpdir;		/* TMPDIR value */
+extern const char *prompt;
+extern int cur_prompt;		/* PS1 or PS2 */
+extern int current_lineno;	/* LINENO value */
+
+unsigned int	hash(const char *);
+void		ktinit(struct table *, Area *, int);
+struct tbl *	ktsearch(struct table *, const char *, unsigned int);
+struct tbl *	ktenter(struct table *, const char *, unsigned int);
+void		ktdelete(struct tbl *);
+void		ktwalk(struct tstate *, struct table *);
+struct tbl *	ktnext(struct tstate *);
+struct tbl **	ktsort(struct table *);

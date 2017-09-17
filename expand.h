@@ -1,4 +1,4 @@
-/*	$OpenBSD: expand.h,v 1.6 2005/03/30 17:16:37 deraadt Exp $	*/
+/*	$OpenBSD: expand.h,v 1.12 2015/11/08 17:52:43 mmcc Exp $	*/
 
 /*
  * Expanding strings
@@ -55,11 +55,10 @@ typedef char * XStringP;
 #define Xcheck(xs, xp)	XcheckN(xs, xp, 1)
 
 /* free string */
-#define	Xfree(xs, xp)	afree((void*) (xs).beg, (xs).areap)
+#define	Xfree(xs, xp)	afree((xs).beg, (xs).areap)
 
 /* close, return string */
-#define	Xclose(xs, xp)	(char*) aresize((void*)(xs).beg, \
-					(size_t)((xp) - (xs).beg), (xs).areap)
+#define	Xclose(xs, xp)	aresize((xs).beg, ((xp) - (xs).beg), (xs).areap)
 /* begin of string */
 #define	Xstring(xs, xp)	((xs).beg)
 
@@ -82,7 +81,7 @@ typedef struct XPtrV {
 
 #define	XPinit(x, n) do { \
 			void **vp__; \
-			vp__ = (void**) alloc(sizeofN(void*, n), ATEMP); \
+			vp__ = areallocarray(NULL, n, sizeof(void *), ATEMP); \
 			(x).cur = (x).beg = vp__; \
 			(x).end = vp__ + n; \
 		} while (0)
@@ -90,8 +89,8 @@ typedef struct XPtrV {
 #define	XPput(x, p) do { \
 			if ((x).cur >= (x).end) { \
 				int n = XPsize(x); \
-				(x).beg = (void**) aresize((void*) (x).beg, \
-						   sizeofN(void*, n*2), ATEMP); \
+				(x).beg = areallocarray((x).beg, n, \
+						   2 * sizeof(void *), ATEMP); \
 				(x).cur = (x).beg + n; \
 				(x).end = (x).cur + n; \
 			} \
@@ -101,7 +100,7 @@ typedef struct XPtrV {
 #define	XPptrv(x)	((x).beg)
 #define	XPsize(x)	((x).cur - (x).beg)
 
-#define	XPclose(x)	(void**) aresize((void*)(x).beg, \
-					 sizeofN(void*, XPsize(x)), ATEMP)
+#define	XPclose(x)	areallocarray((x).beg, XPsize(x), \
+					 sizeof(void *), ATEMP)
 
-#define	XPfree(x)	afree((void*) (x).beg, ATEMP)
+#define	XPfree(x)	afree((x).beg, ATEMP)
