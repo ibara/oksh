@@ -5,6 +5,7 @@
 /* Includes */
 #include <sys/file.h>
 #include <sys/param.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -12,6 +13,7 @@
 #define _PW_NAME_LEN	LOGIN_NAME_MAX
 #define O_EXLOCK	0
 #define srand_deterministic(x)	srand(x)
+#define sys_signame	esys_signame
 
 #ifndef __CYGWIN__
 #define CHILD_MAX	80
@@ -46,7 +48,6 @@
 #endif
 
 /* Functions */
-const char *const sys_signame;
 mode_t	getmode(const void *, mode_t);
 void   *reallocarray(void *, size_t, size_t);
 void   *setmode(const char *);
@@ -54,3 +55,6 @@ size_t	strlcat(char *, const char *, size_t);
 size_t	strlcpy(char *, const char *, size_t);
 long long strtonum(const char *numstr, long long minval, long long maxval,
 		   const char **errstrp);
+
+/* Externs */
+extern const char *const sys_signame[NSIG];

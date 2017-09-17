@@ -31,6 +31,8 @@
 #include <signal.h>
 #include <unistd.h>
 
+#include "linux.h"
+
 const char *const sys_signame[NSIG] = {
 	"Signal 0",
 	"HUP",		/* SIGHUP */

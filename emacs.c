@@ -14,7 +14,11 @@
 #include "config.h"
 #ifdef EMACS
 
+#ifdef __linux__
+#include "portable/linux/queue.h"
+#else
 #include <sys/queue.h>
+#endif
 #include <sys/stat.h>
 
 #include <ctype.h>
