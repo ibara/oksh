@@ -4,6 +4,7 @@
 
  /* Includes */
 #include <sys/param.h>
+#include <sys/time.h>
 #include <mach/clock.h>
 #include <mach/mach.h>
 
@@ -45,5 +46,7 @@
         } while (0)
 
 /* Functions */
+void	 *reallocarray(void *, size_t, size_t);
+int	  stravis(char **, const char *, int);
 long long strtonum(const char *numstr, long long minval, long long maxval,
 		   const char **errstrp);

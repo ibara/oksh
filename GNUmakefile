@@ -37,7 +37,8 @@ GROUP =	bin
 OBJS += portable/common/reallocarray.o
 else ifeq ($(UNAME_S),Darwin)
 GROUP =	bin
-OBJS += portable/common/reallocarray.o portable/common/strtonum.o
+OBJS += portable/common/reallocarray.o portable/common/strtonum.o \
+	portable/darwin/vis.o
 else ifeq ($(findstring CYGWIN,$(UNAME_S)),CYGWIN)
 OBJS +=	portable/common/reallocarray.o portable/linux/setmode.o \
 	portable/linux/signame.o portable/linux/strlcat.o \
