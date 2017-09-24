@@ -22,8 +22,8 @@
 	host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock); \
 	clock_get_time(cclock, &mts);					\
 	mach_port_deallocate(mach_task_self(), cclock);			\
-	(*y)->tv_sec = mts.tv_sec;					\
-	(*y)->tv_nsec = mts.tv_nsec;
+	(y)->tv_sec = mts.tv_sec;					\
+	(y)->tv_nsec = mts.tv_nsec;
 
 /* From OpenBSD sys/time.h */
 #define timespeccmp(tsp, usp, cmp)                                      \
