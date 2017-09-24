@@ -25,6 +25,9 @@
 	(y)->tv_sec = mts.tv_sec;					\
 	(y)->tv_nsec = mts.tv_nsec;
 
+/* struct stat compatibility */
+#define st_mtim	st_mtimespec
+
 /* From OpenBSD sys/time.h */
 #define timespeccmp(tsp, usp, cmp)                                      \
         (((tsp)->tv_sec == (usp)->tv_sec) ?                             \
