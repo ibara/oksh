@@ -4,6 +4,8 @@
 
  /* Includes */
 #include <sys/param.h>
+#include <mach/clock.h>
+#include <mach/mach.h>
 
 /* Defines */
 #define _PW_NAME_LEN	MAXLOGNAME - 1
@@ -12,6 +14,16 @@
 /* Not really sure on these two, but it seems to work ok. */
 #define setresgid(x, y, z)	setgid(x); setegid(y); setgid(z)
 #define setresuid(x, y, z)	setuid(x); seteuid(y); setuid(z)
+
+/* Convert clock_gettime() to clock_get_time() */
+#define clock_gettime(x, y)						\
+	clock_serv_t cclock;						\
+	mach_timespec_t mts;						\
+	host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock); \
+	clock_get_time(cclock, &mts);					\
+	mach_port_deallocate(mach_task_self(), cclock);			\
+	(*y)->tv_sec = mts.tv_sec;					\
+	(*y)->tv_nsec = mts.tv_nsec;
 
 /* From OpenBSD sys/time.h */
 #define timespeccmp(tsp, usp, cmp)                                      \
