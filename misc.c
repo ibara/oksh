@@ -13,11 +13,7 @@
 #include <unistd.h>
 
 #include "sh.h"
-#ifdef __OpenBSD__
 #include "charclass.h"
-#else
-#include "portable/common/charclass.h"
-#endif
 
 short ctypes [UCHAR_MAX+1];	/* type bits for unsigned char */
 
