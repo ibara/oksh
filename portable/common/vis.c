@@ -36,8 +36,11 @@
 #include <stdlib.h>
 #include <vis.h>
 
-#include "darwin.h"
-
+#ifdef __APPLE__
+#include "../darwin/darwin.h"
+#else
+#include "../freebsd/freebsd.h"
+#endif
 
 /* Mac OS X/FreeBSD/DragonFly are missing stravis(). */
 int
