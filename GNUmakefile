@@ -28,17 +28,17 @@ OBJS +=	portable/common/reallocarray.o portable/linux/setmode.o \
 	portable/linux/unvis.o portable/linux/vis.o
 else ifeq ($(UNAME_S),FreeBSD)
 GROUP =	bin
-OBJS +=	portable/common/reallocarray.o
+OBJS +=	portable/common/reallocarray.o portable/common/vis.o
 else ifeq ($(UNAME_S),DragonFly)
 GROUP =	bin
-OBJS += portable/common/reallocarray.o
+OBJS += portable/common/reallocarray.o portable/common/vis.o
 else ifeq ($(UNAME_S),NetBSD)
 GROUP =	bin
 OBJS += portable/common/reallocarray.o
 else ifeq ($(UNAME_S),Darwin)
 GROUP =	bin
 OBJS += portable/common/reallocarray.o portable/common/strtonum.o \
-	portable/darwin/vis.o
+	portable/common/vis.o
 else ifeq ($(UNAME_S),OpenBSD)
 GROUP =	bin
 else ifeq ($(findstring CYGWIN,$(UNAME_S)),CYGWIN)

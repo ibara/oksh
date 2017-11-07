@@ -39,7 +39,7 @@
 #include "darwin.h"
 
 
-/* Mac OS X is only missing stravis(). */
+/* Mac OS X/FreeBSD/DragonFly are missing stravis(). */
 int
 stravis(char **outp, const char *src, int flag)
 {

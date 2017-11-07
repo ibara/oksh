@@ -25,3 +25,6 @@
                         (vsp)->tv_nsec += 1000000000L;                  \
                 }                                                       \
         } while (0)
+
+/* Prototypes */
+int	  stravis(char **, const char *, int);
