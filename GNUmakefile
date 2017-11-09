@@ -68,9 +68,9 @@ endif
 
 install: all
 ifeq ($(UNAME_S),Darwin)
-	@mkdir -p ${PREFIX}/bin ${MANDIR}/man1
+	@mkdir -p ${PREFIX}/bin ${PREFIX}/share/man/man1
 	${INSTALL} -m 755 ${PROG} ${PREFIX}/bin
-	${INSTALL} -m 644 ${PROG}.1 ${MANDIR}/man1
+	${INSTALL} -m 644 ${PROG}.1 ${PREFIX}/share/man/man1
 else ifeq ($(findstring CYGWIN,$(UNAME_S)),CYGWIN)
 	@mkdir -p ${PREFIX}/bin ${MANDIR}/man1
 	${INSTALL} -c -s -m 555 ${PROG} ${PREFIX}/bin
