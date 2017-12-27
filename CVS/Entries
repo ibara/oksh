@@ -1,46 +1,46 @@
-/emacs.c/1.73/Sun Sep 17 20:17:53 2017//
-/main.c/1.83/Sun Sep 17 20:17:53 2017//
-/CONTRIBUTORS/1.10/Fri Oct 27 17:29:56 2017//
-/LEGAL/1.2/Fri Oct 27 17:29:56 2017//
-/Makefile/1.34/Fri Oct 27 17:29:56 2017//
-/NOTES/1.14/Fri Oct 27 17:29:56 2017//
-/PROJECTS/1.8/Fri Oct 27 17:29:56 2017//
-/README/1.16/Fri Oct 27 17:30:07 2017//
-/alloc.c/1.17/Fri Oct 27 17:29:56 2017//
-/c_ksh.c/1.51/Fri Oct 27 17:29:56 2017//
-/c_sh.c/1.60/Fri Oct 27 17:29:56 2017//
-/c_test.c/1.23/Fri Oct 27 17:29:56 2017//
-/c_test.h/1.4/Fri Oct 27 17:29:56 2017//
-/c_ulimit.c/1.24/Fri Oct 27 17:29:56 2017//
-/config.h/1.16/Fri Oct 27 17:29:56 2017//
-/edit.c/1.57/Fri Oct 27 17:29:56 2017//
-/edit.h/1.11/Fri Oct 27 17:29:56 2017//
-/eval.c/1.54/Fri Oct 27 17:29:56 2017//
-/exec.c/1.68/Fri Oct 27 17:29:56 2017//
-/expand.h/1.12/Fri Oct 27 17:29:56 2017//
-/expr.c/1.32/Fri Oct 27 17:29:56 2017//
-/history.c/1.74/Result of merge//
-/io.c/1.35/Fri Oct 27 17:29:56 2017//
-/jobs.c/1.55/Fri Oct 27 17:29:56 2017//
-/ksh.1/1.195/Fri Oct 27 17:30:07 2017//
-/lex.c/1.71/Fri Oct 27 17:29:56 2017//
-/lex.h/1.16/Fri Oct 27 17:29:56 2017//
-/mail.c/1.22/Fri Oct 27 17:29:56 2017//
-/misc.c/1.60/Result of merge//
-/path.c/1.19/Fri Oct 27 17:29:56 2017//
-/sh.1/1.143/Fri Oct 27 17:29:56 2017//
-/sh.h/1.65/Result of merge//
-/shf.c/1.31/Fri Oct 27 17:29:56 2017//
-/shf.h/1.8/Fri Oct 27 17:29:56 2017//
-/syn.c/1.38/Fri Oct 27 17:29:56 2017//
-/table.c/1.23/Fri Oct 27 17:29:56 2017//
-/table.h/1.12/Fri Oct 27 17:29:56 2017//
-/trap.c/1.30/Fri Oct 27 17:29:56 2017//
-/tree.c/1.27/Fri Oct 27 17:29:56 2017//
-/tree.h/1.12/Fri Oct 27 17:29:56 2017//
-/tty.c/1.16/Fri Oct 27 17:29:56 2017//
-/tty.h/1.6/Fri Oct 27 17:29:56 2017//
-/var.c/1.59/Fri Oct 27 17:29:56 2017//
-/version.c/1.12/Fri Oct 27 17:29:56 2017//
-/vi.c/1.49/Fri Oct 27 17:29:56 2017//
+/CONTRIBUTORS/1.10/Wed Dec 27 20:31:53 2017//
+/LEGAL/1.2/Wed Dec 27 20:31:53 2017//
+/Makefile/1.35/Wed Dec 27 20:32:20 2017//
+/NOTES/1.14/Wed Dec 27 20:31:53 2017//
+/PROJECTS/1.8/Wed Dec 27 20:31:53 2017//
+/README/1.16/Wed Dec 27 20:32:20 2017//
+/alloc.c/1.18/Wed Dec 27 20:32:20 2017//
+/c_ksh.c/1.52/Wed Dec 27 20:32:20 2017//
+/c_sh.c/1.62/Wed Dec 27 20:32:20 2017//
+/c_test.c/1.24/Wed Dec 27 20:32:20 2017//
+/c_test.h/1.4/Wed Dec 27 20:31:53 2017//
+/c_ulimit.c/1.24/Wed Dec 27 20:31:53 2017//
+/config.h/1.16/Wed Dec 27 20:31:53 2017//
+/edit.c/1.58/Wed Dec 27 20:32:20 2017//
+/edit.h/1.11/Wed Dec 27 20:31:53 2017//
+/emacs.c/1.77/Result of merge//
+/eval.c/1.54/Wed Dec 27 20:31:53 2017//
+/exec.c/1.70/Wed Dec 27 20:32:20 2017//
+/expand.h/1.12/Wed Dec 27 20:31:53 2017//
+/expr.c/1.32/Wed Dec 27 20:31:53 2017//
+/history.c/1.75/Result of merge//
+/io.c/1.35/Wed Dec 27 20:31:53 2017//
+/jobs.c/1.55/Wed Dec 27 20:31:53 2017//
+/ksh.1/1.197/Wed Dec 27 20:32:20 2017//
+/lex.c/1.74/Wed Dec 27 20:32:20 2017//
+/lex.h/1.17/Wed Dec 27 20:32:20 2017//
+/mail.c/1.22/Wed Dec 27 20:31:53 2017//
+/main.c/1.85/Result of merge//
+/misc.c/1.61/Wed Dec 27 20:32:21 2017//
+/path.c/1.19/Wed Dec 27 20:31:53 2017//
+/sh.1/1.145/Wed Dec 27 20:32:21 2017//
+/sh.h/1.66/Result of merge//
+/shf.c/1.31/Wed Dec 27 20:31:53 2017//
+/shf.h/1.8/Wed Dec 27 20:31:53 2017//
+/syn.c/1.38/Wed Dec 27 20:31:53 2017//
+/table.c/1.24/Wed Dec 27 20:32:21 2017//
+/table.h/1.13/Wed Dec 27 20:32:21 2017//
+/trap.c/1.30/Wed Dec 27 20:31:53 2017//
+/tree.c/1.27/Wed Dec 27 20:31:53 2017//
+/tree.h/1.12/Wed Dec 27 20:31:53 2017//
+/tty.c/1.16/Wed Dec 27 20:31:53 2017//
+/tty.h/1.6/Wed Dec 27 20:31:53 2017//
+/var.c/1.60/Wed Dec 27 20:32:21 2017//
+/version.c/1.12/Wed Dec 27 20:31:53 2017//
+/vi.c/1.50/Wed Dec 27 20:32:21 2017//
 D

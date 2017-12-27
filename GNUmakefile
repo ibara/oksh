@@ -10,7 +10,7 @@ DOCDIR ?= ${PREFIX}/share/doc/oksh
 INSTALL = /usr/bin/install
 
 CFLAGS ?= -O2 -pipe
-CFLAGS += -Wall -DEMACS -DVI -Iportable/common
+CFLAGS += -Wall -Wshadow -DEMACS -DVI -Iportable/common
 
 OBJS =	alloc.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o emacs.o eval.o \
 	exec.o expr.o history.o io.o jobs.o lex.o mail.o main.o misc.o \

@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.68 2016/12/11 17:49:19 millert Exp $	*/
+/*	$OpenBSD: exec.c,v 1.70 2017/12/27 13:02:57 millert Exp $	*/
 
 /*
  * execute command tree
@@ -409,7 +409,7 @@ comexec(struct op *t, struct tbl *volatile tp, char **ap, volatile int flags,
 	volatile int rv = 0;
 	char *cp;
 	char **lastp;
-	static struct op texec; /* Must be static (XXX but why?) */
+	struct op texec;
 	int type_flags;
 	int keepasn_ok;
 	int fcflags = FC_BI|FC_FUNC|FC_PATH;
@@ -684,6 +684,7 @@ comexec(struct op *t, struct tbl *volatile tp, char **ap, volatile int flags,
 		}
 
 		/* to fork we set up a TEXEC node and call execute */
+		memset(&texec, 0, sizeof(texec));
 		texec.type = TEXEC;
 		texec.left = t;	/* for tprint */
 		texec.str = tp->val.s;
@@ -706,7 +707,7 @@ scriptexec(struct op *tp, char **ap)
 
 	shell = str_val(global("EXECSHELL"));
 	if (shell && *shell)
-		shell = search(shell, path, X_OK, NULL);
+		shell = search(shell, search_path, X_OK, NULL);
 	if (!shell || !*shell)
 		shell = _PATH_BSHELL;
 
@@ -899,8 +900,8 @@ findcom(const char *name, int flags)
 			}
 			tp->flag = DEFINED;	/* make ~ISSET */
 		}
-		npath = search(name, flags & FC_DEFPATH ? def_path : path,
-		    X_OK, &tp->u2.errno_);
+		npath = search(name, flags & FC_DEFPATH ? def_path :
+		    search_path, X_OK, &tp->u2.errno_);
 		if (npath) {
 			if (tp == &temp) {
 				tp->val.s = npath;
