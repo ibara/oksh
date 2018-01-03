@@ -26,6 +26,7 @@ OBJS +=	portable/common/reallocarray.o portable/linux/setmode.o \
 	portable/linux/signame.o portable/linux/strlcat.o \
 	portable/linux/strlcpy.o portable/common/strtonum.o \
 	portable/linux/unvis.o portable/linux/vis.o
+CFLAGS += -D_GNU_SOURCE
 else ifeq ($(UNAME_S),FreeBSD)
 GROUP =	bin
 OBJS +=	portable/common/reallocarray.o portable/common/vis.o
@@ -39,6 +40,7 @@ else ifeq ($(UNAME_S),Darwin)
 GROUP =	bin
 OBJS += portable/common/reallocarray.o portable/common/strtonum.o \
 	portable/common/vis.o
+CFLAGS += -D_GNU_SOURCE
 else ifeq ($(UNAME_S),OpenBSD)
 GROUP =	bin
 else ifeq ($(findstring CYGWIN,$(UNAME_S)),CYGWIN)
@@ -46,6 +48,7 @@ OBJS +=	portable/common/reallocarray.o portable/linux/setmode.o \
 	portable/linux/signame.o portable/linux/strlcat.o \
 	portable/linux/strlcpy.o portable/common/strtonum.o \
 	portable/linux/unvis.o portable/linux/vis.o
+CFLAGS += -D_GNU_SOURCE
 endif
 
 #

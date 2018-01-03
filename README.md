@@ -33,4 +33,4 @@ The rest are BSD or ISC licensed.
 
 Get a tarball
 -------------
-http://devio.us/~bcallah/oksh/oksh-20171109.tar.gz
+http://devio.us/~bcallah/oksh/oksh-20180102.tar.gz
