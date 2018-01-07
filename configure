@@ -331,6 +331,9 @@ install:
 	install -c -m 644 oksh.1 \${MANDIR}/\${PROG}.1
 	echo \${ETS}
 
+test:
+	echo "No tests"
+
 clean:
 	rm -f \${PROG} \${OBJS}
 
