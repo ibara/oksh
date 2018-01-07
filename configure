@@ -131,11 +131,25 @@ EOF
   fi
 }
 
-strunvischeck() {
+strlcatcheck() {
   cat << EOF > conftest.c
-#include <stdlib.h>
-#include <vis.h>
-int main(void){strunvis(NULL, NULL);return 0;}
+#include <string.h>
+int main(void){strlcat(NULL,NULL,0);return 0;}
+EOF
+  $cc $tflags -o conftest conftest.c > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.c
+    return 0
+  else
+    rm -f conftest conftest.c
+    return 1
+  fi
+}
+
+strlcpycheck() {
+  cat << EOF > conftest.c
+#include <string.h>
+int main(void){strlcpy(NULL,NULL,0);return 0;}
 EOF
   $cc $tflags -o conftest conftest.c > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
@@ -151,6 +165,22 @@ strtonumcheck() {
   cat << EOF > conftest.c
 #include <stdlib.h>
 int main(void){strtonum(NULL, 0, 0, NULL);return 0;}
+EOF
+  $cc $tflags -o conftest conftest.c > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.c
+    return 0
+  else
+    rm -f conftest conftest.c
+    return 1
+  fi
+}
+
+strunvischeck() {
+  cat << EOF > conftest.c
+#include <stdlib.h>
+#include <vis.h>
+int main(void){strunvis(NULL, NULL);return 0;}
 EOF
   $cc $tflags -o conftest conftest.c > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
@@ -277,10 +307,28 @@ else
   echo "yes"
 fi
 
+printf "checking for strlcat... "
+strlcatcheck
+if [ $? -ne 0 ] ; then
+  echo "#define NEED_STRLCAT" >> pconfig.h
+  echo "no"
+else
+  echo "yes"
+fi
+
+printf "checking for strlcpy... "
+strlcpycheck
+if [ $? -ne 0 ] ; then
+  echo "#define NEED_STRLCPY" >> pconfig.h
+  echo "no"
+else
+  echo "yes"
+fi
+
 printf "checking for strtonum... "
 strtonumcheck
 if [ $? -ne 0 ] ; then
-  echo "#define NEED_STROTONUM" >> pconfig.h
+  echo "#define NEED_STRTONUM" >> pconfig.h
   echo "no"
 else
   echo "yes"
