@@ -28,8 +28,11 @@
  * SUCH DAMAGE.
  */
 
+#ifdef NEED_STRUNVIS
+
 #include <sys/types.h>
 #include <ctype.h>
+
 #include "vis.h"
 
 /*
@@ -48,8 +51,8 @@
 /*
  * unvis - decode characters previously encoded by vis
  */
-int
-unvis(char *cp, char c, int *astate, int flag)
+static int
+eunvis(char *cp, char c, int *astate, int flag)
 {
 
 	if (flag & UNVIS_END) {
@@ -221,7 +224,7 @@ strunvis(char *dst, const char *src)
 
 	while ((c = *src++)) {
 	again:
-		switch (unvis(dst, c, &state, 0)) {
+		switch (eunvis(dst, c, &state, 0)) {
 		case UNVIS_VALID:
 			dst++;
 			break;
@@ -236,50 +239,10 @@ strunvis(char *dst, const char *src)
 			return (-1);
 		}
 	}
-	if (unvis(dst, c, &state, UNVIS_END) == UNVIS_VALID)
+	if (eunvis(dst, c, &state, UNVIS_END) == UNVIS_VALID)
 		dst++;
 	*dst = '\0';
 	return (dst - start);
 }
 
-ssize_t
-strnunvis(char *dst, const char *src, size_t sz)
-{
-	char c, p;
-	char *start = dst, *end = dst + sz - 1;
-	int state = 0;
-
-	if (sz > 0)
-		*end = '\0';
-	while ((c = *src++)) {
-	again:
-		switch (unvis(&p, c, &state, 0)) {
-		case UNVIS_VALID:
-			if (dst < end)
-				*dst = p;
-			dst++;
-			break;
-		case UNVIS_VALIDPUSH:
-			if (dst < end)
-				*dst = p;
-			dst++;
-			goto again;
-		case 0:
-		case UNVIS_NOCHAR:
-			break;
-		default:
-			if (dst <= end)
-				*dst = '\0';
-			return (-1);
-		}
-	}
-	if (unvis(&p, c, &state, UNVIS_END) == UNVIS_VALID) {
-		if (dst < end)
-			*dst = p;
-		dst++;
-	}
-	if (dst <= end)
-		*dst = '\0';
-	return (dst - start);
-}
-
+#endif /* NEED_STRUNVIS */

@@ -15,6 +15,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef NEED_REALLOCARRAY
+
 #include <sys/types.h>
 #include <errno.h>
 #include <stdint.h>
@@ -36,3 +38,5 @@ reallocarray(void *optr, size_t nmemb, size_t size)
 	}
 	return realloc(optr, size * nmemb);
 }
+
+#endif /* NEED_REALLOCARRAY */

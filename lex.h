@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.h,v 1.18 2018/01/01 19:45:56 millert Exp $	*/
+/*	$OpenBSD: lex.h,v 1.20 2018/01/06 16:28:58 millert Exp $	*/
 
 /*
  * Source input, lexer and parser

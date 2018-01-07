@@ -17,6 +17,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef NEED_STRTONUM
+
 #include <errno.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -63,3 +65,5 @@ strtonum(const char *numstr, long long minval, long long maxval,
 
 	return (ll);
 }
+
+#endif /* NEED_STRTONUM */

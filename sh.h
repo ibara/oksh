@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.66 2017/12/27 13:02:57 millert Exp $	*/
+/*	$OpenBSD: sh.h,v 1.68 2018/01/06 16:28:58 millert Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -13,24 +13,11 @@
 #include <limits.h>
 #include <setjmp.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <signal.h>
 #include <stdbool.h>
 
 /* end of common headers */
-
-/* oksh portable: system-specific headers */
-#if defined(__linux__) || defined(__CYGWIN__)
-#include "portable/linux/linux.h"
-#endif
-#if defined(__FreeBSD__) || defined(__DragonFly__)
-#include "portable/freebsd/freebsd.h"
-#endif
-#ifdef __NetBSD__
-#include "portable/netbsd/netbsd.h"
-#endif
-#ifdef __APPLE__
-#include "portable/darwin/darwin.h"
-#endif
 
 #define	NELEM(a) (sizeof(a) / sizeof((a)[0]))
 #define	BIT(i)	(1<<(i))	/* define bit in flag */
@@ -169,9 +156,7 @@ enum sh_flag {
 	FNOGLOB,	/* -f: don't do file globbing */
 	FNOHUP,		/* -H: don't kill running jobs when login shell exits */
 	FNOLOG,		/* don't save functions in history (ignored) */
-#ifdef	JOBS
 	FNOTIFY,	/* -b: asynchronous job completion notification */
-#endif
 	FNOUNSET,	/* -u: using an unset var is an error */
 	FPHYSICAL,	/* -o physical: don't do logical cd's/pwd's */
 	FPOSIX,		/* -o posix: be posixly correct */

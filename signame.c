@@ -28,10 +28,10 @@
  * SUCH DAMAGE.
  */
 
+#ifdef NEED_SIGNAME
+
 #include <signal.h>
 #include <unistd.h>
-
-#include "linux.h"
 
 const char *const sys_signame[NSIG] = {
 	"Signal 0",
@@ -68,3 +68,5 @@ const char *const sys_signame[NSIG] = {
 	"USR2",		/* SIGUSR2 */
 	"THR",		/* SIGTHR */
 };
+
+#endif /* NEED_SIGNAME */

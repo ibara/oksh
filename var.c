@@ -1,4 +1,4 @@
-/*	$OpenBSD: var.c,v 1.61 2018/01/01 19:45:56 millert Exp $	*/
+/*	$OpenBSD: var.c,v 1.63 2018/01/06 16:28:58 millert Exp $	*/
 
 #include <sys/stat.h>
 
@@ -997,7 +997,7 @@ setspec(struct tbl *vp)
 		break;
 	case V_HISTSIZE:
 		vp->flag &= ~SPECIAL;
-		sethistsize(intval(vp));
+		sethistsize((int) intval(vp));
 		vp->flag |= SPECIAL;
 		break;
 	case V_HISTFILE:

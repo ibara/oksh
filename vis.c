@@ -28,13 +28,17 @@
  * SUCH DAMAGE.
  */
 
+/* Mac OS X and FreeBSD are missing stravis */
+
+#ifdef NEED_STRAVIS
+
 #include <sys/types.h>
 #include <errno.h>
 #include <ctype.h>
 #include <limits.h>
 #include <string.h>
 #include <stdlib.h>
-#include "linux.h"
+
 #include "vis.h"
 
 #define	isoctal(c)	(((u_char)(c)) >= '0' && ((u_char)(c)) <= '7')
@@ -53,8 +57,8 @@
 /*
  * vis - visually encode characters
  */
-char *
-vis(char *dst, int c, int flag, int nextc)
+static char *
+evis(char *dst, int c, int flag, int nextc)
 {
 	if (isvisible(c, flag)) {
 		if ((c == '"' && (flag & VIS_DQ) != 0) ||
@@ -151,58 +155,15 @@ done:
  *	Strvisx encodes exactly len bytes from src into dst.
  *	This is useful for encoding a block of data.
  */
-int
-strvis(char *dst, const char *src, int flag)
+static int
+estrvis(char *dst, const char *src, int flag)
 {
 	char c;
 	char *start;
 
 	for (start = dst; (c = *src);)
-		dst = vis(dst, c, flag, *++src);
+		dst = evis(dst, c, flag, *++src);
 	*dst = '\0';
-	return (dst - start);
-}
-
-int
-strnvis(char *dst, const char *src, size_t siz, int flag)
-{
-	char *start, *end;
-	char tbuf[5];
-	int c, i;
-
-	i = 0;
-	for (start = dst, end = start + siz - 1; (c = *src) && dst < end; ) {
-		if (isvisible(c, flag)) {
-			if ((c == '"' && (flag & VIS_DQ) != 0) ||
-			    (c == '\\' && (flag & VIS_NOSLASH) == 0)) {
-				/* need space for the extra '\\' */
-				if (dst + 1 >= end) {
-					i = 2;
-					break;
-				}
-				*dst++ = '\\';
-			}
-			i = 1;
-			*dst++ = c;
-			src++;
-		} else {
-			i = vis(tbuf, c, flag, *++src) - tbuf;
-			if (dst + i <= end) {
-				memcpy(dst, tbuf, i);
-				dst += i;
-			} else {
-				src--;
-				break;
-			}
-		}
-	}
-	if (siz > 0)
-		*dst = '\0';
-	if (dst + i > end) {
-		/* adjust return value for truncation */
-		while ((c = *src))
-			dst += vis(tbuf, c, flag, *++src) - tbuf;
-	}
 	return (dst - start);
 }
 
@@ -215,7 +176,7 @@ stravis(char **outp, const char *src, int flag)
 	buf = reallocarray(NULL, 4, strlen(src) + 1);
 	if (buf == NULL)
 		return -1;
-	len = strvis(buf, src, flag);
+	len = estrvis(buf, src, flag);
 	serrno = errno;
 	*outp = realloc(buf, len + 1);
 	if (*outp == NULL) {
@@ -225,18 +186,4 @@ stravis(char **outp, const char *src, int flag)
 	return (len);
 }
 
-int
-strvisx(char *dst, const char *src, size_t len, int flag)
-{
-	char c;
-	char *start;
-
-	for (start = dst; len > 1; len--) {
-		c = *src;
-		dst = vis(dst, c, flag, *++src);
-	}
-	if (len)
-		dst = vis(dst, *src, flag, '\0');
-	*dst = '\0';
-	return (dst - start);
-}
+#endif /* NEED_STRAVIS */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: emacs.c,v 1.78 2018/01/01 19:45:56 millert Exp $	*/
+/*	$OpenBSD: emacs.c,v 1.81 2018/01/07 19:18:56 millert Exp $	*/
 
 /*
  *  Emacs-like command line editing and history
@@ -14,9 +14,7 @@
 #include "config.h"
 #ifdef EMACS
 
-#ifdef __linux__
-#include "portable/linux/queue.h"
-#else
+#ifndef __linux__
 #include <sys/queue.h>
 #endif
 #include <sys/stat.h>
@@ -1296,13 +1294,13 @@ kb_del(struct kb_entry *k)
 static struct kb_entry *
 kb_add_string(void *func, void *args, char *str)
 {
-	unsigned int		i, count;
+	unsigned int		ele, count;
 	struct kb_entry		*k;
 	struct x_ftab		*xf = NULL;
 
-	for (i = 0; i < NELEM(x_ftab); i++)
-		if (x_ftab[i].xf_func == func) {
-			xf = (struct x_ftab *)&x_ftab[i];
+	for (ele = 0; ele < NELEM(x_ftab); ele++)
+		if (x_ftab[ele].xf_func == func) {
+			xf = (struct x_ftab *)&x_ftab[ele];
 			break;
 		}
 	if (xf == NULL)
@@ -1332,21 +1330,21 @@ static struct kb_entry *
 kb_add(void *func, void *args, ...)
 {
 	va_list			ap;
-	int			i, count;
-	char			l[LINE + 1];
+	unsigned char		ch;
+	unsigned int		i;
+	char			line[LINE + 1];
 
 	va_start(ap, args);
-	count = 0;
-	while (va_arg(ap, unsigned int) != 0)
-		count++;
+	for (i = 0; i < sizeof(line) - 1; i++) {
+		ch = va_arg(ap, unsigned int);
+		if (ch == 0)
+			break;
+		line[i] = ch;
+	}
 	va_end(ap);
+	line[i] = '\0';
 
-	va_start(ap, args);
-	for (i = 0; i <= count /* <= is correct */; i++)
-		l[i] = (unsigned char)va_arg(ap, unsigned int);
-	va_end(ap);
-
-	return (kb_add_string(func, args, l));
+	return (kb_add_string(func, args, line));
 }
 
 static void

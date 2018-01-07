@@ -1,4 +1,4 @@
-/*	$OpenBSD: history.c,v 1.76 2018/01/01 19:45:56 millert Exp $	*/
+/*	$OpenBSD: history.c,v 1.78 2018/01/06 16:28:58 millert Exp $	*/
 
 /*
  * command history
@@ -22,7 +22,7 @@
 #include <string.h>
 #include <unistd.h>
 #if defined(__linux__) || defined(__CYGWIN__)
-#include "portable/linux/vis.h"
+#include "vis.h"
 #else
 #include <vis.h>
 #endif

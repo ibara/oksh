@@ -1,4 +1,4 @@
-/*	$OpenBSD: expand.h,v 1.13 2018/01/01 19:45:56 millert Exp $	*/
+/*	$OpenBSD: expand.h,v 1.15 2018/01/06 16:28:58 millert Exp $	*/
 
 /*
  * Expanding strings
@@ -46,7 +46,7 @@ typedef char * XStringP;
 
 /* check if there are at least n bytes left */
 #define	XcheckN(xs, xp, n) do { \
-		    size_t more = ((xp) + (n)) - (xs).end; \
+		    ptrdiff_t more = ((xp) + (n)) - (xs).end; \
 		    if (more > 0) \
 			xp = Xcheck_grow_(&xs, xp, more); \
 		} while (0)

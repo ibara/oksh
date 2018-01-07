@@ -1,46 +1,46 @@
-/main.c/1.85/Result of merge//
-/sh.h/1.66/Result of merge//
-/CONTRIBUTORS/1.10/Wed Jan  3 02:30:53 2018//
-/LEGAL/1.2/Wed Jan  3 02:30:53 2018//
-/Makefile/1.36/Wed Jan  3 02:31:13 2018//
-/NOTES/1.14/Wed Jan  3 02:30:53 2018//
-/PROJECTS/1.8/Wed Jan  3 02:30:53 2018//
-/README/1.16/Wed Jan  3 02:31:13 2018//
-/alloc.c/1.18/Wed Jan  3 02:30:53 2018//
-/c_ksh.c/1.53/Wed Jan  3 02:31:13 2018//
-/c_sh.c/1.62/Wed Jan  3 02:30:53 2018//
-/c_test.c/1.24/Wed Jan  3 02:30:53 2018//
-/c_test.h/1.4/Wed Jan  3 02:30:53 2018//
-/c_ulimit.c/1.24/Wed Jan  3 02:30:53 2018//
-/config.h/1.16/Wed Jan  3 02:30:53 2018//
-/edit.c/1.59/Wed Jan  3 02:31:13 2018//
-/edit.h/1.11/Wed Jan  3 02:30:53 2018//
-/emacs.c/1.78/Result of merge//
-/eval.c/1.55/Wed Jan  3 02:31:13 2018//
-/exec.c/1.70/Wed Jan  3 02:30:53 2018//
-/expand.h/1.13/Wed Jan  3 02:31:13 2018//
-/expr.c/1.32/Wed Jan  3 02:30:53 2018//
-/history.c/1.76/Result of merge//
-/io.c/1.35/Wed Jan  3 02:30:53 2018//
-/jobs.c/1.55/Wed Jan  3 02:30:53 2018//
-/ksh.1/1.197/Wed Jan  3 02:30:53 2018//
-/lex.c/1.75/Wed Jan  3 02:31:14 2018//
-/lex.h/1.18/Wed Jan  3 02:31:14 2018//
-/mail.c/1.22/Wed Jan  3 02:30:53 2018//
-/misc.c/1.62/Wed Jan  3 02:31:14 2018//
-/path.c/1.20/Wed Jan  3 02:31:14 2018//
-/sh.1/1.146/Wed Jan  3 02:31:14 2018//
-/shf.c/1.31/Wed Jan  3 02:30:54 2018//
-/shf.h/1.8/Wed Jan  3 02:30:54 2018//
-/syn.c/1.38/Wed Jan  3 02:30:54 2018//
-/table.c/1.24/Wed Jan  3 02:30:54 2018//
-/table.h/1.13/Wed Jan  3 02:30:54 2018//
-/trap.c/1.30/Wed Jan  3 02:30:54 2018//
-/tree.c/1.28/Wed Jan  3 02:31:14 2018//
-/tree.h/1.12/Wed Jan  3 02:30:54 2018//
-/tty.c/1.16/Wed Jan  3 02:30:54 2018//
-/tty.h/1.6/Wed Jan  3 02:30:54 2018//
-/var.c/1.61/Wed Jan  3 02:31:14 2018//
-/version.c/1.12/Wed Jan  3 02:30:54 2018//
-/vi.c/1.51/Wed Jan  3 02:31:14 2018//
+/CONTRIBUTORS/1.10/Sun Jan  7 20:03:32 2018//
+/LEGAL/1.2/Sun Jan  7 20:03:32 2018//
+/Makefile/1.38/Sun Jan  7 23:21:17 2018//
+/NOTES/1.14/Sun Jan  7 20:03:32 2018//
+/PROJECTS/1.8/Sun Jan  7 20:03:32 2018//
+/README/1.16/Sun Jan  7 23:21:17 2018//
+/alloc.c/1.18/Sun Jan  7 20:03:32 2018//
+/c_ksh.c/1.56/Sun Jan  7 23:21:17 2018//
+/c_sh.c/1.62/Sun Jan  7 20:03:32 2018//
+/c_test.c/1.24/Sun Jan  7 20:03:32 2018//
+/c_test.h/1.4/Sun Jan  7 20:03:32 2018//
+/c_ulimit.c/1.24/Sun Jan  7 20:03:32 2018//
+/config.h/1.17/Result of merge//
+/edit.c/1.61/Sun Jan  7 23:21:17 2018//
+/edit.h/1.11/Sun Jan  7 20:03:32 2018//
+/emacs.c/1.81/Result of merge//
+/eval.c/1.57/Sun Jan  7 23:21:17 2018//
+/exec.c/1.70/Sun Jan  7 20:03:32 2018//
+/expand.h/1.15/Sun Jan  7 23:21:17 2018//
+/expr.c/1.32/Sun Jan  7 20:03:32 2018//
+/history.c/1.78/Result of merge//
+/io.c/1.35/Sun Jan  7 20:03:32 2018//
+/jobs.c/1.57/Sun Jan  7 23:21:17 2018//
+/ksh.1/1.197/Sun Jan  7 20:03:32 2018//
+/lex.c/1.77/Sun Jan  7 23:21:18 2018//
+/lex.h/1.20/Sun Jan  7 23:21:18 2018//
+/mail.c/1.22/Sun Jan  7 20:03:32 2018//
+/main.c/1.86/Result of merge//
+/misc.c/1.65/Sun Jan  7 23:21:18 2018//
+/path.c/1.22/Sun Jan  7 23:21:18 2018//
+/sh.1/1.146/Sun Jan  7 20:03:32 2018//
+/sh.h/1.68/Sun Jan  7 23:21:18 2018//
+/shf.c/1.31/Sun Jan  7 20:03:32 2018//
+/shf.h/1.8/Sun Jan  7 20:03:32 2018//
+/syn.c/1.38/Sun Jan  7 20:03:32 2018//
+/table.c/1.24/Sun Jan  7 20:03:32 2018//
+/table.h/1.13/Sun Jan  7 20:03:32 2018//
+/trap.c/1.30/Sun Jan  7 20:03:32 2018//
+/tree.c/1.30/Sun Jan  7 23:21:18 2018//
+/tree.h/1.12/Sun Jan  7 20:03:32 2018//
+/tty.c/1.16/Sun Jan  7 20:03:32 2018//
+/tty.h/1.6/Sun Jan  7 20:03:32 2018//
+/var.c/1.63/Sun Jan  7 23:21:18 2018//
+/version.c/1.12/Sun Jan  7 20:03:32 2018//
+/vi.c/1.53/Sun Jan  7 23:21:18 2018//
 D

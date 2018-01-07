@@ -16,6 +16,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef NEED_STRLCAT
+
 #include <sys/types.h>
 #include <string.h>
 
@@ -53,3 +55,5 @@ strlcat(char *dst, const char *src, size_t dsize)
 
 	return(dlen + (src - osrc));	/* count does not include NUL */
 }
+
+#endif /* NEED_STRLCAT */

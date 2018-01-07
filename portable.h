@@ -1,3 +1,162 @@
+/*
+ * Multi-platform support.
+ */
+
+#ifndef _OKSH_PORTABLE_H_
+#define _OKSH_PORTABLE_H_
+
+/*
+ * Includes
+ */
+
+#ifdef __linux__
+#include <sys/file.h>
+
+#include <stdint.h>
+#include <stdlib.h>
+#endif /* __linux__ */
+
+#include <sys/param.h>
+#include <sys/time.h>
+
+#ifdef __APPLE__
+#include <mach/clock.h>
+#include <mach/mach.h>
+#endif /* __APPLE__ */
+
+#include <time.h>
+
+#include "pconfig.h"
+
+/*
+ * Defines
+ */
+
+#ifndef CHILD_MAX
+#define CHILD_MAX	80
+#endif /* CHILD_MAX */
+
+#ifndef O_EXLOCK
+#define O_EXLOCK	0
+#endif /* O_EXLOCK */
+
+#ifndef _PW_NAME_LEN
+#ifdef __linux__
+#define _PW_NAME_LEN	LOGIN_NAME_MAX
+#else
+#define _PW_NAME_LEN	MAXLOGNAME - 1
+#endif /* __linux__ */
+#endif /* _PW_NAME_LEN */
+
+#ifndef RLIMIT_RSS
+#define	RLIMIT_RSS	5		/* resident set size */
+#endif /* RLIMIT_RSS */
+
+#ifndef RLIMIT_MEMLOCK
+#define	RLIMIT_MEMLOCK	6		/* locked-in-memory address space */
+#endif /* RLIMIT_MEMLOCK */
+
+#ifndef RLIMIT_NPROC
+#define	RLIMIT_NPROC	7		/* number of processes */
+#endif /* RLIMIT_NPROC */
+
+/* Convert clock_gettime() to clock_get_time() on Max OS X */
+#ifdef __APPLE__
+#define clock_gettime(x, y)						\
+	clock_serv_t cclock;						\
+	mach_timespec_t mts;						\
+	host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock); \
+	clock_get_time(cclock, &mts);					\
+	mach_port_deallocate(mach_task_self(), cclock);			\
+	(y)->tv_sec = mts.tv_sec;					\
+	(y)->tv_nsec = mts.tv_nsec;
+#endif /* __APPLE__ */
+
+#ifdef NEED_SETRESGID
+#define setresgid(x, y, z)	setgid(x); setegid(y); setgid(z)
+#endif /* setresgid */
+
+#ifdef NEED_SETRESUID
+#define setresuid(x, y, z)	setuid(x); seteuid(y); setuid(z)
+#endif /* NEED_SETRESUID */
+
+#ifdef NEED_SRAND_DETERMINISTIC
+#define srand_deterministic(x)	srand(x)
+#endif /* NEED_SRAND_DETERMINISTIC */
+
+/* struct stat compatibility */
+#ifdef __APPLE__
+#define st_mtim	st_mtimespec
+#endif /* __APPLE__ */
+
+/* Cygwin already has a sys_signame but we want to use our own */
+#ifdef __CYGWIN__
+#define sys_signame	esys_signame
+#endif
+
+/* From OpenBSD sys/time.h */
+#ifndef __OpenBSD__
+#define timespeccmp(tsp, usp, cmp)                                      \
+        (((tsp)->tv_sec == (usp)->tv_sec) ?                             \
+            ((tsp)->tv_nsec cmp (usp)->tv_nsec) :                       \
+            ((tsp)->tv_sec cmp (usp)->tv_sec))
+
+#define timespecsub(tsp, usp, vsp)                                      \
+        do {                                                            \
+                (vsp)->tv_sec = (tsp)->tv_sec - (usp)->tv_sec;          \
+                (vsp)->tv_nsec = (tsp)->tv_nsec - (usp)->tv_nsec;       \
+                if ((vsp)->tv_nsec < 0) {                               \
+                        (vsp)->tv_sec--;                                \
+                        (vsp)->tv_nsec += 1000000000L;                  \
+                }                                                       \
+        } while (0)
+#endif /* !__OpenBSD__ */
+
+/*
+ * Prototypes
+ */
+
+#ifdef NEED_REALLOCARRAY
+void	 *reallocarray(void *, size_t, size_t);
+#endif /* NEED_REALLOCARRAY */
+
+#ifdef NEED_STRAVIS
+int	  stravis(char **, const char *, int);
+#endif /* NEED_STRAVIS */
+
+#ifdef NEED_STRLCAT
+size_t	strlcat(char *, const char *, size_t);
+#endif /* NEED_STRLCAT */
+
+#ifdef NEED_STRLCPY
+size_t	strlcpy(char *, const char *, size_t);
+#endif /* NEED_STRLCPY */
+
+#ifdef NEED_STRTONUM
+long long strtonum(const char *numstr, long long minval, long long maxval,
+		   const char **errstrp);
+#endif /* NEED_STRTONUM */
+
+#ifdef NEED_STRUNVIS
+int	  strunvis(char *, const char *);
+#endif /* NEED_STRUNVIS */
+
+/*
+ * Externs
+ */
+
+#ifdef NEED_SIGNAME
+extern const char *const sys_signame[NSIG];
+#endif /* NEED_SIGNAME */
+
+/*
+ * OpenBSD sys/queue.h
+ */
+
+/* The following should only be necessary on non-BSD systems.  */
+
+#if defined(__linux__)
+
 /*	$OpenBSD: queue.h,v 1.38 2013/07/03 15:05:21 fgsch Exp $	*/
 /*	$NetBSD: queue.h,v 1.11 1996/05/16 05:17:14 mycroft Exp $	*/
 
@@ -641,3 +800,7 @@ struct {								\
 	_Q_INVALIDATE((elm)->field.cqe_prev);				\
 	_Q_INVALIDATE((elm)->field.cqe_next);				\
 } while (0)
+
+#endif /* defined(__linux__) */
+
+#endif /* !_OKSH_PORTABLE_H_ */
