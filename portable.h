@@ -11,7 +11,9 @@
 
 #ifdef __linux__
 #include <sys/file.h>
+#include <sys/types.h>
 
+#include <grp.h>
 #include <stdint.h>
 #include <stdlib.h>
 #endif /* __linux__ */
