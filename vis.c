@@ -28,7 +28,7 @@
  * SUCH DAMAGE.
  */
 
-#include "pconfig.h"
+#include "portable.h"
 
 #ifdef NEED_STRAVIS
 

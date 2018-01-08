@@ -15,7 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "portable.h"
+#include "pconfig.h"
 
 #ifdef NEED_REALLOCARRAY
 
