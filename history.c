@@ -21,13 +21,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+
+#include "sh.h"
+
 #if defined(NEED_STRAVIS) || defined(NEED_STRUNVIS)
 #include "vis.h"
 #else
 #include <vis.h>
 #endif
-
-#include "sh.h"
 
 #ifdef HISTORY
 
