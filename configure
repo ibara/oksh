@@ -263,7 +263,7 @@ cat << EOF > pconfig.h
 EOF
 
 printf "checking for reallocarray... "
-strtonumcheck
+reallocarraycheck
 if [ $? -ne 0 ] ; then
   echo "#define NEED_REALLOCARRAY" >> pconfig.h
   echo "no"
