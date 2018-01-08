@@ -28,6 +28,8 @@
  * SUCH DAMAGE.
  */
 
+#include "pconfig.h"
+
 #ifdef NEED_SIGNAME
 
 #include <signal.h>

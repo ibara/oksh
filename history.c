@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#if defined(__linux__) || defined(__CYGWIN__)
+#if defined(NEED_STRAVIS) || defined(NEED_STRUNVIS)
 #include "vis.h"
 #else
 #include <vis.h>

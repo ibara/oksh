@@ -28,6 +28,8 @@
  * SUCH DAMAGE.
  */
 
+#include "pconfig.h"
+
 #ifdef NEED_STRUNVIS
 
 #include <sys/types.h>

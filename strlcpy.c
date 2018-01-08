@@ -16,6 +16,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "pconfig.h"
+
 #ifdef NEED_STRLCPY
 
 #include <sys/types.h>

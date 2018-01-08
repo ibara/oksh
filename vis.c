@@ -28,7 +28,7 @@
  * SUCH DAMAGE.
  */
 
-/* Mac OS X and FreeBSD are missing stravis */
+#include "pconfig.h"
 
 #ifdef NEED_STRAVIS
 

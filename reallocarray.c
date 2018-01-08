@@ -15,6 +15,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "pconfig.h"
+
 #ifdef NEED_REALLOCARRAY
 
 #include <sys/types.h>
