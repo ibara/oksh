@@ -213,7 +213,7 @@ else
 prefix="/usr/local"
 fi
 
-mandir="$prefix/man/man1"
+mandir="$prefix/man"
 
 # Options.
 for opt
@@ -273,6 +273,9 @@ echo "$os"
 
 if [ "x$os" = "xLinux" ] ; then
   cflags="$cflags -D_GNU_SOURCE"
+elif [ "x$os" = "xFreeBSD" ] ; then
+  prefix="\\${DESTDIR}$prefix"
+  mandir="$prefix/man"
 elif [ "x$os" = "xNetBSD" ] ; then
   tflags="-D_OPENBSD_SOURCE"
   cflags="$cflags $tflags"
@@ -400,7 +403,7 @@ all: \${PROG}
 
 install:
 	install -c -s -m 755 \${PROG} \${PREFIX}/bin
-	install -c -m 644 oksh.1 \${MANDIR}/\${PROG}.1
+	install -c -m 644 oksh.1 \${MANDIR}/man1/\${PROG}.1
 	echo \${ETS}
 
 test:
