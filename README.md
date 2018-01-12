@@ -40,4 +40,4 @@ The rest are BSD or ISC licensed.
 
 Get a tarball
 -------------
-http://devio.us/~bcallah/oksh/oksh-20180108.tar.gz
+http://devio.us/~bcallah/oksh/oksh-20180111.tar.gz
