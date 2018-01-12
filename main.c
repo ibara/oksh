@@ -150,7 +150,7 @@ main(int argc, char *argv[])
 
 	kshname = argv[0];
 
-#ifdef __OpenBSD__
+#ifdef HAVE_PLEDGE
 	if (pledge("stdio rpath wpath cpath fattr flock getpw proc exec tty",
 	    NULL) == -1) {
 		perror("pledge");

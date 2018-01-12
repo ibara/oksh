@@ -18,7 +18,7 @@
 
 #include "pconfig.h"
 
-#ifdef NEED_STRLCAT
+#ifndef HAVE_STRLCAT
 
 #include <sys/types.h>
 #include <string.h>
@@ -58,4 +58,4 @@ strlcat(char *dst, const char *src, size_t dsize)
 	return(dlen + (src - osrc));	/* count does not include NUL */
 }
 
-#endif /* NEED_STRLCAT */
+#endif /* !HAVE_STRLCAT */

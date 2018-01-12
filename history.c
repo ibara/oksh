@@ -24,7 +24,7 @@
 
 #include "sh.h"
 
-#if defined(NEED_STRAVIS) || defined(NEED_STRUNVIS)
+#if !defined(HAVE_STRAVIS) || !defined(HAVE_STRUNVIS)
 #include "vis.h"
 #else
 #include <vis.h>

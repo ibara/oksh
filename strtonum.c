@@ -19,7 +19,7 @@
 
 #include "pconfig.h"
 
-#ifdef NEED_STRTONUM
+#ifndef HAVE_STRTONUM
 
 #include <errno.h>
 #include <limits.h>
@@ -68,4 +68,4 @@ strtonum(const char *numstr, long long minval, long long maxval,
 	return (ll);
 }
 
-#endif /* NEED_STRTONUM */
+#endif /* !HAVE_STRTONUM */

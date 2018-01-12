@@ -30,7 +30,7 @@
 
 #include "portable.h"
 
-#ifdef NEED_STRAVIS
+#ifndef HAVE_STRAVIS
 
 #include <sys/types.h>
 #include <errno.h>
@@ -186,4 +186,4 @@ stravis(char **outp, const char *src, int flag)
 	return (len);
 }
 
-#endif /* NEED_STRAVIS */
+#endif /* !HAVE_STRAVIS */

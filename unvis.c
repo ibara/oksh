@@ -30,7 +30,7 @@
 
 #include "pconfig.h"
 
-#ifdef NEED_STRUNVIS
+#ifndef HAVE_STRUNVIS
 
 #include <sys/types.h>
 #include <ctype.h>
@@ -247,4 +247,4 @@ strunvis(char *dst, const char *src)
 	return (dst - start);
 }
 
-#endif /* NEED_STRUNVIS */
+#endif /* !HAVE_STRUNVIS */

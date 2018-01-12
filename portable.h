@@ -74,17 +74,17 @@
 	(y)->tv_nsec = mts.tv_nsec;
 #endif /* __APPLE__ */
 
-#ifdef NEED_SETRESGID
+#ifndef HAVE_SETRESGID
 #define setresgid(x, y, z)	setgid(x); setegid(y); setgid(z)
-#endif /* setresgid */
+#endif /* !HAVE_SETRESGID */
 
-#ifdef NEED_SETRESUID
+#ifndef HAVE_SETRESUID
 #define setresuid(x, y, z)	setuid(x); seteuid(y); setuid(z)
-#endif /* NEED_SETRESUID */
+#endif /* !HAVE_SETRESUID */
 
-#ifdef NEED_SRAND_DETERMINISTIC
+#ifndef HAVE_SRAND_DETERMINISTIC
 #define srand_deterministic(x)	srand(x)
-#endif /* NEED_SRAND_DETERMINISTIC */
+#endif /* !HAVE_SRAND_DETERMINISTIC */
 
 /* struct stat compatibility */
 #ifdef __APPLE__
@@ -118,38 +118,38 @@
  * Prototypes
  */
 
-#ifdef NEED_REALLOCARRAY
+#ifndef HAVE_REALLOCARRAY
 void	 *reallocarray(void *, size_t, size_t);
-#endif /* NEED_REALLOCARRAY */
+#endif /* !HAVE_REALLOCARRAY */
 
-#ifdef NEED_STRAVIS
+#ifndef HAVE_STRAVIS
 int	  stravis(char **, const char *, int);
-#endif /* NEED_STRAVIS */
+#endif /* !HAVE_STRAVIS */
 
-#ifdef NEED_STRLCAT
+#ifndef HAVE_STRLCAT
 size_t	strlcat(char *, const char *, size_t);
-#endif /* NEED_STRLCAT */
+#endif /* !HAVE_STRLCAT */
 
-#ifdef NEED_STRLCPY
+#ifndef HAVE_STRLCPY
 size_t	strlcpy(char *, const char *, size_t);
-#endif /* NEED_STRLCPY */
+#endif /* !HAVE_STRLCPY */
 
-#ifdef NEED_STRTONUM
+#ifndef HAVE_STRTONUM
 long long strtonum(const char *numstr, long long minval, long long maxval,
 		   const char **errstrp);
-#endif /* NEED_STRTONUM */
+#endif /* !HAVE_STRTONUM */
 
-#ifdef NEED_STRUNVIS
+#ifndef HAVE_STRUNVIS
 int	  strunvis(char *, const char *);
-#endif /* NEED_STRUNVIS */
+#endif /* !HAVE_STRUNVIS */
 
 /*
  * Externs
  */
 
-#ifdef NEED_SIGNAME
+#ifndef HAVE_SIGNAME
 extern const char *const sys_signame[NSIG];
-#endif /* NEED_SIGNAME */
+#endif /* !HAVE_SIGNAME */
 
 /*
  * OpenBSD sys/queue.h

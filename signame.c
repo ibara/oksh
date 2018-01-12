@@ -30,7 +30,7 @@
 
 #include "pconfig.h"
 
-#ifdef NEED_SIGNAME
+#ifndef HAVE_SIGNAME
 
 #include <signal.h>
 #include <unistd.h>
@@ -71,4 +71,4 @@ const char *const sys_signame[NSIG] = {
 	"THR",		/* SIGTHR */
 };
 
-#endif /* NEED_SIGNAME */
+#endif /* !HAVE_SIGNAME */

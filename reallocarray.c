@@ -17,7 +17,7 @@
 
 #include "pconfig.h"
 
-#ifdef NEED_REALLOCARRAY
+#ifndef HAVE_REALLOCARRAY
 
 #include <sys/types.h>
 #include <errno.h>
@@ -41,4 +41,4 @@ reallocarray(void *optr, size_t nmemb, size_t size)
 	return realloc(optr, size * nmemb);
 }
 
-#endif /* NEED_REALLOCARRAY */
+#endif /* !HAVE_REALLOCARRAY */

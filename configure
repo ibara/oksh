@@ -36,6 +36,21 @@ EOF
   return 1
 }
 
+pledgecheck() {
+  cat << EOF > conftest.c
+#include <unistd.h>
+int main(void){pledge(NULL,NULL);return 0;}
+EOF
+  $cc $tflags -o conftest conftest.c > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.c
+    return 0
+  else
+    rm -f conftest conftest.c
+    return 1
+  fi
+}
+
 reallocarraycheck() {
   cat << EOF > conftest.c
 #include <stdlib.h>
@@ -285,94 +300,103 @@ cat << EOF > pconfig.h
 
 EOF
 
+printf "checking for pledge... "
+pledgecheck
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_PLEDGE" >> pconfig.h
+  echo "yes"
+else
+  echo "no"
+fi
+
 printf "checking for reallocarray... "
 reallocarraycheck
-if [ $? -ne 0 ] ; then
-  echo "#define NEED_REALLOCARRAY" >> pconfig.h
-  echo "no"
-else
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_REALLOCARRAY" >> pconfig.h
   echo "yes"
+else
+  echo "no"
 fi
 
 printf "checking for setresgid... "
 setresgidcheck
-if [ $? -ne 0 ] ; then
-  echo "#define NEED_SETRESGID" >> pconfig.h
-  echo "no"
-else
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_SETRESGID" >> pconfig.h
   echo "yes"
+else
+  echo "no"
 fi
 
 printf "checking for setresuid... "
 setresuidcheck
-if [ $? -ne 0 ] ; then
-  echo "#define NEED_SETRESUID" >> pconfig.h
-  echo "no"
-else
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_SETRESUID" >> pconfig.h
   echo "yes"
+else
+  echo "no"
 fi
 
 printf "checking for srand_deterministic... "
 sranddeterministiccheck
-if [ $? -ne 0 ] ; then
-  echo "#define NEED_SRAND_DETERMINISTIC" >> pconfig.h
-  echo "no"
-else
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_SRAND_DETERMINISTIC" >> pconfig.h
   echo "yes"
+else
+  echo "no"
 fi
 
 printf "checking for stravis... "
 stravischeck
-if [ $? -ne 0 ] ; then
-  echo "#define NEED_STRAVIS" >> pconfig.h
-  echo "no"
-else
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_STRAVIS" >> pconfig.h
   echo "yes"
+else
+  echo "no"
 fi
 
 printf "checking for strlcat... "
 strlcatcheck
-if [ $? -ne 0 ] ; then
-  echo "#define NEED_STRLCAT" >> pconfig.h
-  echo "no"
-else
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_STRLCAT" >> pconfig.h
   echo "yes"
+else
+  echo "no"
 fi
 
 printf "checking for strlcpy... "
 strlcpycheck
-if [ $? -ne 0 ] ; then
-  echo "#define NEED_STRLCPY" >> pconfig.h
-  echo "no"
-else
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_STRLCPY" >> pconfig.h
   echo "yes"
+else
+  echo "no"
 fi
 
 printf "checking for strtonum... "
 strtonumcheck
-if [ $? -ne 0 ] ; then
-  echo "#define NEED_STRTONUM" >> pconfig.h
-  echo "no"
-else
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_STRTONUM" >> pconfig.h
   echo "yes"
+else
+  echo "no"
 fi
 
 printf "checking for strunvis... "
 strunvischeck
-if [ $? -ne 0 ] ; then
-  echo "#define NEED_STRUNVIS" >> pconfig.h
-  echo "no"
-else
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_STRUNVIS" >> pconfig.h
   echo "yes"
+else
+  echo "no"
 fi
 
 printf "checking for sys_signame... "
 signamecheck
-if [ $? -ne 0 ] ; then
-  echo "#define NEED_SIGNAME" >> pconfig.h
-  echo "no"
-else
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_SIGNAME" >> pconfig.h
   echo "yes"
+else
+  echo "no"
 fi
 
 printf "creating Makefile... "
