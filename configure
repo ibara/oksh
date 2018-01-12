@@ -273,9 +273,6 @@ echo "$os"
 
 if [ "x$os" = "xLinux" ] ; then
   cflags="$cflags -D_GNU_SOURCE"
-elif [ "x$os" = "xFreeBSD" ] ; then
-  prefix="\\${DESTDIR}$prefix"
-  mandir="$prefix/man"
 elif [ "x$os" = "xNetBSD" ] ; then
   tflags="-D_OPENBSD_SOURCE"
   cflags="$cflags $tflags"
