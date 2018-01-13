@@ -90,6 +90,9 @@ cc -DEMACS -DVI -o version.o -c version.c
 echo cc -DEMACS -DVI -o vi.o -c vi.c
 cc -DEMACS -DVI -o vi.o -c vi.c
 
+echo cc -DEMACS -DVI -o confstr.o -c confstr.c
+cc -DEMACS -DVI -o confstr.o -c confstr.c
+
 echo cc -DEMACS -DVI -o reallocarray.o -c reallocarray.c
 cc -DEMACS -DVI -o reallocarray.o -c reallocarray.c
 
@@ -111,5 +114,5 @@ cc -DEMACS -DVI -o unvis.o -c unvis.c
 echo cc -DEMACS -DVI -o vis.o -c vis.c
 cc -DEMACS -DVI -o vis.o -c vis.c
 
-echo cc -o oksh alloc.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o emacs.o eval.o exec.o expr.o history.o io.o jobs.o lex.o mail.o main.o misc.o path.o shf.o syn.o table.o trap.o tree.o tty.o var.o version.o vi.o reallocarray.o strtonum.o signame.o strlcat.o strlcpy.o unvis.o vis.o -lc
-cc -o oksh alloc.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o emacs.o eval.o exec.o expr.o history.o io.o jobs.o lex.o mail.o main.o misc.o path.o shf.o syn.o table.o trap.o tree.o tty.o var.o version.o vi.o reallocarray.o strtonum.o signame.o strlcat.o strlcpy.o unvis.o vis.o -lc
+echo cc -o oksh alloc.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o emacs.o eval.o exec.o expr.o history.o io.o jobs.o lex.o mail.o main.o misc.o path.o shf.o syn.o table.o trap.o tree.o tty.o var.o version.o vi.o confstr.o reallocarray.o strtonum.o signame.o strlcat.o strlcpy.o unvis.o vis.o -lc
+cc -o oksh alloc.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o emacs.o eval.o exec.o expr.o history.o io.o jobs.o lex.o mail.o main.o misc.o path.o shf.o syn.o table.o trap.o tree.o tty.o var.o version.o vi.o confstr.o reallocarray.o strtonum.o signame.o strlcat.o strlcpy.o unvis.o vis.o -lc
