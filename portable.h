@@ -47,11 +47,13 @@
 #endif /* !O_EXLOCK */
 
 #ifndef _PW_NAME_LEN
-#ifdef __linux__
+#if defined(__linux__)
 #define _PW_NAME_LEN	LOGIN_NAME_MAX
+#elif defined(__NetBSD__)
+#define _PW_NAME_LEN	MAXLOGNAME
 #else
 #define _PW_NAME_LEN	MAXLOGNAME - 1
-#endif /* __linux__ */
+#endif /* __linux__ || __NetBSD__ */
 #endif /* !_PW_NAME_LEN */
 
 #ifndef RLIMIT_RSS
@@ -156,6 +158,10 @@ int	  strunvis(char *, const char *);
  */
 
 #ifndef HAVE_SIGNAME
+#ifdef NSIG
+#undef NSIG
+#endif /* NSIG */
+#define NSIG 33
 extern const char *const sys_signame[NSIG];
 #endif /* !HAVE_SIGNAME */
 
@@ -811,6 +817,6 @@ struct {								\
 	_Q_INVALIDATE((elm)->field.cqe_next);				\
 } while (0)
 
-#endif /* defined(__linux__) */
+#endif /* __linux__ */
 
 #endif /* !_OKSH_PORTABLE_H_ */
