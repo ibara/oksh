@@ -36,11 +36,15 @@
 
 #ifndef CHILD_MAX
 #define CHILD_MAX	80
-#endif /* CHILD_MAX */
+#endif /* !CHILD_MAX */
+
+#ifndef _CS_PATH
+#define _CS_PATH 1
+#endif /* !CS_PATH */
 
 #ifndef O_EXLOCK
 #define O_EXLOCK	0
-#endif /* O_EXLOCK */
+#endif /* !O_EXLOCK */
 
 #ifndef _PW_NAME_LEN
 #ifdef __linux__
@@ -48,19 +52,19 @@
 #else
 #define _PW_NAME_LEN	MAXLOGNAME - 1
 #endif /* __linux__ */
-#endif /* _PW_NAME_LEN */
+#endif /* !_PW_NAME_LEN */
 
 #ifndef RLIMIT_RSS
 #define	RLIMIT_RSS	5		/* resident set size */
-#endif /* RLIMIT_RSS */
+#endif /* !RLIMIT_RSS */
 
 #ifndef RLIMIT_MEMLOCK
 #define	RLIMIT_MEMLOCK	6		/* locked-in-memory address space */
-#endif /* RLIMIT_MEMLOCK */
+#endif /* !RLIMIT_MEMLOCK */
 
 #ifndef RLIMIT_NPROC
 #define	RLIMIT_NPROC	7		/* number of processes */
-#endif /* RLIMIT_NPROC */
+#endif /* !RLIMIT_NPROC */
 
 /* Convert clock_gettime() to clock_get_time() on Max OS X */
 #ifdef __APPLE__
@@ -94,7 +98,7 @@
 /* Cygwin already has a sys_signame but we want to use our own */
 #ifdef __CYGWIN__
 #define sys_signame	esys_signame
-#endif
+#endif /* __CYGWIN__ */
 
 /* From OpenBSD sys/time.h */
 #ifndef __OpenBSD__
@@ -117,6 +121,10 @@
 /*
  * Prototypes
  */
+
+#ifndef HAVE_CONFSTR
+size_t	confstr(int, char *, size_t);
+#endif /* !HAVE_CONFSTR */
 
 #ifndef HAVE_REALLOCARRAY
 void	 *reallocarray(void *, size_t, size_t);
