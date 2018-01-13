@@ -38,10 +38,6 @@
 #define CHILD_MAX	80
 #endif /* !CHILD_MAX */
 
-#ifndef _CS_PATH
-#define _CS_PATH 1
-#endif /* !CS_PATH */
-
 #ifndef O_EXLOCK
 #define O_EXLOCK	0
 #endif /* !O_EXLOCK */
