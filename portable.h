@@ -153,13 +153,18 @@ int	  strunvis(char *, const char *);
  * Externs
  */
 
-#ifndef HAVE_SIGNAME
+#if !defined(HAVE_SIGLIST) || !defined(HAVE_SIGNAME)
 #ifdef NSIG
 #undef NSIG
 #endif /* NSIG */
 #define NSIG 33
+#ifndef HAVE_SIGLIST
+extern const char *const sys_siglist[NSIG];
+#endif /* !HAVE_SIGLIST */
+#ifndef HAVE_SIGNAME
 extern const char *const sys_signame[NSIG];
 #endif /* !HAVE_SIGNAME */
+#endif /* !HAVE_SIGLIST || !HAVE_SIGNAME */
 
 /*
  * OpenBSD sys/queue.h

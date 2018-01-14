@@ -113,6 +113,23 @@ EOF
   fi
 }
 
+siglistcheck() {
+  cat << EOF > conftest.c
+#include <signal.h>
+#include <stdio.h>
+#include <unistd.h>
+int main(void){printf("%s",sys_siglist[0]);return 0;}
+EOF
+  $cc $tflags -o conftest conftest.c > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.c
+    return 0
+  else
+    rm -f conftest conftest.c
+    return 1
+  fi
+}
+
 signamecheck() {
   cat << EOF > conftest.c
 #include <signal.h>
@@ -414,6 +431,15 @@ else
   echo "no"
 fi
 
+printf "checking for sys_siglist... "
+siglistcheck
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_SIGLIST" >> pconfig.h
+  echo "yes"
+else
+  echo "no"
+fi
+
 printf "checking for sys_signame... "
 signamecheck
 if [ $? -eq 0 ] ; then
@@ -436,8 +462,8 @@ PROG =		oksh
 OBJS =	alloc.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o emacs.o eval.o \\
 	exec.o expr.o history.o io.o jobs.o lex.o mail.o main.o misc.o \\
 	path.o shf.o syn.o table.o trap.o tree.o tty.o var.o version.o vi.o \\
-	confstr.o reallocarray.o signame.o strlcat.o strlcpy.o strtonum.o \\
-	unvis.o vis.o
+	confstr.o reallocarray.o siglist.o signame.o strlcat.o strlcpy.o \\
+	strtonum.o unvis.o vis.o
 
 ETS =	\`grep -w \${PREFIX}/bin/\${PROG} /etc/shells > /dev/null; \\
 	[ \$\$? -ne 0 ] && echo "\${PREFIX}/bin/\${PROG}" >> /etc/shells\`
