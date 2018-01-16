@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.h,v 1.17 2018/01/05 15:44:31 jca Exp $	*/
+/*	$OpenBSD: config.h,v 1.19 2018/01/15 14:58:05 jca Exp $	*/
 
 /* config.h.  NOT generated automatically. */
 
@@ -11,12 +11,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-/* Include brace-expansion? */
-#define BRACE_EXPAND 1
-
-/* Include any history? */
-#define HISTORY 1
-
 /* Strict POSIX behaviour? */
 /* #undef POSIXLY_CORRECT */
 
@@ -27,16 +21,9 @@
  * End of configuration stuff for PD ksh.
  */
 
-#if defined(EMACS) || defined(VI)
-# define	EDIT
-#else
-# undef		EDIT
+#if !defined(EMACS) && !defined(VI)
+# error "Define either EMACS or VI."
 #endif
-
-/* Editing implies history */
-#if defined(EDIT) && !defined(HISTORY)
-# define HISTORY
-#endif /* EDIT */
 
 #include "portable.h"
 

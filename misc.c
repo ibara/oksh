@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.65 2018/01/06 16:28:58 millert Exp $	*/
+/*	$OpenBSD: misc.c,v 1.67 2018/01/15 14:58:05 jca Exp $	*/
 
 /*
  * Miscellaneous functions
@@ -121,9 +121,7 @@ const struct option sh_options[] = {
 	 * entries MUST match the order of sh_flag F* enumerations in sh.h.
 	 */
 	{ "allexport",	'a',		OF_ANY },
-#ifdef BRACE_EXPAND
 	{ "braceexpand",  0,		OF_ANY }, /* non-standard */
-#endif
 	{ "bgnice",	  0,		OF_ANY },
 	{ NULL,	'c',	    OF_CMDLINE },
 	{ "csh-history",  0,		OF_ANY }, /* non-standard */
@@ -272,27 +270,25 @@ change_flag(enum sh_flag f,
 		if (what != OF_CMDLINE && newval != oldval)
 			j_change();
 	} else
-#ifdef EDIT
 	if (0
-# ifdef VI
+#ifdef VI
 	    || f == FVI
-# endif /* VI */
-# ifdef EMACS
+#endif /* VI */
+#ifdef EMACS
 	    || f == FEMACS || f == FGMACS
-# endif /* EMACS */
+#endif /* EMACS */
 	   )
 	{
 		if (newval) {
-# ifdef VI
+#ifdef VI
 			Flag(FVI) = 0;
-# endif /* VI */
-# ifdef EMACS
+#endif /* VI */
+#ifdef EMACS
 			Flag(FEMACS) = Flag(FGMACS) = 0;
-# endif /* EMACS */
+#endif /* EMACS */
 			Flag(f) = newval;
 		}
 	} else
-#endif /* EDIT */
 	/* Turning off -p? */
 	if (f == FPRIVILEGED && oldval && !newval) {
 		gid_t gid = getgid();
@@ -301,10 +297,7 @@ change_flag(enum sh_flag f,
 		setgroups(1, &gid);
 		setresuid(ksheuid, ksheuid, ksheuid);
 	} else if (f == FPOSIX && newval) {
-#ifdef BRACE_EXPAND
-		Flag(FBRACEEXPAND) = 0
-#endif /* BRACE_EXPAND */
-		;
+		Flag(FBRACEEXPAND) = 0;
 	}
 	/* Changing interactive flag? */
 	if (f == FTALKING) {

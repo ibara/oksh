@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.68 2018/01/06 16:28:58 millert Exp $	*/
+/*	$OpenBSD: sh.h,v 1.70 2018/01/15 14:58:05 jca Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -132,9 +132,7 @@ extern const struct option sh_options[];
  */
 enum sh_flag {
 	FEXPORT = 0,	/* -a: export all */
-#ifdef BRACE_EXPAND
 	FBRACEEXPAND,	/* enable {} globbing */
-#endif
 	FBGNICE,	/* bgnice */
 	FCOMMAND,	/* -c: (invocation) execute specified command */
 	FCSHHISTORY,	/* csh-style history enabled */
@@ -340,18 +338,14 @@ extern int	builtin_flag;	/* flags of called builtin (SPEC_BI, etc.) */
 extern char	*current_wd;
 extern int	current_wd_size;
 
-#ifdef EDIT
 /* Minimum required space to work with on a line - if the prompt leaves less
  * space than this on a line, the prompt is truncated.
  */
-# define MIN_EDIT_SPACE	7
+#define MIN_EDIT_SPACE	7
 /* Minimum allowed value for x_cols: 2 for prompt, 3 for " < " at end of line
  */
-# define MIN_COLS	(2 + MIN_EDIT_SPACE + 3)
+#define MIN_COLS	(2 + MIN_EDIT_SPACE + 3)
 extern	int	x_cols;	/* tty columns */
-#else
-# define x_cols 80		/* for pr_menu(exec.c) */
-#endif
 
 /* These to avoid bracket matching problems */
 #define OPAREN	'('
@@ -453,7 +447,6 @@ void	init_histvec(void);
 void	hist_init(Source *);
 void	hist_finish(void);
 void	histsave(int, const char *, int);
-#ifdef HISTORY
 int	c_fc(char **);
 void	sethistcontrol(const char *);
 void	sethistsize(int);
@@ -464,7 +457,6 @@ int	findhist(int, int, const char *, int);
 int	findhistrel(const char *);
 char  **hist_get_newest(int);
 
-#endif /* HISTORY */
 /* io.c */
 void	errorf(const char *, ...)
 	    __attribute__((__noreturn__, __format__ (printf, 1, 2)));

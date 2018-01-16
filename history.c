@@ -1,4 +1,4 @@
-/*	$OpenBSD: history.c,v 1.78 2018/01/06 16:28:58 millert Exp $	*/
+/*	$OpenBSD: history.c,v 1.80 2018/01/15 22:30:38 jca Exp $	*/
 
 /*
  * command history
@@ -29,8 +29,6 @@
 #else
 #include <vis.h>
 #endif
-
-#ifdef HISTORY
 
 static void	history_write(void);
 static FILE	*history_open(void);
@@ -798,10 +796,9 @@ hist_init(Source *s)
 
 	hist_source = s;
 
-	hname = str_val(global("HISTFILE"));
-	if (hname == NULL)
+	if (str_val(global("HISTFILE")) == null)
 		return;
-	hname = str_save(hname, APERM);
+	hname = str_save(str_val(global("HISTFILE")), APERM);
 	histfh = history_open();
 	if (histfh == NULL)
 		return;
@@ -861,25 +858,3 @@ hist_finish(void)
 {
 	history_close();
 }
-
-#else /* HISTORY */
-
-/* No history to be compiled in: dummy routines to avoid lots more ifdefs */
-void
-init_histvec(void)
-{
-}
-void
-hist_init(Source *s)
-{
-}
-void
-hist_finish(void)
-{
-}
-void
-histsave(int lno, const char *cmd, int dowrite)
-{
-	errorf("history not enabled");
-}
-#endif /* HISTORY */
