@@ -53,4 +53,4 @@ for details.
 
 Get a tarball
 -------------
-http://devio.us/~bcallah/oksh/oksh-20180111.tar.gz
+http://devio.us/~bcallah/oksh/oksh-20180120.tar.gz
