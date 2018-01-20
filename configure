@@ -10,9 +10,16 @@ int main(void){return 0;}
 EOF
     $CC -o conftest conftest.c > /dev/null 2>&1
     if [ $? -eq 0 ] ; then
-      rm -f conftest conftest.c
-      cc="$CC"
-      return 0
+      ./conftest
+      if [ $? -eq 0 ] ; then
+	rm -f conftest conftest.c
+	cc="$CC"
+	return 0
+      else
+	echo "could not build working executables"
+	echo "Please ensure your C compiler is a native compiler"
+	exit 1
+      fi
     else
       rm -f conftest conftest.c
     fi
@@ -26,9 +33,16 @@ EOF
     $compiler -o conftest conftest.c > /dev/null 2>&1
 
     if [ $? -eq 0 ] ; then
-      rm -f conftest conftest.c
-      cc="$compiler"
-      return 0
+      ./conftest
+      if [ $? -eq 0 ] ; then
+	rm -f conftest conftest.c
+	cc="$compiler"
+	return 0
+      else
+	echo "could not build working executables"
+	echo "Please ensure your C compiler is a native compiler"
+	exit 1
+      fi
     else
       rm -f conftest conftest.c
     fi
@@ -284,15 +298,20 @@ EOF
   fi
 }
 
+# Option variables
 if [ ! -z "$PREFIX" ] ; then
-prefix="$PREFIX"
+  prefix="$PREFIX"
 else
-prefix="/usr/local"
+  prefix="/usr/local"
 fi
 
 mandir="$prefix/man"
 
-# Options.
+instprog="oksh"
+instsh=0
+static=0
+
+# Options
 for opt
 do
   case "$opt" in
@@ -301,6 +320,27 @@ do
 	;;
     --mandir=*)
 	mandir=`echo $opt | cut -d '=' -f 2`
+	;;
+    --disable-ksh|--enable-ksh)
+	if [ "x$opt" = "x--enable-ksh" ] ; then
+	  instprog="ksh"
+	else
+	  instprog="oksh"
+	fi
+	;;
+    --disable-sh|--enable-sh)
+	if [ "x$opt" = "x--enable-sh" ] ; then
+	  instsh=1
+	else
+	  instsh=0
+	fi
+	;;
+    --disable-static|--enable-static)
+	if [ "x$opt" = "x--enable-static" ] ; then
+	  static=1
+	else
+	  static=0
+	fi
 	;;
     --help|-h)
 	echo "Usage: configure [options]"
@@ -312,6 +352,12 @@ do
 	echo "Top level install directory is PREFIX [$prefix]"
 	printf "  --mandir=MANDIR            "
 	echo "Manual pages are installed to MANDIR [$mandir]"
+	printf "  --enable-ksh               "
+	echo "Install executable as ksh [default=no]"
+	printf "  --enable-sh                "
+	echo "Install additional sh executable [default=no]"
+	printf "  --enable-static            "
+	echo "Statically link executables [default=no]"
 	exit 1
 	;;
     *)
@@ -320,9 +366,19 @@ do
 done
 
 if [ ! -z "$CFLAGS" ] ; then
-cflags="$CFLAGS -DEMACS -DVI"
+  cflags="$CFLAGS -DEMACS -DVI"
 else
-cflags="-DEMACS -DVI"
+  cflags="-DEMACS -DVI"
+fi
+
+if [ ! -z "$LDFLAGS" ] ; then
+  ldflags="$LDFLAGS "
+else
+  ldflags=""
+fi
+
+if [ $static -ne 0 ] ; then
+  ldflags="${ldflags}-static"
 fi
 
 printf "checking for C compiler... "
@@ -502,9 +558,18 @@ cat << EOF > Makefile
 
 CC =		$cc
 CFLAGS =	$cflags
+EOF
+
+if [ ! -z "$ldflags" ] ; then
+cat << EOF >> Makefile
+LDFLAGS =	$ldflags
+EOF
+fi
+
+cat << EOF >> Makefile
 PREFIX =	$prefix
 MANDIR =	$mandir
-PROG =		oksh
+PROG =		$instprog
 
 OBJS =	alloc.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o emacs.o eval.o \\
 	exec.o expr.o history.o io.o jobs.o lex.o mail.o main.o misc.o \\
@@ -523,7 +588,26 @@ all: \${PROG}
 install:
 	install -c -s -m 755 \${PROG} \${PREFIX}/bin
 	install -c -m 644 oksh.1 \${MANDIR}/man1/\${PROG}.1
-	echo \${ETS}
+EOF
+
+if [ $instsh -ne 0 ] ; then
+cat << EOF >> Makefile
+	install -c -s -m 755 \${PROG} \${PREFIX}/bin/sh
+	install -c -m 644 sh.1 \${MANDIR}/man1
+EOF
+fi
+
+cat << EOF >> Makefile
+	echo "Please add $prefix/bin/$instprog to /etc/shells"
+EOF
+
+if [ $instsh -ne 0 ] ; then
+cat << EOF >> Makefile
+	echo "Please add $prefix/bin/sh to /etc/shells"
+EOF
+fi
+
+cat << EOF >> Makefile
 
 test:
 	echo "No tests"
