@@ -95,7 +95,7 @@
 
 /* Cygwin already has a sys_signame but we want to use our own */
 #ifdef __CYGWIN__
-#define sys_signame	esys_signame
+#undef sys_signame
 #endif /* __CYGWIN__ */
 
 /* From OpenBSD sys/time.h */
