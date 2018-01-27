@@ -98,6 +98,13 @@
 #undef sys_signame
 #endif /* __CYGWIN__ */
 
+/* Android is missing _CS_PATH */
+#if defined(__linux__) && defined(__ANDROID__)
+#ifndef _CS_PATH
+#define _CS_PATH 1
+#endif
+#endif
+
 /* From OpenBSD sys/time.h */
 #ifndef __OpenBSD__
 #define timespeccmp(tsp, usp, cmp)                                      \
