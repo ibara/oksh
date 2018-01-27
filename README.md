@@ -8,6 +8,7 @@ Because all operating systems deserve a good shell.
 
 Supported systems
 -----------------
+`oksh` is known to run on the following Operating Systems:
 * OpenBSD
 * FreeBSD
 * DragonFly BSD
@@ -17,6 +18,16 @@ Supported systems
 * Android (via Termux)
 
 Running on a system not listed here? Add it and send a pull request!
+
+Supported compilers
+-------------------
+`oksh` is known to build with the following C compilers:
+* clang (https://llvm.org/)
+* gcc (https://gcc.gnu.org/)
+* pcc (http://pcc.ludd.ltu.se/)
+* cparser (https://pp.ipd.kit.edu/firm/)
+
+Building with a compiler not listed here? Add it and send a pull request!
 
 Packages
 --------
@@ -28,7 +39,8 @@ Using a package not listed here? Add it and send a pull request!
 Dependencies
 ------------
 A C compiler that understands the `long long` type. A C99 compiler is the
-easiest way to ensure that `oksh` will build correctly.
+easiest way to ensure that `oksh` will build correctly. Please see the
+list of C compilers above for a list of known working compilers.
 
 A `configure` script that produces a `POSIX` `Makefile` is provided to
 ease building and installation and can be run by:
