@@ -586,14 +586,18 @@ all: \${PROG}
 	\${CC} \${LDFLAGS} -o \${PROG} \${OBJS}
 
 install:
-	install -c -s -m 755 \${PROG} \${PREFIX}/bin
-	install -c -m 644 oksh.1 \${MANDIR}/man1/\${PROG}.1
+	install -d \${DESTDIR}\${PREFIX}/bin
+	install -d \${DESTDIR}\${MANDIR}/man1
+	install -c -s -m 755 \${PROG} \${DESTDIR}\${PREFIX}/bin
+	install -c -m 644 oksh.1 \${DESTDIR}\${MANDIR}/man1/\${PROG}.1
 EOF
 
 if [ $instsh -ne 0 ] ; then
 cat << EOF >> Makefile
-	install -c -s -m 755 \${PROG} \${PREFIX}/bin/sh
-	install -c -m 644 sh.1 \${MANDIR}/man1
+	install -d \${DESTDIR}\${PREFIX}/bin
+	install -d \${DESTDIR}\${MANDIR}/man1
+	install -c -s -m 755 \${PROG} \${DESTDIR}\${PREFIX}/bin/sh
+	install -c -m 644 sh.1 \${DESTDIR}\${MANDIR}/man1
 EOF
 fi
 
