@@ -19,6 +19,12 @@ Supported systems
 
 Running on a system not listed here? Add it and send a pull request!
 
+Current porting efforts
+-----------------------
+`oksh` is currently being ported to the following platforms.
+Help is greatly appreciated and encouraged!
+* AIX
+
 Supported compilers
 -------------------
 `oksh` is known to build with the following C compilers:
@@ -65,4 +71,4 @@ for details.
 
 Get a tarball
 -------------
-http://devio.us/~bcallah/oksh/oksh-20180120.tar.gz
+http://devio.us/~bcallah/oksh/oksh-20180401.tar.gz
