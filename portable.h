@@ -43,13 +43,13 @@
 #endif /* !O_EXLOCK */
 
 #ifndef _PW_NAME_LEN
-#if defined(__linux__)
+#if defined(__linux__) || defined(__CYGWIN__)
 #define _PW_NAME_LEN	LOGIN_NAME_MAX
 #elif defined(__NetBSD__)
 #define _PW_NAME_LEN	MAXLOGNAME
 #else
 #define _PW_NAME_LEN	MAXLOGNAME - 1
-#endif /* __linux__ || __NetBSD__ */
+#endif /* __linux__ || __CYGWIN__ || __NetBSD__ */
 #endif /* !_PW_NAME_LEN */
 
 #ifndef RLIMIT_RSS
