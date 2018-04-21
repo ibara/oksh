@@ -9,7 +9,7 @@
  * Includes
  */
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__CYGWIN__)
 #include <sys/file.h>
 #include <sys/types.h>
 
