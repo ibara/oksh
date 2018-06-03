@@ -127,6 +127,10 @@
  * Prototypes
  */
 
+#ifndef HAVE_ASPRINTF
+int asprintf(char **str, const char *fmt, ...);
+#endif /* !HAVE_ASPRINTF */
+
 #ifndef HAVE_CONFSTR
 size_t	confstr(int, char *, size_t);
 #endif /* !HAVE_CONFSTR */

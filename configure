@@ -3,6 +3,21 @@
 # This configure script written by Brian Callahan <bcallah@openbsd.org>
 # and released into the Public Domain.
 
+asprintfcheck() {
+  cat << EOF > conftest.c
+#include <stdio.h>
+int main(void){asprintf(NULL,NULL);return 0;}
+EOF
+  $cc $tflags -o conftest conftest.c > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.c
+    return 0
+  else
+    rm -f conftest conftest.c
+    return 1
+  fi
+}
+
 cccheck() {
   if [ ! -z "$CC" ] ; then
 cat << EOF > conftest.c
@@ -436,6 +451,15 @@ else
   fi
 fi
 
+printf "checking for asprintf... "
+asprintfcheck
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_ASPRINTF" >> pconfig.h
+  echo "yes"
+else
+  echo "no"
+fi
+
 printf "checking for confstr... "
 confstrcheck
 if [ $? -eq 0 ] ; then
@@ -572,11 +596,11 @@ PREFIX =	$prefix
 MANDIR =	$mandir
 PROG =		$instprog
 
-OBJS =	alloc.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o emacs.o eval.o \\
-	exec.o expr.o history.o io.o jobs.o lex.o mail.o main.o misc.o \\
-	path.o shf.o syn.o table.o trap.o tree.o tty.o var.o version.o vi.o \\
-	confstr.o reallocarray.o siglist.o signame.o strlcat.o strlcpy.o \\
-	strtonum.o unvis.o vis.o
+OBJS =	alloc.o asprintf.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o \\
+	emacs.o eval.o exec.o expr.o history.o io.o jobs.o lex.o mail.o \\
+	main.o misc.o path.o shf.o syn.o table.o trap.o tree.o tty.o var.o \\
+	version.o vi.o confstr.o reallocarray.o siglist.o signame.o \\
+	strlcat.o strlcpy.o strtonum.o unvis.o vis.o
 
 ETS =	\`grep -w \${PREFIX}/bin/\${PROG} /etc/shells > /dev/null; \\
 	[ \$\$? -ne 0 ] && echo "\${PREFIX}/bin/\${PROG}" >> /etc/shells\`
