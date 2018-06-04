@@ -88,6 +88,30 @@
 #define srand_deterministic(x)	srand(x)
 #endif /* !HAVE_SRAND_DETERMINISTIC */
 
+#ifndef HAVE_TIMERADD
+#define timeradd(tvp, uvp, vvp)                                         \
+        do {                                                            \
+                (vvp)->tv_sec = (tvp)->tv_sec + (uvp)->tv_sec;          \
+                (vvp)->tv_usec = (tvp)->tv_usec + (uvp)->tv_usec;       \
+                if ((vvp)->tv_usec >= 1000000) {                        \
+                        (vvp)->tv_sec++;                                \
+                        (vvp)->tv_usec -= 1000000;                      \
+                }                                                       \
+        } while (0)
+#endif /* !HAVE_TIMERADD */
+
+#ifndef HAVE_TIMERSUB
+#define timersub(tvp, uvp, vvp)                                         \
+        do {                                                            \
+                (vvp)->tv_sec = (tvp)->tv_sec - (uvp)->tv_sec;          \
+                (vvp)->tv_usec = (tvp)->tv_usec - (uvp)->tv_usec;       \
+                if ((vvp)->tv_usec < 0) {                               \
+                        (vvp)->tv_sec--;                                \
+                        (vvp)->tv_usec += 1000000;                      \
+                }                                                       \
+        } while (0)
+#endif /* !HAVE_TIMERSUB */
+
 /* struct stat compatibility */
 #ifdef __APPLE__
 #define st_mtim	st_mtimespec

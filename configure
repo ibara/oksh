@@ -298,6 +298,36 @@ EOF
   fi
 }
 
+timeraddcheck() {
+  cat << EOF > conftest.c
+#include <sys/time.h>
+int main(void){struct timeval a, b, res;timeradd(&a, &b, &res);return 0;}
+EOF
+  $cc $tflags -o conftest conftest.c > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.c
+    return 0
+  else
+    rm -f conftest conftest.c
+    return 1
+  fi
+}
+
+timersubcheck() {
+  cat << EOF > conftest.c
+#include <sys/time.h>
+int main(void){struct timeval a, b, res;timersub(&a, &b, &res);return 0;}
+EOF
+  $cc $tflags -o conftest conftest.c > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.c
+    return 0
+  else
+    rm -f conftest conftest.c
+    return 1
+  fi
+}
+
 wflagcheck() {
   cat << EOF > conftest.c
 int main(void){return 0;}
@@ -572,6 +602,24 @@ printf "checking for sys_signame... "
 signamecheck
 if [ $? -eq 0 ] ; then
   echo "#define HAVE_SIGNAME" >> pconfig.h
+  echo "yes"
+else
+  echo "no"
+fi
+
+printf "checking for timeradd... "
+timeraddcheck
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_TIMERADD" >> pconfig.h
+  echo "yes"
+else
+  echo "no"
+fi
+
+printf "checking for timersub... "
+timersubcheck
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_TIMERSUB" >> pconfig.h
   echo "yes"
 else
   echo "no"
