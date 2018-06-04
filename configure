@@ -502,6 +502,11 @@ case "x$os" in
     tflags="-D_OPENBSD_SOURCE"
     cflags="$cflags $tflags"
     ;;
+  "xAIX")
+    tflags="-D_ALL_SOURCE"
+    cflags="$cflags $tflags"
+    ldflags="-lbsd"
+    ;;
 esac
 
 cat << EOF > pconfig.h

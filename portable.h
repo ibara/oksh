@@ -26,6 +26,10 @@
 #include <mach/mach.h>
 #endif /* __APPLE__ */
 
+#ifdef _AIX
+#include <sys/file.h>
+#endif /* _AIX */
+
 #include <time.h>
 
 #include "pconfig.h"
@@ -43,13 +47,13 @@
 #endif /* !O_EXLOCK */
 
 #ifndef _PW_NAME_LEN
-#if defined(__linux__) || defined(__CYGWIN__)
+#if defined(__linux__) || defined(__CYGWIN__) || defined(_AIX)
 #define _PW_NAME_LEN	LOGIN_NAME_MAX
 #elif defined(__NetBSD__)
 #define _PW_NAME_LEN	MAXLOGNAME
 #else
 #define _PW_NAME_LEN	MAXLOGNAME - 1
-#endif /* __linux__ || __CYGWIN__ || __NetBSD__ */
+#endif /* __linux__ || __CYGWIN__ || _AIX || __NetBSD__ */
 #endif /* !_PW_NAME_LEN */
 
 #ifndef RLIMIT_RSS
@@ -75,6 +79,15 @@
 	(y)->tv_sec = mts.tv_sec;					\
 	(y)->tv_nsec = mts.tv_nsec;
 #endif /* __APPLE__ */
+
+#ifdef _AIX
+#define VWERASE VWERSE
+#define VDISCARD VDISCRD
+#define _PATH_DEFPATH "/usr/bin:/etc:/usr/sbin:/usr/ucb:/usr/bin/X11:/sbin"
+#define WCOREFLAG 0200
+#define WCOREDUMP(x) ((x) & WCOREFLAG)
+#undef BAD
+#endif /* _AIX */
 
 #ifndef HAVE_SETRESGID
 #define setresgid(x, y, z)	setgid(x); setegid(y); setgid(z)
@@ -220,7 +233,7 @@ typedef void (*sig_t) (int);
 
 /* The following should only be necessary on non-BSD systems.  */
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(_AIX)
 
 /*	$OpenBSD: queue.h,v 1.38 2013/07/03 15:05:21 fgsch Exp $	*/
 /*	$NetBSD: queue.h,v 1.11 1996/05/16 05:17:14 mycroft Exp $	*/
@@ -866,6 +879,6 @@ struct {								\
 	_Q_INVALIDATE((elm)->field.cqe_next);				\
 } while (0)
 
-#endif /* __linux__ */
+#endif /* __linux__ || _AIX */
 
 #endif /* !_OKSH_PORTABLE_H_ */
