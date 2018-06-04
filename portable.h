@@ -113,9 +113,9 @@
 #endif /* !HAVE_TIMERSUB */
 
 /* struct stat compatibility */
-#ifdef __APPLE__
+#if !defined(HAVE_ST_MTIM) && defined(HAVE_ST_MTIMESPEC)
 #define st_mtim	st_mtimespec
-#endif /* __APPLE__ */
+#endif /* !HAVE_ST_MTIM && HAVE_ST_MTIMESPEC */
 
 /* Cygwin already has a sys_signame but we want to use our own */
 #ifdef __CYGWIN__
@@ -146,6 +146,11 @@
                 }                                                       \
         } while (0)
 #endif /* !__OpenBSD__ */
+
+#if !defined(HAVE_ST_MTIM) && !defined(HAVE_ST_MTIMESPEC)
+#define timespeccmp(tsp, usp, cmp) (tsp) cmp (usp)
+#define st_mtim st_mtime
+#endif /* !HAVE_ST_MTIM && !HAVE_ST_TIMESPEC */
 
 /*
  * Prototypes

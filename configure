@@ -236,6 +236,36 @@ EOF
   fi
 }
 
+st_mtimcheck() {
+  cat << EOF > conftest.c
+#include <sys/stat.h>
+int main(void){struct stat s;sizeof(s.st_mtim);return 0;}
+EOF
+  $cc $tflags -o conftest conftest.c > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.c
+    return 0
+  else
+    rm -f conftest conftest.c
+    return 1
+  fi
+}
+
+st_mtimespeccheck() {
+  cat << EOF > conftest.c
+#include <sys/stat.h>
+int main(void){struct stat s;sizeof(s.st_mtimespec);return 0;}
+EOF
+  $cc $tflags -o conftest conftest.c > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.c
+    return 0
+  else
+    rm -f conftest conftest.c
+    return 1
+  fi
+}
+
 stravischeck() {
   cat << EOF > conftest.c
 #include <stdlib.h>
@@ -563,6 +593,24 @@ printf "checking for srand_deterministic... "
 sranddeterministiccheck
 if [ $? -eq 0 ] ; then
   echo "#define HAVE_SRAND_DETERMINISTIC" >> pconfig.h
+  echo "yes"
+else
+  echo "no"
+fi
+
+printf "checking for st_mtim... "
+st_mtimcheck
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_ST_MTIM" >> pconfig.h
+  echo "yes"
+else
+  echo "no"
+fi
+
+printf "checking for st_mtimespec... "
+st_mtimespeccheck
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_ST_MTIMESPEC" >> pconfig.h
   echo "yes"
 else
   echo "no"
