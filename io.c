@@ -259,6 +259,7 @@ savefd(int fd)
 	int nfd;
 
 	if (fd < FDBASE) {
+#ifdef F_DUPFD_CLOEXEC
 		nfd = fcntl(fd, F_DUPFD_CLOEXEC, FDBASE);
 		if (nfd < 0) {
 			if (errno == EBADF)
@@ -266,6 +267,16 @@ savefd(int fd)
 			else
 				errorf("too many files open in shell");
 		}
+#else
+		nfd = fcntl(fd, F_DUPFD, FDBASE);
+		if (nfd < 0) {
+			if (errno == EBADF)
+				return -1;
+			else
+				errorf("too many files open in shell");
+		}
+		fcntl(nfd, F_SETFD, FD_CLOEXEC);
+#endif
 	} else {
 		nfd = fd;
 		fcntl(nfd, F_SETFD, FD_CLOEXEC);
