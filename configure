@@ -206,6 +206,21 @@ EOF
   fi
 }
 
+sig_tcheck() {
+  cat << EOF > conftest.c
+#include <signal.h>
+int main(void){sizeof(sig_t);return 0;}
+EOF
+  $cc $tflags -o conftest conftest.c > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.c
+    return 0
+  else
+    rm -f conftest conftest.c
+    return 1
+  fi
+}
+
 sranddeterministiccheck() {
   cat << EOF > conftest.c
 #include <stdlib.h>
@@ -530,6 +545,15 @@ printf "checking for setresuid... "
 setresuidcheck
 if [ $? -eq 0 ] ; then
   echo "#define HAVE_SETRESUID" >> pconfig.h
+  echo "yes"
+else
+  echo "no"
+fi
+
+printf "checking for sig_t... "
+sig_tcheck
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_SIG_T" >> pconfig.h
   echo "yes"
 else
   echo "no"

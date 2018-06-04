@@ -202,6 +202,14 @@ extern const char *const sys_signame[NSIG];
 #endif /* !HAVE_SIGLIST || !HAVE_SIGNAME */
 
 /*
+ * Types
+ */
+
+#ifndef HAVE_SIG_T
+typedef void (*sig_t) (int); 
+#endif /* !HAVE_SIG_T */
+
+/*
  * OpenBSD sys/queue.h
  */
 
