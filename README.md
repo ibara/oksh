@@ -17,14 +17,16 @@ Supported systems
 * Linux (glibc and musl)
 * Cygwin
 * Android (via Termux)
+* AIX (with major thanks to @tssva and @NattyNarwhal)
 
 Running on a system not listed here? Add it and send a pull request!
 
-Current porting efforts
------------------------
-`oksh` is currently being ported to the following platforms.
+Believed working
+----------------
+We believe that `oksh` will work on the following platforms, but testing is needed.
 Help is greatly appreciated and encouraged!
-* AIX
+* HPUX
+* Solaris
 
 Supported compilers
 -------------------
