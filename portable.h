@@ -224,7 +224,7 @@ extern const char *const sys_signame[NSIG];
  */
 
 #ifndef HAVE_SIG_T
-typedef void (*sig_t) (int); 
+typedef void (*sig_t) (int);
 #endif /* !HAVE_SIG_T */
 
 /*
