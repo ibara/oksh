@@ -49,9 +49,20 @@ tty_init(int init_ttystate)
 			return;
 		}
 	}
+#ifdef F_DUPFD_CLOEXEC
 	if ((tty_fd = fcntl(tfd, F_DUPFD_CLOEXEC, FDBASE)) < 0) {
 		warningf(false, "%s: dup of tty fd failed: %s",
 		    __func__, strerror(errno));
+#else
+	if ((tty_fd = fcntl(tfd, F_DUPFD, FDBASE)) < 0) {
+		warningf(false, "%s: dup of tty fd failed: %s",
+		    __func__, strerror(errno));
+	} else if (fcntl(tty_fd, F_SETFD, FD_CLOEXEC) < 0) {
+		warningf(false, "%s: set tty fd close-on-exec flag failed: %s",
+		    __func__, strerror(errno));
+		close(tty_fd);
+		tty_fd = -1;
+#endif
 	} else if (init_ttystate)
 		tcgetattr(tty_fd, &tty_state);
 	if (do_close)

@@ -26,6 +26,10 @@
 #include <mach/mach.h>
 #endif /* __APPLE__ */
 
+#ifdef _AIX
+#include <sys/file.h>
+#endif /* _AIX */
+
 #include <time.h>
 
 #include "pconfig.h"
@@ -43,13 +47,13 @@
 #endif /* !O_EXLOCK */
 
 #ifndef _PW_NAME_LEN
-#if defined(__linux__) || defined(__CYGWIN__)
+#if defined(__linux__) || defined(__CYGWIN__) || defined(_AIX)
 #define _PW_NAME_LEN	LOGIN_NAME_MAX
 #elif defined(__NetBSD__)
 #define _PW_NAME_LEN	MAXLOGNAME
 #else
 #define _PW_NAME_LEN	MAXLOGNAME - 1
-#endif /* __linux__ || __CYGWIN__ || __NetBSD__ */
+#endif /* __linux__ || __CYGWIN__ || _AIX || __NetBSD__ */
 #endif /* !_PW_NAME_LEN */
 
 #ifndef RLIMIT_RSS
@@ -76,6 +80,15 @@
 	(y)->tv_nsec = mts.tv_nsec;
 #endif /* __APPLE__ */
 
+#ifdef _AIX
+#define VWERASE VWERSE
+#define VDISCARD VDISCRD
+#define _PATH_DEFPATH "/usr/bin:/etc:/usr/sbin:/usr/ucb:/usr/bin/X11:/sbin"
+#define WCOREFLAG 0200
+#define WCOREDUMP(x) ((x) & WCOREFLAG)
+#undef BAD
+#endif /* _AIX */
+
 #ifndef HAVE_SETRESGID
 #define setresgid(x, y, z)	setgid(x); setegid(y); setgid(z)
 #endif /* !HAVE_SETRESGID */
@@ -88,10 +101,34 @@
 #define srand_deterministic(x)	srand(x)
 #endif /* !HAVE_SRAND_DETERMINISTIC */
 
+#ifndef HAVE_TIMERADD
+#define timeradd(tvp, uvp, vvp)                                         \
+        do {                                                            \
+                (vvp)->tv_sec = (tvp)->tv_sec + (uvp)->tv_sec;          \
+                (vvp)->tv_usec = (tvp)->tv_usec + (uvp)->tv_usec;       \
+                if ((vvp)->tv_usec >= 1000000) {                        \
+                        (vvp)->tv_sec++;                                \
+                        (vvp)->tv_usec -= 1000000;                      \
+                }                                                       \
+        } while (0)
+#endif /* !HAVE_TIMERADD */
+
+#ifndef HAVE_TIMERSUB
+#define timersub(tvp, uvp, vvp)                                         \
+        do {                                                            \
+                (vvp)->tv_sec = (tvp)->tv_sec - (uvp)->tv_sec;          \
+                (vvp)->tv_usec = (tvp)->tv_usec - (uvp)->tv_usec;       \
+                if ((vvp)->tv_usec < 0) {                               \
+                        (vvp)->tv_sec--;                                \
+                        (vvp)->tv_usec += 1000000;                      \
+                }                                                       \
+        } while (0)
+#endif /* !HAVE_TIMERSUB */
+
 /* struct stat compatibility */
-#ifdef __APPLE__
+#if !defined(HAVE_ST_MTIM) && defined(HAVE_ST_MTIMESPEC)
 #define st_mtim	st_mtimespec
-#endif /* __APPLE__ */
+#endif /* !HAVE_ST_MTIM && HAVE_ST_MTIMESPEC */
 
 /* Cygwin already has a sys_signame but we want to use our own */
 #ifdef __CYGWIN__
@@ -123,9 +160,18 @@
         } while (0)
 #endif /* !__OpenBSD__ */
 
+#if !defined(HAVE_ST_MTIM) && !defined(HAVE_ST_MTIMESPEC)
+#define timespeccmp(tsp, usp, cmp) (tsp) cmp (usp)
+#define st_mtim st_mtime
+#endif /* !HAVE_ST_MTIM && !HAVE_ST_TIMESPEC */
+
 /*
  * Prototypes
  */
+
+#ifndef HAVE_ASPRINTF
+int asprintf(char **str, const char *fmt, ...);
+#endif /* !HAVE_ASPRINTF */
 
 #ifndef HAVE_CONFSTR
 size_t	confstr(int, char *, size_t);
@@ -174,12 +220,20 @@ extern const char *const sys_signame[NSIG];
 #endif /* !HAVE_SIGLIST || !HAVE_SIGNAME */
 
 /*
+ * Types
+ */
+
+#ifndef HAVE_SIG_T
+typedef void (*sig_t) (int); 
+#endif /* !HAVE_SIG_T */
+
+/*
  * OpenBSD sys/queue.h
  */
 
 /* The following should only be necessary on non-BSD systems.  */
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(_AIX)
 
 /*	$OpenBSD: queue.h,v 1.38 2013/07/03 15:05:21 fgsch Exp $	*/
 /*	$NetBSD: queue.h,v 1.11 1996/05/16 05:17:14 mycroft Exp $	*/
@@ -825,6 +879,6 @@ struct {								\
 	_Q_INVALIDATE((elm)->field.cqe_next);				\
 } while (0)
 
-#endif /* __linux__ */
+#endif /* __linux__ || _AIX */
 
 #endif /* !_OKSH_PORTABLE_H_ */
