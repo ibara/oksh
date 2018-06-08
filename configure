@@ -752,12 +752,12 @@ EOF
 fi
 
 cat << EOF >> Makefile
-	echo "Please add $prefix/bin/$instprog to /etc/shells"
+	@echo "Please add $prefix/bin/$instprog to /etc/shells"
 EOF
 
 if [ $instsh -ne 0 ] ; then
 cat << EOF >> Makefile
-	echo "Please add $prefix/bin/sh to /etc/shells"
+	@echo "Please add $prefix/bin/sh to /etc/shells"
 EOF
 fi
 
