@@ -14,7 +14,7 @@
 #include "config.h"
 #ifdef EMACS
 
-#ifndef __linux__
+#if !defined(__linux__) && !defined(__APPLE__)
 #include <sys/queue.h>
 #endif
 #include <sys/stat.h>
