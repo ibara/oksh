@@ -48,9 +48,8 @@ Using a package not listed here? Add it and send a pull request!
 
 Dependencies
 ------------
-A C compiler that understands the `long long` type. A C99 compiler is the
-easiest way to ensure that `oksh` will build correctly. Please see the
-list of C compilers above for a list of known working compilers.
+A C99 compiler is the easiest way to ensure that `oksh` will build correctly.
+Please see the list of C compilers above for a list of known working compilers.
 
 A `configure` script that produces a `POSIX` `Makefile` is provided to
 ease building and installation and can be run by:
