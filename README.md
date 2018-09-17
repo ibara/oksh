@@ -18,6 +18,7 @@ Supported systems
 * Cygwin
 * Android (via Termux)
 * AIX (with major thanks to @tssva and @NattyNarwhal)
+* IBM i PASE
 
 Running on a system not listed here? Add it and send a pull request!
 
@@ -35,6 +36,7 @@ Supported compilers
 * gcc (https://gcc.gnu.org/)
 * pcc (http://pcc.ludd.ltu.se/)
 * cparser (https://pp.ipd.kit.edu/firm/)
+* xlc (https://www.ibm.com/us-en/marketplace/ibm-c-and-c-plus-plus-compiler-family)
 
 Building with a compiler not listed here? Add it and send a pull request!
 
