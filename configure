@@ -534,7 +534,7 @@ case "x$os" in
   "xNetBSD")
     cflags="$cflags -D_OPENBSD_SOURCE"
     ;;
-  "xAIX")
+  "xAIX"|"xOS400")
     cflags="$cflags -D_ALL_SOURCE"
     ldflags="-lbsd"
     ;;
