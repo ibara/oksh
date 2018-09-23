@@ -55,6 +55,10 @@ Dependencies
 A C99 compiler is the easiest way to ensure that `oksh` will build correctly.
 Please see the list of C compilers above for a list of known working compilers.
 
+Though not required, the `ncurses` library will be used for screen clearing
+routines if the library is found during the `configure` stage. This can be
+turned off by the user by passing the `--disable-curses` flag to `configure`.
+
 A `configure` script that produces a `POSIX` `Makefile` is provided to
 ease building and installation and can be run by:
 ```
