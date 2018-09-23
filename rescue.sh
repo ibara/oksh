@@ -27,8 +27,8 @@ cc -DEMACS -DVI -o c_ulimit.o -c c_ulimit.c
 echo cc -DEMACS -DVI -o edit.o -c edit.c
 cc -DEMACS -DVI -o edit.o -c edit.c
 
-echo cc -DEMACS -DVI -o emacs.o -c emacs.c
-cc -DEMACS -DVI -o emacs.o -c emacs.c
+echo cc -DEMACS -DVI -DNO_CURSES -o emacs.o -c emacs.c
+cc -DEMACS -DVI -DNO_CURSES -o emacs.o -c emacs.c
 
 echo cc -DEMACS -DVI -o eval.o -c eval.c
 cc -DEMACS -DVI -o eval.o -c eval.c
@@ -81,8 +81,8 @@ cc -DEMACS -DVI -o tree.o -c tree.c
 echo cc -DEMACS -DVI -o tty.o -c tty.c
 cc -DEMACS -DVI -o tty.o -c tty.c
 
-echo cc -DEMACS -DVI -o var.o -c var.c
-cc -DEMACS -DVI -o var.o -c var.c
+echo cc -DEMACS -DVI -DNO_CURSES -o var.o -c var.c
+cc -DEMACS -DVI -DNO_CURSES -o var.o -c var.c
 
 echo cc -DEMACS -DVI -o version.o -c version.c
 cc -DEMACS -DVI -o version.o -c version.c
