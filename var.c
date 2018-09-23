@@ -1,4 +1,4 @@
-/*	$OpenBSD: var.c,v 1.68 2018/04/13 18:18:36 cheloha Exp $	*/
+/*	$OpenBSD: var.c,v 1.70 2018/06/18 21:46:05 millert Exp $	*/
 
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -13,6 +13,19 @@
 #include <unistd.h>
 
 #include "sh.h"
+
+#if !defined(SMALL) && !defined(NO_CURSES)
+#ifdef HAVE_CURSES
+# include <term.h>
+# include <curses.h>
+#elif HAVE_NCURSES
+# include <term.h>
+# include <ncurses.h>
+#elif HAVE_NCURSESNCURSES
+# include <ncurses/term.h>
+# include <ncurses/ncurses.h>
+#endif
+#endif
 
 /*
  * Variables
@@ -111,12 +124,13 @@ initvar(void)
 		{ "SECONDS",		V_SECONDS },
 		{ "TMOUT",		V_TMOUT },
 		{ "LINENO",		V_LINENO },
+		{ "TERM",		V_TERM },
 		{ NULL,	0 }
 	};
 	int i;
 	struct tbl *tp;
 
-	ktinit(&specials, APERM, 32); /* must be 2^n (currently 17 specials) */
+	ktinit(&specials, APERM, 32); /* must be 2^n (currently 19 specials) */
 	for (i = 0; names[i].name; i++) {
 		tp = ktenter(&specials, names[i].name, hash(names[i].name));
 		tp->flag = DEFINED|ISSET;
@@ -1056,6 +1070,18 @@ setspec(struct tbl *vp)
 		/* The -1 is because line numbering starts at 1. */
 		user_lineno = (unsigned int) intval(vp) - current_lineno - 1;
 		vp->flag |= SPECIAL;
+		break;
+	case V_TERM:
+#if !defined(SMALL) && !defined(NO_CURSES)
+		{
+			int ret;
+
+			vp->flag &= ~SPECIAL;
+			if (setupterm(str_val(vp), shl_out->fd, &ret) == ERR)
+				del_curterm(cur_term);
+			vp->flag |= SPECIAL;
+		}
+#endif
 		break;
 	}
 }

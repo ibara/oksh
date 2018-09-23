@@ -95,6 +95,22 @@ EOF
   fi
 }
 
+cursescheck() {
+  cat << EOF > conftest.c
+#include <term.h>
+#include <curses.h>
+int main(void){setupterm(NULL, 0, NULL);return 0;}
+EOF
+  $cc $cflags $ldflags -o conftest conftest.c -lcurses > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.o conftest.c
+    return 0
+  else
+    rm -f conftest conftest.o conftest.c
+    return 1
+  fi
+}
+
 deadcheck() {
   cat << EOF > conftest.c
 #include <stdlib.h>
@@ -116,6 +132,38 @@ dead2check() {
 __dead2 usage(void){exit(1);}int main(void){usage();return 0;}
 EOF
   $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.o conftest.c
+    return 0
+  else
+    rm -f conftest conftest.o conftest.c
+    return 1
+  fi
+}
+
+ncursescheck() {
+  cat << EOF > conftest.c
+#include <term.h>
+#include <ncurses.h>
+int main(void){setupterm(NULL, 0, NULL);return 0;}
+EOF
+  $cc $cflags $ldflags -o conftest conftest.c -lncurses > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.o conftest.c
+    return 0
+  else
+    rm -f conftest conftest.o conftest.c
+    return 1
+  fi
+}
+
+ncursesncursescheck() {
+  cat << EOF > conftest.c
+#include <ncurses/term.h>
+#include <ncurses/ncurses.h>
+int main(void){setupterm(NULL, 0, NULL);return 0;}
+EOF
+  $cc $cflags $ldflags -o conftest conftest.c -lncurses > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -413,6 +461,8 @@ fi
 mandir="$prefix/man"
 
 instprog="oksh"
+libs=""
+curses=1
 instsh=0
 static=0
 
@@ -425,6 +475,13 @@ do
 	;;
     --mandir=*)
 	mandir=`echo $opt | cut -d '=' -f 2`
+	;;
+    --disable-curses|--enable-curses)
+	if [ "x$opt" = "x--disable-curses" ] ; then
+	  curses=0
+	else
+	  curses=1
+	fi
 	;;
     --disable-ksh|--enable-ksh)
 	if [ "x$opt" = "x--enable-ksh" ] ; then
@@ -457,6 +514,8 @@ do
 	echo "Top level install directory is PREFIX [$prefix]"
 	printf "  --mandir=MANDIR         "
 	echo "Manual pages are installed to MANDIR [$mandir]"
+	printf "  --enable-curses         "
+	echo "Use curses library for screen clear [default=yes]"
 	printf "  --enable-ksh            "
 	echo "Install executable as ksh [default=no]"
 	printf "  --enable-sh             "
@@ -578,6 +637,38 @@ if [ $? -eq 0 ] ; then
   echo "yes"
 else
   echo "no"
+fi
+
+printf "checking for curses library... "
+if [ $curses -eq 1 ] ; then
+  cursescheck
+  if [ $? -eq 0 ] ; then
+    libs="-lcurses"
+    echo "#define HAVE_CURSES" >> pconfig.h
+    echo "curses.h"
+  else
+    ncursescheck
+    if [ $? -eq 0 ] ; then
+      libs="-lncurses"
+      echo "#define HAVE_NCURSES" >> pconfig.h
+      echo "ncurses.h"
+    else
+      ncursesncursescheck
+      if [ $? -eq 0 ] ; then
+	libs="-lncurses"
+	echo "#define HAVE_NCURSESNCURSES" >> pconfig.h
+	echo "ncurses/ncurses.h"
+      else
+	echo "#define NO_CURSES" >> pconfig.h
+	echo "not found"
+	echo "oksh will be built without screen clearing support"
+      fi
+    fi
+  fi
+else
+  echo "#define NO_CURSES" >> pconfig.h
+  echo "disabled by user"
+  echo "oksh will be built without screen clearing support"
 fi
 
 printf "checking for pledge... "
@@ -764,7 +855,7 @@ ETS =	\`grep -w \${PREFIX}/bin/\${PROG} /etc/shells > /dev/null; \\
 all: \${PROG}
 
 \${PROG}: \${OBJS}
-	\${CC} \${LDFLAGS} -o \${PROG} \${OBJS}
+	\${CC} \${LDFLAGS} -o \${PROG} \${OBJS} $libs
 
 install:
 	install -d \${DESTDIR}\${PREFIX}/bin
