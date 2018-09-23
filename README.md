@@ -13,6 +13,8 @@ Supported systems
 * FreeBSD
 * DragonFly BSD
 * NetBSD
+* HardenedBSD
+* SoloBSD (as the default shell)
 * Mac OS X
 * Linux (glibc and musl)
 * Cygwin
