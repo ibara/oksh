@@ -90,6 +90,9 @@ cc -DEMACS -DVI -o version.o -c version.c
 echo cc -DEMACS -DVI -o vi.o -c vi.c
 cc -DEMACS -DVI -o vi.o -c vi.c
 
+echo cc -DEMACS -DVI -o asprintf.o -c asprintf.c
+cc -DEMACS -DVI -o asprintf.o -c asprintf.c
+
 echo cc -DEMACS -DVI -o confstr.o -c confstr.c
 cc -DEMACS -DVI -o confstr.o -c confstr.c
 
