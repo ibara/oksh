@@ -483,7 +483,7 @@ bi_getn(const char *as, int *ai)
  */
 
 int
-gmatch(const char *s, const char *p, int isfile)
+gmatch_(const char *s, const char *p, int isfile)
 {
 	const char *se, *pe;
 
