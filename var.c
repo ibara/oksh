@@ -18,10 +18,10 @@
 #ifdef HAVE_CURSES
 # include <term.h>
 # include <curses.h>
-#elif HAVE_NCURSES
+#elif defined(HAVE_NCURSES)
 # include <term.h>
 # include <ncurses.h>
-#elif HAVE_NCURSESNCURSES
+#elif defined(HAVE_NCURSESNCURSES)
 # include <ncurses/term.h>
 # include <ncurses/ncurses.h>
 #endif
