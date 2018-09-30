@@ -21,6 +21,8 @@ Supported systems
 * Android (via Termux)
 * AIX (with major thanks to @tssva and @NattyNarwhal)
 * IBM i PASE
+* Solaris
+* Illumos
 
 Running on a system not listed here? Add it and send a pull request!
 
@@ -29,7 +31,7 @@ Believed working
 We believe that `oksh` will work on the following platforms, but testing is needed.
 Help is greatly appreciated and encouraged!
 * HPUX
-* Solaris
+* Irix
 
 Supported compilers
 -------------------
@@ -39,6 +41,7 @@ Supported compilers
 * pcc (http://pcc.ludd.ltu.se/)
 * cparser (https://pp.ipd.kit.edu/firm/)
 * xlc (https://www.ibm.com/us-en/marketplace/ibm-c-and-c-plus-plus-compiler-family)
+* Sun Studio compiler (https://www.oracle.com/technetwork/server-storage/developerstudio/overview/index.html)
 
 Building with a compiler not listed here? Add it and send a pull request!
 
@@ -82,4 +85,4 @@ for details.
 
 Get a tarball
 -------------
-http://devio.us/~bcallah/oksh/oksh-20180502.tar.gz
+See releases tab.
