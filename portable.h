@@ -26,9 +26,9 @@
 #include <mach/mach.h>
 #endif /* __APPLE__ */
 
-#ifdef _AIX
+#if defined(_AIX) || defined(__sun)
 #include <sys/file.h>
-#endif /* _AIX */
+#endif /* _AIX || __sun */
 
 #include <time.h>
 
@@ -51,9 +51,11 @@
 #define _PW_NAME_LEN	LOGIN_NAME_MAX
 #elif defined(__NetBSD__)
 #define _PW_NAME_LEN	MAXLOGNAME
+#elif defined(__sun)
+#define _PW_NAME_LEN	LOGNAME_MAX
 #else
 #define _PW_NAME_LEN	MAXLOGNAME - 1
-#endif /* __linux__ || __CYGWIN__ || _AIX || __NetBSD__ */
+#endif /* __linux__ || __CYGWIN__ || _AIX || __NetBSD__ || __sun */
 #endif /* !_PW_NAME_LEN */
 
 #ifndef RLIMIT_RSS

@@ -348,7 +348,7 @@ execute(struct op *volatile t,
 		for (t = t->left; t != NULL && t->type == TPAT; t = t->right) {
 			for (ap = t->vars; *ap; ap++) {
 				if ((s = evalstr(*ap, DOTILDE|DOPAT)) &&
-				    gmatch(cp, s, false))
+				    gmatch_(cp, s, false))
 					goto Found;
 			}
 		}

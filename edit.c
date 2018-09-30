@@ -805,7 +805,7 @@ glob_table(const char *pat, XPtrV *wp, struct table *tp)
 	struct tbl *te;
 
 	for (ktwalk(&ts, tp); (te = ktnext(&ts)); ) {
-		if (gmatch(te->name, pat, false))
+		if (gmatch_(te->name, pat, false))
 			XPput(*wp, str_save(te->name, ATEMP));
 	}
 }

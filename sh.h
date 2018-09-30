@@ -537,7 +537,7 @@ void	change_flag(enum sh_flag, int, int);
 int	parse_args(char **, int, int *);
 int	getn(const char *, int *);
 int	bi_getn(const char *, int *);
-int	gmatch(const char *, const char *, int);
+int	gmatch_(const char *, const char *, int);
 int	has_globbing(const char *, const char *);
 const unsigned char *pat_scan(const unsigned char *, const unsigned char *,
     int);

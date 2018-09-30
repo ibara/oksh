@@ -291,11 +291,11 @@ test_eval(Test_env *te, Test_op op, const char *opnd1, const char *opnd2,
 	 */
 	case TO_STEQL: /* = */
 		if (te->flags & TEF_DBRACKET)
-			return gmatch(opnd1, opnd2, false);
+			return gmatch_(opnd1, opnd2, false);
 		return strcmp(opnd1, opnd2) == 0;
 	case TO_STNEQ: /* != */
 		if (te->flags & TEF_DBRACKET)
-			return !gmatch(opnd1, opnd2, false);
+			return !gmatch_(opnd1, opnd2, false);
 		return strcmp(opnd1, opnd2) != 0;
 	case TO_STLT: /* < */
 		return strcmp(opnd1, opnd2) < 0;
