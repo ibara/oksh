@@ -85,4 +85,4 @@ for details.
 
 Get a tarball
 -------------
-See releases tab.
+See releases tab. The latest release is dated 20181009, which matches OpenBSD 6.4.
