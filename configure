@@ -141,6 +141,21 @@ EOF
   fi
 }
 
+issetugidcheck() {
+  cat << EOF > conftest.c
+#include <unistd.h>
+int main(void){issetugid();return 0;}
+EOF
+  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.o conftest.c
+    return 0
+  else
+    rm -f conftest conftest.o conftest.c
+    return 1
+  fi
+}
+
 ncursescheck() {
   cat << EOF > conftest.c
 #include <term.h>
@@ -669,6 +684,15 @@ else
   echo "#define NO_CURSES" >> pconfig.h
   echo "disabled by user"
   echo "oksh will be built without screen clearing support"
+fi
+
+printf "checking for issetugid... "
+issetugidcheck
+if [ $? -eq 0 ] ; then
+  echo "yes"
+else
+  echo "#define issetugid(x) 0" >> pconfig.h
+  echo "no"
 fi
 
 printf "checking for pledge... "

@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.70 2018/04/09 17:53:36 tobias Exp $	*/
+/*	$OpenBSD: misc.c,v 1.72 2018/11/20 08:12:26 deraadt Exp $	*/
 
 /*
  * Miscellaneous functions
@@ -16,6 +16,7 @@
 #include "charclass.h"
 
 short ctypes [UCHAR_MAX+1];	/* type bits for unsigned char */
+static int dropped_privileges;
 
 static int	do_gmatch(const unsigned char *, const unsigned char *,
 		    const unsigned char *, const unsigned char *);
@@ -290,12 +291,20 @@ change_flag(enum sh_flag f,
 		}
 	} else
 	/* Turning off -p? */
-	if (f == FPRIVILEGED && oldval && !newval) {
+	if (f == FPRIVILEGED && oldval && !newval && issetugid() &&
+	    !dropped_privileges) {
 		gid_t gid = getgid();
 
 		setresgid(gid, gid, gid);
 		setgroups(1, &gid);
 		setresuid(ksheuid, ksheuid, ksheuid);
+
+#ifdef HAVE_PLEDGE
+		if (pledge("stdio rpath wpath cpath fattr flock getpw proc "
+		    "exec tty", NULL) == -1)
+			bi_errorf("pledge fail");
+#endif
+		dropped_privileges = 1;
 	} else if (f == FPOSIX && newval) {
 		Flag(FBRACEEXPAND) = 0;
 	}
