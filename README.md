@@ -50,6 +50,7 @@ Packages
 `oksh` is included in some package systems.
 * [FreeBSD ports](https://www.freshports.org/shells/oksh/)
 * [pkgsrc-wip](http://pkgsrc.se/wip/oksh)
+* [Ravenports](http://www.ravenports.com/catalog/bucket_9E/ksh/standard/)
 
 Using a package not listed here? Add it and send a pull request!
 
