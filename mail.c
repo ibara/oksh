@@ -1,4 +1,4 @@
-/*	$OpenBSD: mail.c,v 1.25 2019/01/07 20:50:43 tedu Exp $	*/
+/*	$OpenBSD: mail.c,v 1.27 2019/01/14 08:48:16 schwarze Exp $	*/
 
 /*
  * Mailbox checking code by Robert J. Gibson, adapted for PD ksh by
@@ -128,10 +128,10 @@ mpset(char *mptoparse)
 		/* POSIX/bourne-shell say file%message */
 		for (p = mpath; (mmsg = strchr(p, '%')); ) {
 			/* a literal percent? (POSIXism) */
-			if (mmsg[-1] == '\\') {
+			if (mmsg > mpath && mmsg[-1] == '\\') {
 				/* use memmove() to avoid overlap problems */
 				memmove(mmsg - 1, mmsg, strlen(mmsg) + 1);
-				p = mmsg + 1;
+				p = mmsg;
 				continue;
 			}
 			break;
@@ -142,7 +142,11 @@ mpset(char *mptoparse)
 		if (mmsg) {
 			*mmsg = '\0';
 			mmsg++;
+			if (*mmsg == '\0')
+				mmsg = NULL;
 		}
+		if (*mpath == '\0')
+			continue;
 		mbp = mballoc(mpath, mmsg);
 		mbp->mb_next = mplist;
 		mplist = mbp;
