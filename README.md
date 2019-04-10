@@ -86,4 +86,5 @@ for details.
 
 Get a tarball
 -------------
-See releases tab. The latest release is dated 20181009, which matches OpenBSD 6.4.
+See releases tab. The latest release is oksh-6.5, which matches the ksh(1)
+from OpenBSD 6.5.
