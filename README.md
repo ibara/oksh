@@ -42,6 +42,7 @@ Supported compilers
 * cparser (https://pp.ipd.kit.edu/firm/)
 * xlc (https://www.ibm.com/us-en/marketplace/ibm-c-and-c-plus-plus-compiler-family)
 * Sun Studio compiler (https://www.oracle.com/technetwork/server-storage/developerstudio/overview/index.html)
+* lacc (https://github.com/larmel/lacc)
 
 Building with a compiler not listed here? Add it and send a pull request!
 
