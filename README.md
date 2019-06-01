@@ -52,6 +52,7 @@ Packages
 * [FreeBSD ports](https://www.freshports.org/shells/oksh/)
 * [pkgsrc-wip](http://pkgsrc.se/wip/oksh)
 * [Ravenports](http://www.ravenports.com/catalog/bucket_9E/ksh/standard/)
+* [Ubuntu PPA](https://launchpad.net/~dysfunctionalprogramming/+archive/ubuntu/oksh)
 
 Using a package not listed here? Add it and send a pull request!
 
