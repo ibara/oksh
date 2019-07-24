@@ -145,12 +145,14 @@
 #endif
 
 /* From OpenBSD sys/time.h */
-#ifndef __OpenBSD__
+#ifndef timespeccmp
 #define timespeccmp(tsp, usp, cmp)                                      \
         (((tsp)->tv_sec == (usp)->tv_sec) ?                             \
             ((tsp)->tv_nsec cmp (usp)->tv_nsec) :                       \
             ((tsp)->tv_sec cmp (usp)->tv_sec))
+#endif
 
+#ifndef timespecsub
 #define timespecsub(tsp, usp, vsp)                                      \
         do {                                                            \
                 (vsp)->tv_sec = (tsp)->tv_sec - (usp)->tv_sec;          \
@@ -160,7 +162,7 @@
                         (vsp)->tv_nsec += 1000000000L;                  \
                 }                                                       \
         } while (0)
-#endif /* !__OpenBSD__ */
+#endif
 
 #if !defined(HAVE_ST_MTIM) && !defined(HAVE_ST_MTIMESPEC)
 #define timespeccmp(tsp, usp, cmp) (tsp) cmp (usp)
