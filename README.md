@@ -50,7 +50,7 @@ Packages
 --------
 `oksh` is included in some package systems.
 * [FreeBSD ports](https://www.freshports.org/shells/oksh/)
-* [pkgsrc-wip](http://pkgsrc.se/wip/oksh)
+* [pkgsrc](http://pkgsrc.se/shells/oksh)
 * [Ravenports](http://www.ravenports.com/catalog/bucket_9E/ksh/standard/)
 * [Ubuntu PPA](https://launchpad.net/~dysfunctionalprogramming/+archive/ubuntu/oksh)
 * [MacPorts](https://www.macports.org/ports.php?by=name&substr=oksh)
