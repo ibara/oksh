@@ -6,6 +6,3 @@ export PATH HOME TERM
 
 # Uncomment to set default prompt to current working directory.
 # PS1='$PWD $ '
-
-# Uncomment if you think ksh should act like bash...
-# bind -m '^L'=clear'^J'
