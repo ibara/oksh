@@ -55,6 +55,7 @@ Packages
 * [Ubuntu PPA](https://launchpad.net/~dysfunctionalprogramming/+archive/ubuntu/oksh)
 * [MacPorts](https://www.macports.org/ports.php?by=name&substr=oksh)
 * [Homebrew](https://github.com/sirn/homebrew-oksh/)
+* [AUR](https://aur.archlinux.org/packages/oksh)
 
 Using a package not listed here? Add it and send a pull request!
 
