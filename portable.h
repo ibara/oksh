@@ -9,14 +9,14 @@
  * Includes
  */
 
-#if defined(__linux__) || defined(__CYGWIN__)
+#if defined(__linux__) || defined(__CYGWIN__) || defined(__midipix__)
 #include <sys/file.h>
 #include <sys/types.h>
 
 #include <grp.h>
 #include <stdint.h>
 #include <stdlib.h>
-#endif /* __linux__ */
+#endif /* __linux__ || __CYGWIN__ || __midipix__ */
 
 #include <sys/param.h>
 #include <sys/time.h>
@@ -47,7 +47,7 @@
 #endif /* !O_EXLOCK */
 
 #ifndef _PW_NAME_LEN
-#if defined(__linux__) || defined(__CYGWIN__) || defined(_AIX)
+#if defined(__linux__) || defined(__CYGWIN__) || defined(_AIX) || defined(__midipix__)
 #define _PW_NAME_LEN	LOGIN_NAME_MAX
 #elif defined(__NetBSD__)
 #define _PW_NAME_LEN	MAXLOGNAME
@@ -55,7 +55,7 @@
 #define _PW_NAME_LEN	LOGNAME_MAX
 #else
 #define _PW_NAME_LEN	MAXLOGNAME - 1
-#endif /* __linux__ || __CYGWIN__ || _AIX || __NetBSD__ || __sun */
+#endif /* __linux__ || __CYGWIN__ || _AIX || __NetBSD__ || __sun || __midipix__ */
 #endif /* !_PW_NAME_LEN */
 
 #ifndef RLIMIT_RSS
