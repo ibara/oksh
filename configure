@@ -473,6 +473,7 @@ else
   prefix="/usr/local"
 fi
 
+bindir="$prefix/bin"
 mandir="$prefix/man"
 
 instprog="oksh"
@@ -487,6 +488,9 @@ do
   case "$opt" in
     --prefix=*)
 	prefix=`echo $opt | cut -d '=' -f 2`
+	;;
+    --bindir=*)
+	bindir=`echo $opt | cut -d '=' -f 2`
 	;;
     --mandir=*)
 	mandir=`echo $opt | cut -d '=' -f 2`
@@ -527,6 +531,8 @@ do
 	echo "Display this help message"
 	printf "  --prefix=PREFIX         "
 	echo "Top level install directory is PREFIX [$prefix]"
+	printf "  --bindir=BINDIR         "
+	echo "Install the executable to BINDIR [$bindir]"
 	printf "  --mandir=MANDIR         "
 	echo "Manual pages are installed to MANDIR [$mandir]"
 	printf "  --enable-curses         "
@@ -864,6 +870,7 @@ fi
 
 cat << EOF >> Makefile
 PREFIX =	$prefix
+BINDIR =	$bindir
 MANDIR =	$mandir
 PROG =		$instprog
 
@@ -873,8 +880,8 @@ OBJS =	alloc.o asprintf.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o \\
 	version.o vi.o confstr.o reallocarray.o siglist.o signame.o \\
 	strlcat.o strlcpy.o strtonum.o unvis.o vis.o
 
-ETS =	\`grep -w \${PREFIX}/bin/\${PROG} /etc/shells > /dev/null; \\
-	[ \$\$? -ne 0 ] && echo "\${PREFIX}/bin/\${PROG}" >> /etc/shells\`
+ETS =	\`grep -w \${BINDIR}/\${PROG} /etc/shells > /dev/null; \\
+	[ \$\$? -ne 0 ] && echo "\${BINDIR}/\${PROG}" >> /etc/shells\`
 
 all: \${PROG}
 
@@ -882,28 +889,28 @@ all: \${PROG}
 	\${CC} \${LDFLAGS} -o \${PROG} \${OBJS} $libs
 
 install:
-	install -d \${DESTDIR}\${PREFIX}/bin
+	install -d \${DESTDIR}\${BINDIR}
 	install -d \${DESTDIR}\${MANDIR}/man1
-	install -c -s -m 755 \${PROG} \${DESTDIR}\${PREFIX}/bin
+	install -c -s -m 755 \${PROG} \${DESTDIR}\${BINDIR}
 	install -c -m 644 oksh.1 \${DESTDIR}\${MANDIR}/man1/\${PROG}.1
 EOF
 
 if [ $instsh -ne 0 ] ; then
 cat << EOF >> Makefile
-	install -d \${DESTDIR}\${PREFIX}/bin
+	install -d \${DESTDIR}\${BINDIR}
 	install -d \${DESTDIR}\${MANDIR}/man1
-	install -c -s -m 755 \${PROG} \${DESTDIR}\${PREFIX}/bin/sh
+	install -c -s -m 755 \${PROG} \${DESTDIR}\${BINDIR}/sh
 	install -c -m 644 sh.1 \${DESTDIR}\${MANDIR}/man1
 EOF
 fi
 
 cat << EOF >> Makefile
-	@echo "Please add $prefix/bin/$instprog to /etc/shells"
+	@echo "Please add $bindir/$instprog to /etc/shells"
 EOF
 
 if [ $instsh -ne 0 ] ; then
 cat << EOF >> Makefile
-	@echo "Please add $prefix/bin/sh to /etc/shells"
+	@echo "Please add $bindir/sh to /etc/shells"
 EOF
 fi
 
