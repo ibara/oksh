@@ -23,6 +23,7 @@ Supported systems
 * IBM i PASE
 * Solaris
 * Illumos
+* midipix
 
 Running on a system not listed here? Add it and send a pull request!
 
