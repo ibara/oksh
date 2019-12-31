@@ -532,9 +532,9 @@ do
 	printf "  --prefix=PREFIX         "
 	echo "Top level install directory is PREFIX [$prefix]"
 	printf "  --bindir=BINDIR         "
-	echo "Install the executable to BINDIR [$bindir]"
+	echo "Install executable to BINDIR [$bindir]"
 	printf "  --mandir=MANDIR         "
-	echo "Manual pages are installed to MANDIR [$mandir]"
+	echo "Install manual pages to MANDIR [$mandir]"
 	printf "  --enable-curses         "
 	echo "Use curses library for screen clear [default=yes]"
 	printf "  --enable-ksh            "
@@ -879,9 +879,6 @@ OBJS =	alloc.o asprintf.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o \\
 	main.o misc.o path.o shf.o syn.o table.o trap.o tree.o tty.o var.o \\
 	version.o vi.o confstr.o reallocarray.o siglist.o signame.o \\
 	strlcat.o strlcpy.o strtonum.o unvis.o vis.o
-
-ETS =	\`grep -w \${BINDIR}/\${PROG} /etc/shells > /dev/null; \\
-	[ \$\$? -ne 0 ] && echo "\${BINDIR}/\${PROG}" >> /etc/shells\`
 
 all: \${PROG}
 
