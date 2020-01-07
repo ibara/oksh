@@ -59,6 +59,7 @@ Packages
 * [MacPorts](https://www.macports.org/ports.php?by=name&substr=oksh)
 * [Homebrew](https://github.com/sirn/homebrew-oksh/)
 * [AUR](https://aur.archlinux.org/packages/oksh)
+* [SlackBuilds](https://slackbuilds.org/repository/14.2/system/oksh/)
 
 Using a package not listed here? Add it and send a pull request!
 
