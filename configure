@@ -659,7 +659,9 @@ else
       echo "yes"
     else
       echo "#define __dead" >> pconfig.h
+      echo "#define __attribute__(x)" >> pconfig.h
       echo "no"
+    fi
   fi
 fi
 
