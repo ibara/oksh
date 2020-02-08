@@ -79,14 +79,6 @@ $ ./configure
 $ make && sudo make install
 ```
 
-In case of emergency
---------------------
-If you cannot execute `make` for whatever reason, a rescue script,
-`rescue.sh`, is available. This script contains nothing more than a
-hand-written list of compiler invocations which will build `oksh` in the
-most basic and portable way possible. This rescue shell is perfectly
-usable (as it is just an unoptimized build).
-
 License
 -------
 The main Korn shell files are public domain (see `LEGAL`).
