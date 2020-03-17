@@ -26,6 +26,7 @@ Supported systems
 * midipix
 * WSL
 * WSL2
+* Unixware 7
 
 Running on a system not listed here? Add it and send a pull request!
 
@@ -46,6 +47,7 @@ Supported compilers
 * xlc (https://www.ibm.com/us-en/marketplace/ibm-c-and-c-plus-plus-compiler-family)
 * Sun Studio compiler (https://www.oracle.com/technetwork/server-storage/developerstudio/overview/index.html)
 * lacc (https://github.com/larmel/lacc)
+* Optimizing C Compilation System  (CCS) 4.2  03/27/14 (uw714mp5.bl4s)
 
 Building with a compiler not listed here? Add it and send a pull request!
 
