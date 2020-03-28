@@ -29,6 +29,14 @@
 #define	TOOSMALL	2
 #define	TOOLARGE	3
 
+#ifndef LLONG_MAX
+#define LLONG_MAX	0x7fffffffffffffffLL
+#endif
+
+#ifndef LLONG_MIN
+#define LLONG_MIN	(-0x7fffffffffffffffLL-1)
+#endif
+
 long long
 strtonum(const char *numstr, long long minval, long long maxval,
     const char **errstrp)
