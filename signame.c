@@ -35,40 +35,114 @@
 #include <signal.h>
 #include <unistd.h>
 
-const char *const sys_signame[NSIG] = {
-	"Signal 0",
-	"HUP",		/* SIGHUP */
-	"INT",		/* SIGINT */
-	"QUIT",		/* SIGQUIT */
-	"ILL",		/* SIGILL */
-	"TRAP",		/* SIGTRAP */
-	"ABRT",		/* SIGABRT */
-	"EMT",		/* SIGEMT */
-	"FPE",		/* SIGFPE */
-	"KILL",		/* SIGKILL */
-	"BUS",		/* SIGBUS */
-	"SEGV",		/* SIGSEGV */
-	"SYS",		/* SIGSYS */
-	"PIPE",		/* SIGPIPE */
-	"ALRM",		/* SIGALRM */
-	"TERM",		/* SIGTERM */
-	"URG",		/* SIGURG */
-	"STOP",		/* SIGSTOP */
-	"TSTP",		/* SIGTSTP */
-	"CONT",		/* SIGCONT */
-	"CHLD",		/* SIGCHLD */
-	"TTIN",		/* SIGTTIN */
-	"TTOU",		/* SIGTTOU */
-	"IO",		/* SIGIO */
-	"XCPU",		/* SIGXCPU */
-	"XFSZ",		/* SIGXFSZ */
-	"VTALRM",	/* SIGVTALRM */
-	"PROF",		/* SIGPROF */
-	"WINCH",	/* SIGWINCH */
-	"INFO",		/* SIGINFO */
-	"USR1",		/* SIGUSR1 */
-	"USR2",		/* SIGUSR2 */
-	"THR",		/* SIGTHR */
+static const struct { int sig; const char *name; } signame[] = {
+	{ 0, "Signal 0" },
+#ifdef SIGHUP
+	{ SIGHUP, "HUP" },
+#endif
+#ifdef SIGINT
+	{ SIGINT, "INT" },
+#endif
+#ifdef SIGQUIT
+	{ SIGQUIT, "QUIT" },
+#endif
+#ifdef SIGILL
+	{ SIGILL, "ILL" },
+#endif
+#ifdef SIGTRAP
+	{ SIGTRAP, "TRAP" },
+#endif
+#ifdef SIGABRT
+	{ SIGABRT, "ABRT" },
+#endif
+#ifdef SIGEMT
+	{ SIGEMT, "EMT" },
+#endif
+#ifdef SIGFPE
+	{ SIGFPE, "FPE" },
+#endif
+#ifdef SIGKILL
+	{ SIGKILL, "KILL" },
+#endif
+#ifdef SIGBUS
+	{ SIGBUS, "BUS" },
+#endif
+#ifdef SIGSEGV
+	{ SIGSEGV, "SEGV" },
+#endif
+#ifdef SIGSYS
+	{ SIGSYS, "SYS" },
+#endif
+#ifdef SIGPIPE
+	{ SIGPIPE, "PIPE" },
+#endif
+#ifdef SIGALRM
+	{ SIGALRM, "ALRM" },
+#endif
+#ifdef SIGTERM
+	{ SIGTERM, "TERM" },
+#endif
+#ifdef SIGURG
+	{ SIGURG, "URG" },
+#endif
+#ifdef SIGSTOP
+	{ SIGSTOP, "STOP" },
+#endif
+#ifdef SIGTSTP
+	{ SIGTSTP, "TSTP" },
+#endif
+#ifdef SIGCONT
+	{ SIGCONT, "CONT" },
+#endif
+#ifdef SIGCHLD
+	{ SIGCHLD, "CHLD" },
+#endif
+#ifdef SIGTTIN
+	{ SIGTTIN, "TTIN" },
+#endif
+#ifdef SIGTTOU
+	{ SIGTTOU, "TTOU" },
+#endif
+#ifdef SIGIO
+	{ SIGIO, "IO" },
+#endif
+#ifdef SIGXCPU
+	{ SIGXCPU, "XCPU" },
+#endif
+#ifdef SIGXFSZ
+	{ SIGXFSZ, "XFSZ" },
+#endif
+#ifdef SIGVTALRM
+	{ SIGVTALRM, "VTALRM" },
+#endif
+#ifdef SIGPROF
+	{ SIGPROF, "PROF" },
+#endif
+#ifdef SIGWINCH
+	{ SIGWINCH, "WINCH" },
+#endif
+#ifdef SIGINFO
+	{ SIGINFO, "INFO" },
+#endif
+#ifdef SIGUSR1
+	{ SIGUSR1, "USR1" },
+#endif
+#ifdef SIGUSR2
+	{ SIGUSR2, "USR2" },
+#endif
+#ifdef SIGPWR
+	{ SIGPWR, "PWR" },
+#endif
+#ifdef SIGSTKFLT
+	{ SIGSTKFLT, "STKFLT" },
+#endif
 };
+
+const char *sig2str(int sig) {
+	for (int i = 0; i < sizeof(signame)/sizeof(*signame); i++)
+		if (signame[i].sig == sig)
+			return signame[i].name;
+	return "UNKNOWN";
+}
 
 #endif /* !HAVE_SIGNAME */

@@ -15,6 +15,10 @@ Trap sigtraps[NSIG + 1];
 
 static struct sigaction Sigact_ign, Sigact_trap;
 
+#ifndef HAVE_SIGNAME
+const char *sig2str(int sig);
+#endif
+
 void
 inittraps(void)
 {
@@ -27,8 +31,19 @@ inittraps(void)
 			sigtraps[i].name = "ERR";
 			sigtraps[i].mess = "Error handler";
 		} else {
+#ifdef HAVE_SIGNAME
 			sigtraps[i].name = sys_signame[i];
+#else
+			sigtraps[i].name = sig2str(i);
+#endif
+#ifdef HAVE_SIGLIST
 			sigtraps[i].mess = sys_siglist[i];
+#else
+			static char *mess[NSIG+1] = {NULL};
+			if (!mess[i])
+				mess[i] = strdup(strsignal(i));
+			sigtraps[i].mess = mess[i];
+#endif
 		}
 	}
 	sigtraps[SIGEXIT_].name = "EXIT";	/* our name for signal 0 */
