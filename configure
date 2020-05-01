@@ -652,6 +652,7 @@ else
     echo "#define __dead __dead2" >> pconfig.h
     echo "yes"
   else
+    echo "no"
     printf "checking for __attribute__((__noreturn__))... "
     noreturncheck
     if [ $? -eq 0 ] ; then
