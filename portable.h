@@ -30,6 +30,10 @@
 #include <sys/file.h>
 #endif /* _AIX || __sun */
 
+#if defined(__HAIKU__)
+#include <stdint.h>
+#endif
+
 #include <time.h>
 
 #include "pconfig.h"
@@ -46,8 +50,12 @@
 #define O_EXLOCK	0
 #endif /* !O_EXLOCK */
 
+#ifndef _PATH_BSHELL
+#define _PATH_BSHELL	"/bin/sh"
+#endif /* !_PATH_BSHELL */
+
 #ifndef _PW_NAME_LEN
-#if defined(__linux__) || defined(__CYGWIN__) || defined(_AIX) || defined(__midipix__)
+#if defined(__linux__) || defined(__CYGWIN__) || defined(_AIX) || defined(__midipix__) || defined(__HAIKU__)
 #define _PW_NAME_LEN	LOGIN_NAME_MAX
 #elif defined(__NetBSD__)
 #define _PW_NAME_LEN	MAXLOGNAME
@@ -55,8 +63,16 @@
 #define _PW_NAME_LEN	LOGNAME_MAX
 #else
 #define _PW_NAME_LEN	MAXLOGNAME - 1
-#endif /* __linux__ || __CYGWIN__ || _AIX || __NetBSD__ || __sun || __midipix__ */
+#endif /* __linux__ || __CYGWIN__ || _AIX || __NetBSD__ || __sun || __midipix__ || __HAIKU__ */
 #endif /* !_PW_NAME_LEN */
+
+#ifndef LOCK_EX
+#define LOCK_EX	0x02
+#endif /* !LOCK_EX */
+
+#ifndef LOCK_UN
+#define LOCK_UN	0x08
+#endif /* !LOCK_UN */
 
 #ifndef RLIMIT_RSS
 #define	RLIMIT_RSS	5		/* resident set size */
@@ -90,6 +106,13 @@
 #define WCOREDUMP(x) ((x) & WCOREFLAG)
 #undef BAD
 #endif /* _AIX */
+
+#ifdef __HAIKU__
+#define _PATH_DEFPATH ".:/boot/home/config/non-packaged/bin:/boot/home/config/bin:/boot/system/non-packaged/bin:/bin:/boot/system/apps:/boot/system/preferences"
+#define WCOREFLAG 0200
+#define WCOREDUMP(x) ((x) & WCOREFLAG)
+#define nice(x) (int)0
+#endif /* __HAIKU__ */
 
 #ifndef HAVE_SETRESGID
 #define setresgid(x, y, z)	setgid(x); setegid(y); setgid(z)

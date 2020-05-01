@@ -173,13 +173,19 @@ x_mode(bool onoff)
 		edchars.intr = cb.c_cc[VINTR];
 		edchars.quit = cb.c_cc[VQUIT];
 		edchars.eof = cb.c_cc[VEOF];
+#ifdef VWERASE
 		edchars.werase = cb.c_cc[VWERASE];
+#endif
 		cb.c_iflag &= ~(INLCR|ICRNL);
 		cb.c_lflag &= ~(ISIG|ICANON|ECHO);
+#ifdef VLNEXT
 		/* osf/1 processes lnext when ~icanon */
 		cb.c_cc[VLNEXT] = _POSIX_VDISABLE;
+#endif
+#ifdef VDISCARD
 		/* sunos 4.1.x & osf/1 processes discard(flush) when ~icanon */
 		cb.c_cc[VDISCARD] = _POSIX_VDISABLE;
+#endif
 		cb.c_cc[VTIME] = 0;
 		cb.c_cc[VMIN] = 1;
 
