@@ -1,5 +1,4 @@
 /config.h/1.19/Tue Jan 16 02:21:56 2018//
-/var.c/1.70/Sun Sep 23 17:59:17 2018//
 /emacs.c/1.86/Result of merge//
 /sh.h/1.75/Result of merge//
 /c_test.c/1.27/Result of merge//
@@ -11,36 +10,37 @@
 /tty.c/1.18/Result of merge+Tue Jul 23 23:36:05 2019//
 /io.c/1.38/Result of merge//
 /history.c/1.84/Result of merge//
-/CONTRIBUTORS/1.11/Tue Dec 17 00:39:35 2019//
-/LEGAL/1.2/Tue Dec 17 00:39:35 2019//
-/Makefile/1.39/Tue Dec 17 00:39:41 2019//
-/NOTES/1.16/Tue Dec 17 00:39:35 2019//
-/PROJECTS/1.9/Tue Dec 17 00:39:35 2019//
-/README/1.16/Tue Dec 17 00:39:41 2019//
-/alloc.c/1.19/Tue Dec 17 00:39:35 2019//
-/c_ksh.c/1.62/Tue Dec 17 00:39:35 2019//
-/c_sh.c/1.63/Tue Dec 17 00:39:35 2019//
-/c_test.h/1.4/Tue Dec 17 00:39:35 2019//
-/c_ulimit.c/1.29/Tue Dec 17 00:39:35 2019//
-/edit.h/1.12/Tue Dec 17 00:39:35 2019//
-/expand.h/1.15/Tue Dec 17 00:39:35 2019//
-/expr.c/1.34/Tue Dec 17 00:39:35 2019//
-/jobs.c/1.61/Tue Dec 17 00:39:35 2019//
-/ksh.1/1.208/Tue Dec 17 00:39:42 2019//
-/lex.c/1.78/Tue Dec 17 00:39:35 2019//
-/lex.h/1.21/Tue Dec 17 00:39:35 2019//
-/mail.c/1.27/Tue Dec 17 00:39:35 2019//
-/path.c/1.23/Tue Dec 17 00:39:35 2019//
-/sh.1/1.152/Tue Dec 17 00:39:35 2019//
-/shf.c/1.34/Tue Dec 17 00:39:35 2019//
-/shf.h/1.8/Tue Dec 17 00:39:35 2019//
-/syn.c/1.39/Tue Dec 17 00:39:35 2019//
-/table.c/1.25/Tue Dec 17 00:39:35 2019//
-/table.h/1.15/Tue Dec 17 00:39:35 2019//
 /trap.c/1.33/Tue Dec 17 00:39:35 2019//
-/tree.c/1.34/Tue Dec 17 00:39:35 2019//
-/tree.h/1.12/Tue Dec 17 00:39:35 2019//
-/tty.h/1.6/Tue Dec 17 00:39:35 2019//
-/version.c/1.12/Tue Dec 17 00:39:35 2019//
-/vi.c/1.56/Tue Dec 17 00:39:35 2019//
+/CONTRIBUTORS/1.11/Fri May  1 15:57:32 2020//
+/LEGAL/1.2/Fri May  1 15:57:32 2020//
+/Makefile/1.39/Sat May  2 04:16:10 2020//
+/NOTES/1.16/Fri May  1 15:57:32 2020//
+/PROJECTS/1.9/Fri May  1 15:57:32 2020//
+/README/1.16/Sat May  2 04:16:10 2020//
+/alloc.c/1.19/Fri May  1 15:57:32 2020//
+/c_ksh.c/1.62/Fri May  1 15:57:32 2020//
+/c_sh.c/1.63/Fri May  1 15:57:32 2020//
+/c_test.h/1.4/Fri May  1 15:57:32 2020//
+/c_ulimit.c/1.29/Fri May  1 15:57:32 2020//
+/edit.h/1.12/Fri May  1 15:57:32 2020//
+/expand.h/1.15/Fri May  1 15:57:32 2020//
+/expr.c/1.34/Fri May  1 15:57:32 2020//
+/jobs.c/1.61/Fri May  1 15:57:32 2020//
+/ksh.1/1.208/Fri May  1 15:57:32 2020//
+/lex.c/1.78/Fri May  1 15:57:32 2020//
+/lex.h/1.21/Fri May  1 15:57:32 2020//
+/mail.c/1.27/Fri May  1 15:57:32 2020//
+/path.c/1.23/Fri May  1 15:57:32 2020//
+/sh.1/1.152/Fri May  1 15:57:32 2020//
+/shf.c/1.34/Fri May  1 15:57:32 2020//
+/shf.h/1.8/Fri May  1 15:57:32 2020//
+/syn.c/1.39/Fri May  1 15:57:32 2020//
+/table.c/1.25/Fri May  1 15:57:32 2020//
+/table.h/1.15/Fri May  1 15:57:32 2020//
+/tree.c/1.34/Fri May  1 15:57:32 2020//
+/tree.h/1.12/Fri May  1 15:57:32 2020//
+/tty.h/1.6/Fri May  1 15:57:32 2020//
+/var.c/1.71/Result of merge//
+/version.c/1.12/Fri May  1 15:57:32 2020//
+/vi.c/1.56/Fri May  1 15:57:32 2020//
 D
