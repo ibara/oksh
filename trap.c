@@ -16,7 +16,7 @@ Trap sigtraps[NSIG + 1];
 static struct sigaction Sigact_ign, Sigact_trap;
 
 #ifndef HAVE_SIGNAME
-const char *sig2str(int sig);
+extern const char *sig2str(int);
 #endif
 
 void
@@ -39,7 +39,7 @@ inittraps(void)
 #ifdef HAVE_SIGLIST
 			sigtraps[i].mess = sys_siglist[i];
 #else
-			static char *mess[NSIG+1] = {NULL};
+			static char *mess[NSIG + 1] = { NULL };
 			if (!mess[i])
 				mess[i] = strdup(strsignal(i));
 			sigtraps[i].mess = mess[i];

@@ -35,7 +35,10 @@
 #include <signal.h>
 #include <unistd.h>
 
-static const struct { int sig; const char *name; } signame[] = {
+static const struct {
+	int sig;
+	const char *name;
+} signame[] = {
 	{ 0, "Signal 0" },
 #ifdef SIGHUP
 	{ SIGHUP, "HUP" },
@@ -138,10 +141,16 @@ static const struct { int sig; const char *name; } signame[] = {
 #endif
 };
 
-const char *sig2str(int sig) {
-	for (int i = 0; i < sizeof(signame)/sizeof(*signame); i++)
+const char *
+sig2str(int sig)
+{
+	int i;
+
+	for (i = 0; i < sizeof(signame) / sizeof(*signame); i++) {
 		if (signame[i].sig == sig)
 			return signame[i].name;
+	}
+
 	return "UNKNOWN";
 }
 
