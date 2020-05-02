@@ -6,6 +6,9 @@ Why?
 ----
 Because all operating systems deserve a good shell.
 
+Unlike other ports of OpenBSD ksh, this port is entirely self-contained and aims to be maximally portable across operating systems and C compilers.
+We are always looking for new combinations to add support for.
+
 Supported systems
 -----------------
 `oksh` is known to run on the following Operating Systems:
@@ -31,11 +34,14 @@ Supported systems
 
 Running on a system not listed here? Add it and send a pull request!
 
+Tentative/In progress
+---------------------
+* HPUX (builds with both aCC and gcc, but crashes on startup)
+
 Believed working
 ----------------
 We believe that `oksh` will work on the following platforms, but testing is needed.
 Help is greatly appreciated and encouraged!
-* HPUX
 * Irix
 
 Supported compilers
