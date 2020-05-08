@@ -16,7 +16,7 @@ Trap sigtraps[NSIG + 1];
 static struct sigaction Sigact_ign, Sigact_trap;
 
 #ifndef HAVE_SIGNAME
-extern const char *sig2str(int);
+extern const char *oksh_sig2str(int);
 #endif
 
 void
@@ -34,7 +34,7 @@ inittraps(void)
 #ifdef HAVE_SIGNAME
 			sigtraps[i].name = sys_signame[i];
 #else
-			sigtraps[i].name = sig2str(i);
+			sigtraps[i].name = oksh_sig2str(i);
 #endif
 #ifdef HAVE_SIGLIST
 			sigtraps[i].mess = sys_siglist[i];

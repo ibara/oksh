@@ -142,7 +142,7 @@ static const struct {
 };
 
 const char *
-sig2str(int sig)
+oksh_sig2str(int sig)
 {
 	int i;
 
