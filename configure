@@ -488,8 +488,10 @@ else
   prefix="/usr/local"
 fi
 
+bindirset=0
+mandirset=0
 bindir="$prefix/bin"
-mandir="$prefix/man"
+mandir="$prefix/share/man"
 
 instprog="oksh"
 libs=""
@@ -503,12 +505,20 @@ do
   case "$opt" in
     --prefix=*)
 	prefix=`echo $opt | cut -d '=' -f 2`
+	if [ bindirset -eq 0 ] ; then
+	  bindir="$prefix/bin"
+	fi
+	if [ mandirset -eq 0 ] ; then
+	  mandir="$prefix/share/man"
+	fi
 	;;
     --bindir=*)
 	bindir=`echo $opt | cut -d '=' -f 2`
+	bindirset=1
 	;;
     --mandir=*)
 	mandir=`echo $opt | cut -d '=' -f 2`
+	mandirset=1
 	;;
     --disable-curses|--enable-curses)
 	if [ "x$opt" = "x--disable-curses" ] ; then
@@ -893,11 +903,12 @@ EOF
 fi
 
 cat << EOF >> Makefile
+
 PREFIX =	$prefix
 BINDIR =	$bindir
 MANDIR =	$mandir
-PROG =		$instprog
 
+PROG =	$instprog
 OBJS =	alloc.o asprintf.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o \\
 	emacs.o eval.o exec.o expr.o history.o io.o jobs.o lex.o mail.o \\
 	main.o misc.o path.o shf.o syn.o table.o trap.o tree.o tty.o var.o \\
