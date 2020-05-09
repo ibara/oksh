@@ -505,10 +505,10 @@ do
   case "$opt" in
     --prefix=*)
 	prefix=`echo $opt | cut -d '=' -f 2`
-	if [ bindirset -eq 0 ] ; then
+	if [ $bindirset -eq 0 ] ; then
 	  bindir="$prefix/bin"
 	fi
-	if [ mandirset -eq 0 ] ; then
+	if [ $mandirset -eq 0 ] ; then
 	  mandir="$prefix/share/man"
 	fi
 	;;
