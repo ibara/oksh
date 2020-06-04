@@ -80,6 +80,38 @@ EOF
   return 1
 }
 
+clockgettimecheck() {
+  cat << EOF > conftest.c
+#include <stdio.h>
+#include <time.h>
+int main(void){clock_gettime(0,NULL);return 0;}
+EOF
+  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.o conftest.c
+    return 0
+  else
+    rm -f conftest conftest.o conftest.c
+    return 1
+  fi
+}
+
+clockgettimertcheck() {
+  cat << EOF > conftest.c
+#include <stdio.h>
+#include <time.h>
+int main(void){clock_gettime(0,NULL);return 0;}
+EOF
+  $cc $cflags $ldflags -o conftest conftest.c -lrt > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.o conftest.c
+    return 0
+  else
+    rm -f conftest conftest.o conftest.c
+    return 1
+  fi
+}
+
 confstrcheck() {
   cat << EOF > conftest.c
 #include <unistd.h>
@@ -685,6 +717,24 @@ else
   echo "no"
 fi
 
+printf "checking for clock_gettime... "
+clockgettimecheck
+if [ $? -eq 0 ] ; then
+  echo "yes"
+else
+  echo "no"
+  printf "checking if clock_gettime needs -lrt... "
+  clockgettimertcheck
+  if [ $? -eq 0 ] ; then
+    libs="$libs -lrt"
+    echo "yes"
+  else
+    echo "no"
+    echo "Error: oksh requires clock_gettime()"
+    exit 1
+  fi
+fi
+
 printf "checking for confstr... "
 confstrcheck
 if [ $? -eq 0 ] ; then
@@ -698,19 +748,19 @@ printf "checking for curses library... "
 if [ $curses -eq 1 ] ; then
   cursescheck
   if [ $? -eq 0 ] ; then
-    libs="-lcurses"
+    libs="$libs -lcurses"
     echo "#define HAVE_CURSES" >> pconfig.h
     echo "curses.h"
   else
     ncursescheck
     if [ $? -eq 0 ] ; then
-      libs="-lncurses"
+      libs="$libs -lncurses"
       echo "#define HAVE_NCURSES" >> pconfig.h
       echo "ncurses.h"
     else
       ncursesncursescheck
       if [ $? -eq 0 ] ; then
-	libs="-lncurses"
+	libs="$libs -lncurses"
 	echo "#define HAVE_NCURSESNCURSES" >> pconfig.h
 	echo "ncurses/ncurses.h"
       else
