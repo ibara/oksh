@@ -717,13 +717,13 @@ else
   echo "no"
 fi
 
-printf "checking for clock_gettime... "
+printf "checking for clock_gettime in libc... "
 clockgettimecheck
 if [ $? -eq 0 ] ; then
   echo "yes"
 else
   echo "no"
-  printf "checking if clock_gettime needs -lrt... "
+  printf "checking for clock_gettime in librt... "
   clockgettimertcheck
   if [ $? -eq 0 ] ; then
     libs="$libs -lrt"
