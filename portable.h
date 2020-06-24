@@ -61,6 +61,8 @@
 #define _PW_NAME_LEN	MAXLOGNAME
 #elif defined(__sun)
 #define _PW_NAME_LEN	LOGNAME_MAX
+#elif defined(__hpux)
+#define _PW_NAME_LEN	8
 #else
 #define _PW_NAME_LEN	MAXLOGNAME - 1
 #endif /* __linux__ || __CYGWIN__ || _AIX || __NetBSD__ || __sun || __midipix__ || __HAIKU__ */
