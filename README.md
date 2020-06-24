@@ -31,12 +31,9 @@ Supported systems
 * WSL2
 * Unixware 7
 * Haiku
+* HP-UX (only gcc tested)
 
 Running on a system not listed here? Add it and send a pull request!
-
-Tentative/In progress
----------------------
-* HPUX (builds with both aCC and gcc, but crashes on startup)
 
 Believed working
 ----------------
