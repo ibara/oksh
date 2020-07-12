@@ -58,14 +58,12 @@ Building with a compiler not listed here? Add it and send a pull request!
 Packages
 --------
 `oksh` is included in some package systems.
-* [FreeBSD ports](https://www.freshports.org/shells/oksh/)
-* [pkgsrc](http://pkgsrc.se/shells/oksh)
-* [Ravenports](http://www.ravenports.com/catalog/bucket_9E/ksh/standard/)
+
+[![Packaging status](https://repology.org/badge/vertical-allrepos/oksh.svg)](https://repology.org/project/oksh/versions)
+
+In addition, there are some unofficial packages:
 * [Ubuntu PPA](https://launchpad.net/~dysfunctionalprogramming/+archive/ubuntu/oksh)
-* [MacPorts](https://www.macports.org/ports.php?by=name&substr=oksh)
 * [Homebrew](https://github.com/sirn/homebrew-oksh/)
-* [AUR](https://aur.archlinux.org/packages/oksh)
-* [SlackBuilds](https://slackbuilds.org/repository/14.2/system/oksh/)
 
 Using a package not listed here? Add it and send a pull request!
 
