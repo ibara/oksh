@@ -91,9 +91,9 @@ CC=/path/to/cross/cc CFLAGS="any needed cflags" LDFLAGS="any needed ldflags" ./c
 ```
 
 This will skip all `configure` checks and write out a generic `Makefile`
-a `pconfig.h` with nearly no options turned on. If using a cross gcc or
-clang, this very well may just work (with all compat compiled in). You
-can edit these files to reflect your system before running `make`.
+and `pconfig.h` with nearly no options turned on. If using a cross gcc
+or clang, this very well may just work (with all compat compiled in).
+You can edit these files to reflect your system before running `make`.
 
 All environment variables and configure flags are respected when using
 `--no-thanks`. Further specifying `--no-link` after `--no-thanks` will
