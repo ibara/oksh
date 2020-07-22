@@ -27,18 +27,6 @@
 #include <stdio.h> /* for vsnprintf */
 #include <stdlib.h>
 
-#ifndef VA_COPY
-# ifdef HAVE_VA_COPY
-#  define VA_COPY(dest, src) va_copy(dest, src)
-# else
-#  ifdef HAVE___VA_COPY
-#   define VA_COPY(dest, src) __va_copy(dest, src)
-#  else
-#   define VA_COPY(dest, src) (dest) = (src)
-#  endif
-# endif
-#endif
-
 #define INIT_SZ	128
 
 int
@@ -52,7 +40,7 @@ vasprintf(char **str, const char *fmt, va_list ap)
 	if ((string = malloc(INIT_SZ)) == NULL)
 		goto fail;
 
-	VA_COPY(ap2, ap);
+	va_copy(ap2, ap);
 	ret = vsnprintf(string, INIT_SZ, fmt, ap2);
 	va_end(ap2);
 	if (ret >= 0 && ret < INIT_SZ) { /* succeeded with initial alloc */
@@ -66,7 +54,7 @@ vasprintf(char **str, const char *fmt, va_list ap)
 			free(string);
 			goto fail;
 		}
-		VA_COPY(ap2, ap);
+		va_copy(ap2, ap);
 		ret = vsnprintf(newstr, len, fmt, ap2);
 		va_end(ap2);
 		if (ret < 0 || (size_t)ret >= len) { /* failed with realloc'ed string */

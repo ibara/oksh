@@ -153,9 +153,14 @@
 #endif /* !HAVE_TIMERSUB */
 
 /* struct stat compatibility */
-#if !defined(HAVE_ST_MTIM) && defined(HAVE_ST_MTIMESPEC)
+#ifndef HAVE_ST_MTIM
+#ifndef HAVE_ST_MTIMESPEC
+#define st_mtim st_mtime
+#define timespeccmp(tsp, usp, cmp) (tsp) cmp (usp)
+#else
 #define st_mtim	st_mtimespec
-#endif /* !HAVE_ST_MTIM && HAVE_ST_MTIMESPEC */
+#endif /* !HAVE_ST_TIMESPEC */
+#endif /* !HAVE_ST_MTIM */
 
 /* Cygwin already has a sys_signame but we want to use our own */
 #ifdef __CYGWIN__
@@ -188,11 +193,6 @@
                 }                                                       \
         } while (0)
 #endif
-
-#if !defined(HAVE_ST_MTIM) && !defined(HAVE_ST_MTIMESPEC)
-#define timespeccmp(tsp, usp, cmp) (tsp) cmp (usp)
-#define st_mtim st_mtime
-#endif /* !HAVE_ST_MTIM && !HAVE_ST_TIMESPEC */
 
 /*
  * Prototypes
