@@ -103,7 +103,7 @@ EOF
 c99check() {
   cat << EOF > conftest.c
 #include <stdio.h>
-int main(void){long long l;printf("%s",__func__);return 0;}
+int main(void){long long l;for (int i=0;i<1;i++)printf("%s",__func__);return 0;}
 EOF
   $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
