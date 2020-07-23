@@ -100,6 +100,10 @@ All environment variables and configure flags are respected when using
 only compile the source files into object files, to be transfered onto
 the target machine and linked there.
 
+The `--no-thanks` flag can also be used to compile a native `oksh` with
+all the compatibility functions compiled in, rather than relying on the
+system's version of those functions.
+
 License
 -------
 The main Korn shell files are public domain (see `LEGAL`).
