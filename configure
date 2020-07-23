@@ -749,6 +749,9 @@ if [ $compileonly -eq 1 ] ; then
 fi
 
 if [ $doconfigure -eq 0 ] ; then
+  if [ -z "$CC" ] ; then
+    CC=gcc
+  fi
   cflags="$cflags -std=gnu99"
   echo "OK, I trust you."
   echo "I'll assume you have gcc/clang and little else."
