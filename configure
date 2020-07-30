@@ -90,7 +90,8 @@ asprintfcheck() {
 #include <stdio.h>
 int main(void){asprintf(NULL,NULL);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -105,7 +106,8 @@ c99check() {
 #include <stdio.h>
 int main(void){long long l;for (int i=0;i<1;i++)printf("%s",__func__);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -120,7 +122,8 @@ cccheck() {
 cat << EOF > conftest.c
 int main(void){return 0;}
 EOF
-    $CC $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+    $CC $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+    $CC $ldflags -o conftest conftest.o > /dev/null 2>&1
     if [ $? -eq 0 ] ; then
       ./conftest
       if [ $? -eq 0 ] ; then
@@ -142,7 +145,8 @@ cat << EOF > conftest.c
 int main(void){return 0;}
 EOF
 
-    $compiler $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+    $compiler $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+    $compiler $ldflags -o conftest conftest.o > /dev/null 2>&1
 
     if [ $? -eq 0 ] ; then
       ./conftest
@@ -168,7 +172,8 @@ clockgettimecheck() {
 #include <time.h>
 int main(void){clock_gettime(0,NULL);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -184,7 +189,8 @@ clockgettimertcheck() {
 #include <time.h>
 int main(void){clock_gettime(0,NULL);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c -lrt > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o -lrt > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -199,7 +205,8 @@ confstrcheck() {
 #include <unistd.h>
 int main(void){confstr(0,NULL,0);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -215,7 +222,8 @@ cursescheck() {
 #include <curses.h>
 int main(void){setupterm(NULL, 0, NULL);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c -lcurses > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c -lcurses > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o -lcurses > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -230,7 +238,8 @@ deadcheck() {
 #include <stdlib.h>
 __dead usage(void){exit(1);}int main(void){usage();return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -245,7 +254,8 @@ dead2check() {
 #include <stdlib.h>
 __dead2 usage(void){exit(1);}int main(void){usage();return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -260,7 +270,8 @@ issetugidcheck() {
 #include <unistd.h>
 int main(void){issetugid();return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -274,7 +285,8 @@ ltoflagcheck() {
   cat << EOF > conftest.c
 int main(void){return 0;}
 EOF
-  $cc $cflags -flto $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -flto -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -flto -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 1
@@ -290,7 +302,8 @@ ncursescheck() {
 #include <ncurses.h>
 int main(void){setupterm(NULL, 0, NULL);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c -lncurses > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c -lncurses > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o -lncurses > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -306,7 +319,8 @@ ncursesncursescheck() {
 #include <ncurses/ncurses.h>
 int main(void){setupterm(NULL, 0, NULL);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c -lncurses > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c -lncurses > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o -lncurses > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -321,7 +335,8 @@ noreturncheck() {
 #include <stdlib.h>
 __attribute__((__noreturn__)) usage(void){exit(1);}int main(void){usage();return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -336,7 +351,8 @@ pledgecheck() {
 #include <unistd.h>
 int main(void){pledge(NULL,NULL);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -351,7 +367,8 @@ reallocarraycheck() {
 #include <stdlib.h>
 int main(void){reallocarray(NULL, 0, 0);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -367,7 +384,8 @@ setresgidcheck() {
 #include <unistd.h>
 int main(void){setresgid(NULL, NULL, NULL);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -383,7 +401,8 @@ setresuidcheck() {
 #include <unistd.h>
 int main(void){setresuid(NULL, NULL, NULL);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -400,7 +419,8 @@ siglistcheck() {
 #include <unistd.h>
 int main(void){printf("%s",sys_siglist[0]);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -417,7 +437,8 @@ signamecheck() {
 #include <unistd.h>
 int main(void){printf("%s",sys_signame[0]);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -432,7 +453,8 @@ sig_tcheck() {
 #include <signal.h>
 int main(void){sig_t s;return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -447,7 +469,8 @@ sranddeterministiccheck() {
 #include <stdlib.h>
 int main(void){srand_deterministic(0);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -462,7 +485,8 @@ st_mtimcheck() {
 #include <sys/stat.h>
 int main(void){struct stat s;s.st_mtim.tv_sec=0;return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -477,7 +501,8 @@ st_mtimespeccheck() {
 #include <sys/stat.h>
 int main(void){struct stat s;s.st_mtimespec.tv_sec=0;return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -493,7 +518,8 @@ stravischeck() {
 #include <vis.h>
 int main(void){stravis(NULL, NULL, 0);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -508,7 +534,8 @@ strlcatcheck() {
 #include <string.h>
 int main(void){strlcat(NULL,NULL,0);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -523,7 +550,8 @@ strlcpycheck() {
 #include <string.h>
 int main(void){strlcpy(NULL,NULL,0);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -538,7 +566,8 @@ strtonumcheck() {
 #include <stdlib.h>
 int main(void){strtonum(NULL, 0, 0, NULL);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -554,7 +583,8 @@ strunvischeck() {
 #include <vis.h>
 int main(void){strunvis(NULL, NULL);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -569,7 +599,8 @@ timeraddcheck() {
 #include <sys/time.h>
 int main(void){struct timeval a, b, res;timeradd(&a, &b, &res);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -584,7 +615,8 @@ timersubcheck() {
 #include <sys/time.h>
 int main(void){struct timeval a, b, res;timersub(&a, &b, &res);return 0;}
 EOF
-  $cc $cflags $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -598,7 +630,7 @@ wflagcheck() {
   cat << EOF > conftest.c
 int main(void){return 0;}
 EOF
-  $cc $cflags -w $ldflags -o conftest conftest.c > /dev/null 2>&1
+  $cc $cflags -w -o conftest.o -c conftest.c > /dev/null 2>&1
   grep ':' conftest.err > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.err conftest.o conftest.c
