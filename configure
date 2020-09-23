@@ -807,8 +807,8 @@ if [ $doconfigure -eq 0 ] ; then
 /* #define HAVE_SETRESUID */
 /* #define HAVE_SIG_T */
 /* #define HAVE_SRAND_DETERMINISTIC */
-/* #define HAVE_ST_MTIM */
-#define HAVE_ST_MTIMESPEC
+#define HAVE_ST_MTIM
+/* #define HAVE_ST_MTIMESPEC */
 /* #define HAVE_STRAVIS */
 /* #define HAVE_STRLCAT */
 /* #define HAVE_STRLCPY */
