@@ -265,6 +265,20 @@ EOF
   fi
 }
 
+defaultcflagscheck() {
+  cat << EOF > conftest.c
+int main(void){return 0;}
+EOF
+  $cc $cflags -g -O2 -o conftest.o -c conftest.c > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.o conftest.c
+    return 1
+  else
+    rm -f conftest conftest.o conftest.c
+    return 0
+  fi
+}
+
 issetugidcheck() {
   cat << EOF > conftest.c
 #include <unistd.h>
@@ -631,12 +645,11 @@ wflagcheck() {
 int main(void){return 0;}
 EOF
   $cc $cflags -w -o conftest.o -c conftest.c > /dev/null 2>&1
-  grep ':' conftest.err > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
-    rm -f conftest conftest.err conftest.o conftest.c
+    rm -f conftest conftest.o conftest.c
     return 1
   else
-    rm -f conftest conftest.err conftest.o conftest.c
+    rm -f conftest conftest.o conftest.c
     return 0
   fi
 }
@@ -852,9 +865,20 @@ else
   echo "yes"
 fi
 
+if [ "x$cflags" = "x-DEMACS -DVI" ] ; then
+  printf "checking if the compiler understands -g -O2... "
+  defaultcflagscheck
+  if [ $? -eq 0 ] ; then
+    echo "no"
+  else
+    cflags="-g -O2 $cflags"
+    echo "yes"
+  fi
+fi
+
 printf "checking for -w compiler flag... "
 wflagcheck
-if [ $? -ne 0 ] ; then
+if [ $? -eq 0 ] ; then
   echo "no"
 else
   cflags="$cflags -w"
