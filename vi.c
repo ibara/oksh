@@ -14,7 +14,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
-#ifndef SMALL
+#if !defined(SMALL) && !defined(NO_CURSES)
 # include <term.h>
 # include <curses.h>
 #endif
@@ -1731,7 +1731,7 @@ do_clear_screen(void)
 {
 	int neednl = 1;
 
-#ifndef SMALL
+#if !defined(SMALL) && !defined(NO_CURSES)
 	if (cur_term != NULL && clear_screen != NULL) {
 		if (tputs(clear_screen, 1, x_putc) != ERR)
 			neednl = 0;
