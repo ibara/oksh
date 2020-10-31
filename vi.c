@@ -22,6 +22,10 @@
 #include "sh.h"
 #include "edit.h"
 
+#ifndef CTRL
+#define CTRL(c)	(c & 0x1f)
+#endif
+
 struct edstate {
 	char	*cbuf;		/* main buffer to build the command line */
 	int	cbufsize;	/* number of bytes allocated for cbuf */
