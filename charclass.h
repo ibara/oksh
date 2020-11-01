@@ -1,13 +1,13 @@
 /*
- * Public domain, 2008, Todd C. Miller <Todd.Miller@courtesan.com>
+ * Public domain, 2008, Todd C. Miller <millert@openbsd.org>
  *
- * $OpenBSD: charclass.h,v 1.1 2008/10/01 23:04:13 millert Exp $
+ * $OpenBSD: charclass.h,v 1.3 2020/10/13 04:42:28 guenther Exp $
  */
 
 /*
  * POSIX character class support for fnmatch() and glob().
  */
-static struct cclass {
+static const struct cclass {
 	const char *name;
 	int (*isctype)(int);
 } cclasses[] = {
