@@ -36,7 +36,7 @@ inittraps(void)
 #else
 			sigtraps[i].name = oksh_sig2str(i);
 #endif
-#ifdef HAVE_SIGLIST
+#if defined(HAVE_SIGLIST) && !defined(__linux__)
 			sigtraps[i].mess = sys_siglist[i];
 #else
 			static char *mess[NSIG + 1] = { NULL };
