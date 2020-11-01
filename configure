@@ -814,6 +814,7 @@ if [ $doconfigure -eq 0 ] ; then
 /* #define HAVE_ASPRINTF */
 /* #define HAVE_CONFSTR */
 #define NO_CURSES
+#define issetugid(x) 0
 /* #define HAVE_PLEDGE */
 /* #define HAVE_REALLOCARRAY */
 /* #define HAVE_SETRESGID */
