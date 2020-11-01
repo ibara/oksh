@@ -82,6 +82,7 @@ static const char initsubs[] = "${PS2=> } ${PS3=#? } ${PS4=+ }";
 
 static const char *initcoms [] = {
 	"typeset", "-r", "KSH_VERSION", NULL,
+	"typeset", "-r", "OKSH_VERSION", NULL,
 	"typeset", "-x", "SHELL", "PATH", "HOME", "PWD", "OLDPWD", NULL,
 	"typeset", "-ir", "PPID", NULL,
 	"typeset", "-i", "OPTIND=1", NULL,
@@ -300,6 +301,7 @@ main(int argc, char *argv[])
 	setint(global("PPID"), (int64_t) ppid);
 	/* setstr can't fail here */
 	setstr(global(version_param), ksh_version, KSH_RETURN_ERROR);
+	setstr(global("OKSH_VERSION"), "oksh 6.8", KSH_RETURN_ERROR);
 
 	/* execute initialization statements */
 	for (wp = (char**) initcoms; *wp != NULL; wp++) {
