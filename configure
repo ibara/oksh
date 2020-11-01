@@ -31,7 +31,7 @@ OBJS =	alloc.o asprintf.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o \\
 	emacs.o eval.o exec.o expr.o history.o io.o jobs.o lex.o mail.o \\
 	main.o misc.o path.o shf.o syn.o table.o trap.o tree.o tty.o var.o \\
 	version.o vi.o confstr.o reallocarray.o siglist.o signame.o \\
-	strlcat.o strlcpy.o strtonum.o unvis.o vis.o
+	strlcat.o strlcpy.o strtonum.o unvis.o vis.o issetugid.o
 
 all: \${PROG}
 
@@ -276,6 +276,22 @@ EOF
   else
     rm -f conftest conftest.o conftest.c
     return 0
+  fi
+}
+
+getauxvalcheck() {
+  cat << EOF > conftest.c
+#include <sys/auxv.h>
+int main(void){getauxval(AT_SECURE);return 0;}
+EOF
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.o conftest.c
+    return 0
+  else
+    rm -f conftest conftest.o conftest.c
+    return 1
   fi
 }
 
@@ -814,7 +830,8 @@ if [ $doconfigure -eq 0 ] ; then
 /* #define HAVE_ASPRINTF */
 /* #define HAVE_CONFSTR */
 #define NO_CURSES
-#define issetugid(x) 0
+/* #define HAVE_ISSETUGID */
+/* #define HAVE_GETAUXVAL */
 /* #define HAVE_PLEDGE */
 /* #define HAVE_REALLOCARRAY */
 /* #define HAVE_SETRESGID */
@@ -1019,10 +1036,18 @@ fi
 printf "checking for issetugid... "
 issetugidcheck
 if [ $? -eq 0 ] ; then
+  echo "#define HAVE_ISSETUGID" >> pconfig.h
   echo "yes"
 else
-  echo "#define issetugid(x) 0" >> pconfig.h
   echo "no"
+  printf "checking for getauxval(AT_SECURE)... "
+  getauxvalcheck
+  if [ $? -eq 0 ] ; then
+    echo "#define HAVE_GETAUXVAL" >> pconfig.h
+    echo "yes"
+  else
+    echo "no"
+  fi
 fi
 
 printf "checking for pledge... "

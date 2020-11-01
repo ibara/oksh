@@ -231,6 +231,8 @@ long long strtonum(const char *numstr, long long minval, long long maxval,
 int	  strunvis(char *, const char *);
 #endif /* !HAVE_STRUNVIS */
 
+int	oksh_issetugid(void);
+
 /*
  * Externs
  */

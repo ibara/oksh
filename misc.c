@@ -292,7 +292,7 @@ change_flag(enum sh_flag f,
 		}
 	} else
 	/* Turning off -p? */
-	if (f == FPRIVILEGED && oldval && !newval && issetugid() &&
+	if (f == FPRIVILEGED && oldval && !newval && oksh_issetugid() &&
 	    !dropped_privileges) {
 		gid_t gid = getgid();
 
