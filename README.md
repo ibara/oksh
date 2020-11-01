@@ -112,5 +112,5 @@ for details.
 
 Get a tarball
 -------------
-See releases tab. The latest release is oksh-6.8, which matches the ksh(1)
+See releases tab. The latest release is oksh-6.8.1, which matches the ksh(1)
 from OpenBSD 6.8.
