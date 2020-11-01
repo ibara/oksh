@@ -64,6 +64,7 @@ Packages
 In addition, there are some unofficial packages:
 * [Ubuntu PPA](https://launchpad.net/~dysfunctionalprogramming/+archive/ubuntu/oksh)
 * [Homebrew](https://github.com/sirn/homebrew-oksh/)
+* [Debian](https://software.opensuse.org//download.html?project=home%3AHead_on_a_Stick%3Aoksh&package=oksh)
 
 Using a package not listed here? Add it and send a pull request!
 
