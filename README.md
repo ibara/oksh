@@ -105,6 +105,18 @@ The `--no-thanks` flag can also be used to compile a native `oksh` with
 all the compatibility functions compiled in, rather than relying on the
 system's version of those functions.
 
+Submitting patches
+------------------
+Patches that add new platforms and improve support for existing platforms
+are always welcome.
+
+Patches that cause `oksh` to deviate from upstream OpenBSD ksh behavior
+are better suited to be sent to the
+[OpenBSD tech@](https://www.openbsd.org/mail.html)
+mailing list. I will sync with the master OpenBSD code once your patch
+is accepted. If you'd like to open an issue here to track progress of
+your patch on tech@, that's fine.
+
 License
 -------
 The main Korn shell files are public domain (see `LEGAL`).
