@@ -1,8 +1,8 @@
-.\"	$OpenBSD: ksh.1,v 1.203 2019/04/03 14:55:12 jca Exp $
+.\"	$OpenBSD: ksh.1,v 1.210 2020/09/20 14:40:45 millert Exp $
 .\"
 .\"	Public Domain
 .\"
-.Dd $Mdocdate: April 3 2019 $
+.Dd $Mdocdate: September 20 2020 $
 .Dt OKSH 1
 .Os
 .Sh NAME
@@ -361,7 +361,9 @@ token to form pipelines, in which the standard output of each command but the
 last is piped (see
 .Xr pipe 2 )
 to the standard input of the following command.
-The exit status of a pipeline is that of its last command.
+The exit status of a pipeline is that of its last command, unless the
+.Ic pipefail
+option is set.
 A pipeline may be prefixed by the
 .Ql \&!
 reserved word, which causes the exit status of the pipeline to be logically
@@ -750,12 +752,13 @@ expressions are patterns (e.g. the comparison
 .Ic [[ foobar = f*r ]]
 succeeds).
 .It
-There are two additional binary operators,
+The
 .Ql <
 and
-.Ql > ,
-which return true if their first string operand is less than, or greater than,
-their second string operand, respectively.
+.Ql >
+binary operators do not need to be quoted with the
+.Ql \e
+character.
 .It
 The single argument form of
 .Ic test ,
@@ -1340,7 +1343,7 @@ Note that if
 .Ev CDPATH
 is set and does not contain
 .Sq \&.
-or contains an empty path, the current directory is not searched.
+or an empty path, the current directory is not searched.
 Also, the
 .Ic cd
 built-in command will display the resulting directory when a match is found
@@ -2865,7 +2868,9 @@ is set, it lists the search path for the directory containing
 .Ar dir .
 A
 .Dv NULL
-path means the current directory.
+path or
+.Ql .\&
+means the current directory.
 If
 .Ar dir
 is found in any component of the
@@ -3661,6 +3666,10 @@ See the
 and
 .Ic pwd
 commands above for more details.
+.It Ic pipefail
+The exit status of a pipeline is the exit status of the rightmost
+command in the pipeline that doesn't return 0, or 0 if all commands
+returned a 0 exit status.
 .It Ic posix
 Enable POSIX mode.
 See
@@ -3890,6 +3899,10 @@ Strings are equal.
 Strings are equal.
 .It Ar string No != Ar string
 Strings are not equal.
+.It Ar string No > Ar string
+Strings compare greater than based on the ASCII value of their characters.
+.It Ar string No < Ar string
+Strings compare less than based on the ASCII value of their characters.
 .It Ar number Fl eq Ar number
 Numbers compare equal.
 .It Ar number Fl ne Ar number
@@ -5040,6 +5053,13 @@ Erases previous character.
 .It ^J | ^M
 End of line.
 The current line is read, parsed, and executed by the shell.
+.It ^L
+Clear the screen (if possible) and redraw the current line.
+See the
+.Em clear-screen
+command in
+.Sx Emacs editing mode
+for more information.
 .It ^V
 Literal next.
 The next character typed is not treated specially (can be used
@@ -5497,7 +5517,9 @@ Miscellaneous vi commands
 .Bl -tag -width Ds
 .It ^J and ^M
 The current line is read, parsed, and executed by the shell.
-.It ^L and ^R
+.It ^L
+Clear the screen (if possible) and redraw the current line.
+.It ^R
 Redraw the current line.
 .It Xo
 .Oo Ar n Oc Ns \&.
@@ -5540,10 +5562,12 @@ Privileged shell profile.
 .Rs
 .%A Morris Bolsky
 .%A David Korn
-.%B The KornShell Command and Programming Language, 2nd Edition
-.%D 1995
+.%B The KornShell Command and Programming Language
+.%D First Edition 1989
 .%I Prentice Hall
-.%O ISBN 0131827006
+.%O ISBN 0135169720
+.\" The second edition of the above book (1995) is about ksh93,
+.\" but the OpenBSD ksh is a descendant from ksh88 via pdksh.
 .Re
 .Rs
 .%A Stephen G. Kochan
