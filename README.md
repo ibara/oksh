@@ -114,9 +114,9 @@ Patches that cause `oksh` to deviate from upstream OpenBSD ksh behavior
 are better suited to be sent to the
 [OpenBSD tech@](https://www.openbsd.org/mail.html)
 mailing list. Please make sure to test your patch on an OpenBSD machine
-first before submitting it to tech@. I will sync with the master OpenBSD
-code once your patch is accepted. If you'd like to open an issue here to
-track progress of your patch on tech@, that's fine.
+first before submitting it to tech@. I will sync with the upstream 
+penBSD code once your patch is accepted. If you'd like to open an issue
+here to track progress of your patch on tech@, that's fine.
 
 License
 -------
