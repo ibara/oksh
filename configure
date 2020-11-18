@@ -50,7 +50,7 @@ install:
 	install -d \${DESTDIR}\${BINDIR}
 	install -d \${DESTDIR}\${MANDIR}/man1
 	install -c -s -m 755 \${PROG} \${DESTDIR}\${BINDIR}
-	install -c -m 644 oksh.1 \${DESTDIR}\${MANDIR}/man1/\${PROG}.1
+	install -c -m 644 \${PROG}.1 \${DESTDIR}\${MANDIR}/man1
 EOF
 
 if [ $instsh -ne 0 ] ; then
