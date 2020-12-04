@@ -106,7 +106,7 @@ c99check() {
 #include <stdio.h>
 int main(void){long long l;for (int i=0;i<1;i++)printf("%s",__func__);return 0;}
 EOF
-  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $cflags -std=c99 -o conftest.o -c conftest.c > /dev/null 2>&1
   $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
@@ -285,6 +285,22 @@ getauxvalcheck() {
 int main(void){getauxval(AT_SECURE);return 0;}
 EOF
   $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.o conftest.c
+    return 0
+  else
+    rm -f conftest conftest.o conftest.c
+    return 1
+  fi
+}
+
+gnu99check() {
+  cat << EOF > conftest.c
+#include <stdio.h>
+int main(void){long long l;for (int i=0;i<1;i++)printf("%s",__func__);return 0;}
+EOF
+  $cc $cflags -std=gnu99 -o conftest.o -c conftest.c > /dev/null 2>&1
   $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
@@ -870,13 +886,22 @@ c99check
 if [ $? -ne 0 ] ; then
   echo "no"
   printf "checking if C compiler can compile C99 with -std=c99... "
-  cflags="$cflags -std=c99"
+  cflags="$cflags"
   c99check
   if [ $? -ne 0 ] ; then
     echo "no"
-    echo "You must have a C99 compiler to build oksh!"
-    exit 1
+    printf "checking if C compiler can compile C99 with -std=gnu99... "
+    gnu99check
+    if [ $? -ne 0 ] ; then
+      echo "no"
+      echo "You must have a C99 compiler to build oksh!"
+      exit 1
+    else
+      cflags="$cflags -std=gnu99"
+      echo "yes"
+    fi
   else
+    cflags="$cflags -std=c99"
     echo "yes"
   fi
 else
