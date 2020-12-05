@@ -909,7 +909,7 @@ else
 fi
 
 if [ "x$cflags" = "x-DEMACS -DVI" ] ; then
-  printf "checking if the compiler understands -g -O2... "
+  printf "checking if the compiler accepts -g -O2... "
   defaultcflagscheck
   if [ $? -eq 0 ] ; then
     echo "no"
