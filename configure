@@ -390,6 +390,22 @@ EOF
   fi
 }
 
+noc99check() {
+  cat << EOF > conftest.c
+#include <stdio.h>
+int main(void){long long l;for (int i=0;i<1;i++)printf("%s",__func__);return 0;}
+EOF
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.o conftest.c
+    return 0
+  else
+    rm -f conftest conftest.o conftest.c
+    return 1
+  fi
+}
+
 noreturncheck() {
   cat << EOF > conftest.c
 #include <stdlib.h>
@@ -896,7 +912,7 @@ else
 fi
 
 printf "checking if C compiler can compile C99 without -std=c99... "
-c99check
+noc99check
 if [ $? -ne 0 ] ; then
   echo "no"
   printf "checking if C compiler can compile C99 with -std=c99... "
