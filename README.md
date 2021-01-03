@@ -52,6 +52,7 @@ Supported compilers
 * Sun Studio compiler (https://www.oracle.com/technetwork/server-storage/developerstudio/overview/index.html)
 * lacc (https://github.com/larmel/lacc)
 * Optimizing C Compilation System  (CCS) 4.2  03/27/14 (uw714mp5.bl4s)
+* Tiny C Compiler (https://bellard.org/tcc/)
 
 Building with a compiler not listed here? Add it and send a pull request!
 
