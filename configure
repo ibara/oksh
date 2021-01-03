@@ -74,6 +74,20 @@ fi
 
 cat << EOF >> Makefile
 
+uninstall:
+	rm -f \${DESTDIR}\${BINDIR}/\${PROG}
+	rm -f \${DESTDIR}\${MANDIR}/man1/\${PROG}.1
+EOF
+
+if [ $instsh -ne 0 ] ; then
+cat << EOF >> Makefile
+	rm -f \${DESTDIR}\${BINDIR}/sh
+	rm -f \${DESTDIR}\${MANDIR}/man1/sh.1
+EOF
+fi
+
+cat << EOF >> Makefile
+
 test:
 	echo "No tests"
 
