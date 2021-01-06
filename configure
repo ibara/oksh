@@ -236,7 +236,7 @@ cursescheck() {
 #include <curses.h>
 int main(void){setupterm(NULL, 0, NULL);return 0;}
 EOF
-  $cc $cflags -o conftest.o -c conftest.c -lcurses > /dev/null 2>&1
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
   $cc $ldflags -o conftest conftest.o -lcurses > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
