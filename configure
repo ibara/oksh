@@ -739,7 +739,7 @@ for opt
 do
   case "$opt" in
     --prefix=*)
-	prefix=`echo $opt | cut -d '=' -f 2`
+	prefix=${opt#*=}
 	if [ $bindirset -eq 0 ] ; then
 	  bindir="$prefix/bin"
 	fi
@@ -748,11 +748,11 @@ do
 	fi
 	;;
     --bindir=*)
-	bindir=`echo $opt | cut -d '=' -f 2`
+	bindir=${opt#*=}
 	bindirset=1
 	;;
     --mandir=*)
-	mandir=`echo $opt | cut -d '=' -f 2`
+	mandir=${opt#*=}
 	mandirset=1
 	;;
     --disable-curses|--enable-curses)
