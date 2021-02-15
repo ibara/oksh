@@ -95,7 +95,7 @@ clean:
 	rm -f \${PROG} \${OBJS}
 
 distclean: clean
-	rm -f Makefile pconfig.h
+	rm -f Makefile pconfig.h *.core
 EOF
 }
 
@@ -121,7 +121,6 @@ c99check() {
 int main(void){long long l;for (int i=0;i<1;i++)printf("%s",__func__);return 0;}
 EOF
   $cc $cflags -std=c99 -o conftest.o -c conftest.c > /dev/null 2>&1
-  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -315,7 +314,6 @@ gnu99check() {
 int main(void){long long l;for (int i=0;i<1;i++)printf("%s",__func__);return 0;}
 EOF
   $cc $cflags -std=gnu99 -o conftest.o -c conftest.c > /dev/null 2>&1
-  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -396,7 +394,6 @@ noc99check() {
 int main(void){long long l;for (int i=0;i<1;i++)printf("%s",__func__);return 0;}
 EOF
   $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
-  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
   if [ $? -eq 0 ] ; then
     rm -f conftest conftest.o conftest.c
     return 0
@@ -911,16 +908,27 @@ else
   echo "$cc"
 fi
 
-printf "checking if C compiler can compile C99 without -std=c99... "
+if [ "x$cflags" = "x-DEMACS -DVI" ] ; then
+  printf "checking if the compiler accepts -g -O2... "
+  defaultcflagscheck
+  if [ $? -eq 0 ] ; then
+    echo "no"
+  else
+    cflags="-g -O2 $cflags"
+    echo "yes"
+  fi
+fi
+
+printf "checking if the compiler can compile C99 without -std=c99... "
 noc99check
 if [ $? -ne 0 ] ; then
   echo "no"
-  printf "checking if C compiler can compile C99 with -std=c99... "
+  printf "checking if the compiler can compile C99 with -std=c99... "
   cflags="$cflags"
   c99check
   if [ $? -ne 0 ] ; then
     echo "no"
-    printf "checking if C compiler can compile C99 with -std=gnu99... "
+    printf "checking if the compiler can compile C99 with -std=gnu99... "
     gnu99check
     if [ $? -ne 0 ] ; then
       echo "no"
@@ -936,17 +944,6 @@ if [ $? -ne 0 ] ; then
   fi
 else
   echo "yes"
-fi
-
-if [ "x$cflags" = "x-DEMACS -DVI" ] ; then
-  printf "checking if the compiler accepts -g -O2... "
-  defaultcflagscheck
-  if [ $? -eq 0 ] ; then
-    echo "no"
-  else
-    cflags="-g -O2 $cflags"
-    echo "yes"
-  fi
 fi
 
 printf "checking for -w compiler flag... "
@@ -970,10 +967,15 @@ case "x$os" in
     cflags="$cflags -D_OPENBSD_SOURCE"
     ;;
   "xOpenBSD")
-    if [ "x$cc" = "xccomp" ] ; then
-      cflags="$cflags -D_ANSI_LIBRARY"
-      ldflags="$ldflags -Wl,-nopie"
-    fi
+    case "x$cc" in
+      "xccomp")
+	cflags="$cflags -D_ANSI_LIBRARY"
+	ldflags="$ldflags -Wl,-nopie"
+	;;
+      "xnwcc")
+	ldflags="$ldflags -Wl,-nopie"
+	;;
+    esac
     ;;
   "xAIX"|"xOS400")
     cflags="$cflags -D_ALL_SOURCE"

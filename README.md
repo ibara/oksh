@@ -54,6 +54,7 @@ Supported compilers
 * Optimizing C Compilation System  (CCS) 4.2  03/27/14 (uw714mp5.bl4s)
 * Tiny C Compiler (https://bellard.org/tcc/)
 * CompCert (https://compcert.org/)
+* Nils Weller's C compiler (http://nwcc.sourceforge.net/)
 
 Building with a compiler not listed here? Add it and send a pull request!
 
