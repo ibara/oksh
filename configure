@@ -154,7 +154,7 @@ EOF
     fi
   fi
 
-  for compiler in cc clang pcc xlc gcc ; do
+  for compiler in cc clang pcc tcc lacc cparser ccomp xlc gcc ; do
 cat << EOF > conftest.c
 int main(void){return 0;}
 EOF
@@ -968,6 +968,12 @@ case "x$os" in
     ;;
   "xNetBSD")
     cflags="$cflags -D_OPENBSD_SOURCE"
+    ;;
+  "xOpenBSD")
+    if [ "x$cc" = "xccomp" ] ; then
+      cflags="$cflags -D_ANSI_LIBRARY"
+      ldflags="$ldflags -Wl,-nopie"
+    fi
     ;;
   "xAIX"|"xOS400")
     cflags="$cflags -D_ALL_SOURCE"
