@@ -18,7 +18,7 @@ Supported systems
 * NetBSD
 * HardenedBSD
 * SoloBSD (as the default shell)
-* Mac OS X
+* Mac OS X (port originally by @geoff-nixon)
 * Linux (glibc and musl)
 * Cygwin
 * Android (via Termux)
