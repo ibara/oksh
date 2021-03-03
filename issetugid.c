@@ -16,7 +16,7 @@
 
 #include "pconfig.h"
 
-#ifdef HAVE_ISSETUGID
+#if defined(HAVE_ISSETUGID)
 #include <unistd.h>
 #elif defined(HAVE_GETAUXVAL)
 #include <sys/auxv.h>
@@ -26,7 +26,7 @@ int
 oksh_issetugid(void)
 {
 
-#ifdef HAVE_ISSETUGID
+#if defined(HAVE_ISSETUGID)
 	return issetugid();
 #elif defined(HAVE_GETAUXVAL)
 	return (int) getauxval(AT_SECURE);
