@@ -22,9 +22,12 @@
 #include "sh.h"
 #include "edit.h"
 
-#ifndef CTRL
-#define CTRL(c)	(c & 0x1f)
+#if !defined(CTRL) || defined(__FreeBSD__)
+#ifdef __FreeBSD__
+#undef CTRL
 #endif
+#define CTRL(c)	(c & 0x1f)
+#endif /* !CTRL || __FreeBSD__ */
 
 struct edstate {
 	char	*cbuf;		/* main buffer to build the command line */
