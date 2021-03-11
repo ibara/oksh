@@ -1,6 +1,6 @@
 oksh
 ====
-Portable OpenBSD `ksh(1)`.
+Portable OpenBSD `ksh(1)`. Not an official OpenBSD project.
 
 Why?
 ----
