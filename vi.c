@@ -1,4 +1,4 @@
-/*	$OpenBSD: vi.c,v 1.58 2021/03/10 20:06:04 millert Exp $	*/
+/*	$OpenBSD: vi.c,v 1.60 2021/03/12 02:10:25 millert Exp $	*/
 
 /*
  *	vi command editing
@@ -22,12 +22,8 @@
 #include "sh.h"
 #include "edit.h"
 
-#if !defined(CTRL) || defined(__FreeBSD__)
-#ifdef __FreeBSD__
 #undef CTRL
-#endif
-#define CTRL(c)	(c & 0x1f)
-#endif /* !CTRL || __FreeBSD__ */
+#define	CTRL(x)		((x) & 0x1F)	/* ASCII */
 
 struct edstate {
 	char	*cbuf;		/* main buffer to build the command line */
@@ -663,6 +659,10 @@ vi_insert(int ch)
 
 	case CTRL('l'):
 		do_clear_screen();
+		break;
+
+	case CTRL('r'):
+		redraw_line(1, 0);
 		break;
 
 	case CTRL('i'):
