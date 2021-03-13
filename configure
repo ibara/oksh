@@ -435,9 +435,16 @@ EOF
   fi
 }
 
+# Intentionally fail on Android.
+# Avoids header/library mismatches as found on
+#   (at least) Termux. Doesn't hurt to use the
+#   portable reallocarray in this repo.
 reallocarraycheck() {
   cat << EOF > conftest.c
 #include <stdlib.h>
+#ifdef __ANDROID__
+00ThisWillDefinitelyFail00
+#endif
 int main(void){reallocarray(NULL, 0, 0);return 0;}
 EOF
   $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
