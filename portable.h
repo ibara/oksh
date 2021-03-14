@@ -140,6 +140,10 @@
         } while (0)
 #endif /* !HAVE_TIMERADD */
 
+#ifndef HAVE_TIMERCLEAR
+#define timerclear(tvp) ((tvp)->tv_sec = (tvp)->tv_usec = 0)
+#endif /* !HAVE_TIMERCLEAR */
+
 #ifndef HAVE_TIMERSUB
 #define timersub(tvp, uvp, vvp)                                         \
         do {                                                            \
