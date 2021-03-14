@@ -690,6 +690,22 @@ EOF
   fi
 }
 
+timerclearcheck() {
+  cat << EOF > conftest.c
+#include <sys/time.h>
+int main(void){struct timeval a;timerclear(&a);return 0;}
+EOF
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.o conftest.c
+    return 0
+  else
+    rm -f conftest conftest.o conftest.c
+    return 1
+  fi
+}
+
 timersubcheck() {
   cat << EOF > conftest.c
 #include <sys/time.h>
@@ -898,6 +914,7 @@ if [ $doconfigure -eq 0 ] ; then
 /* #define HAVE_SIGLIST */
 /* #define HAVE_SIGNAME */
 /* #define HAVE_TIMERADD */
+/* #define HAVE_TIMERCLEAR */
 /* #define HAVE_TIMERSUB */
 EOF
   Makefile
@@ -1259,6 +1276,15 @@ printf "checking for timeradd... "
 timeraddcheck
 if [ $? -eq 0 ] ; then
   echo "#define HAVE_TIMERADD" >> pconfig.h
+  echo "yes"
+else
+  echo "no"
+fi
+
+printf "checking for timerclear... "
+timerclearcheck
+if [ $? -eq 0 ] ; then
+  echo "#define HAVE_TIMERCLEAR" >> pconfig.h
   echo "yes"
 else
   echo "no"
