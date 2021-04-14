@@ -32,6 +32,7 @@ Supported systems
 * Unixware 7
 * Haiku
 * HP-UX (only gcc tested)
+* SerenityOS
 
 Running on a system not listed here? Add it and send a pull request!
 
