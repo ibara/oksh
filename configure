@@ -31,7 +31,8 @@ OBJS =	alloc.o asprintf.o c_ksh.o c_sh.o c_test.o c_ulimit.o edit.o \\
 	emacs.o eval.o exec.o expr.o history.o io.o jobs.o lex.o mail.o \\
 	main.o misc.o path.o shf.o syn.o table.o trap.o tree.o tty.o var.o \\
 	version.o vi.o confstr.o reallocarray.o siglist.o signame.o \\
-	strlcat.o strlcpy.o strtonum.o unvis.o vis.o issetugid.o
+	strlcat.o strlcpy.o strtonum.o unvis.o vis.o issetugid.o \\
+	clock_gettime.o
 
 all: \${PROG}
 
@@ -183,6 +184,7 @@ clockgettimecheck() {
   cat << EOF > conftest.c
 #include <stdio.h>
 #include <time.h>
+#include "clock_gettime.c"
 int main(void){clock_gettime(0,NULL);return 0;}
 EOF
   $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1

@@ -22,8 +22,8 @@
 #include <sys/time.h>
 
 #ifdef __APPLE__
-#include <mach/clock.h>
-#include <mach/mach.h>
+#include <stdint.h>
+#include "clock_gettime.h"
 #endif /* __APPLE__ */
 
 #if defined(_AIX) || defined(__sun)
@@ -87,18 +87,6 @@
 #ifndef RLIMIT_NPROC
 #define	RLIMIT_NPROC	7		/* number of processes */
 #endif /* !RLIMIT_NPROC */
-
-/* Convert clock_gettime() to clock_get_time() on Max OS X */
-#ifdef __APPLE__
-#define clock_gettime(x, y)						\
-	clock_serv_t cclock;						\
-	mach_timespec_t mts;						\
-	host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock); \
-	clock_get_time(cclock, &mts);					\
-	mach_port_deallocate(mach_task_self(), cclock);			\
-	(y)->tv_sec = mts.tv_sec;					\
-	(y)->tv_nsec = mts.tv_nsec;
-#endif /* __APPLE__ */
 
 #ifdef _AIX
 #define VWERASE VWERSE
