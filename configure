@@ -4,6 +4,10 @@
 # and released into the Public Domain.
 
 Makefile() {
+  if [ $strip -ne 0 ] ; then
+    stripopt="-s"
+  fi
+
   if [ -z "$cc" ] ; then
     cc=$CC
   fi
@@ -49,7 +53,7 @@ cat << EOF >> Makefile
 install:
 	install -d \${DESTDIR}\${BINDIR}
 	install -d \${DESTDIR}\${MANDIR}/man1
-	install -c -s -m 755 \${PROG} \${DESTDIR}\${BINDIR}
+	install -c $stripopt -m 755 \${PROG} \${DESTDIR}\${BINDIR}
 	install -c -m 644 \${PROG}.1 \${DESTDIR}\${MANDIR}/man1
 EOF
 
@@ -57,7 +61,7 @@ if [ $instsh -ne 0 ] ; then
 cat << EOF >> Makefile
 	install -d \${DESTDIR}\${BINDIR}
 	install -d \${DESTDIR}\${MANDIR}/man1
-	install -c -s -m 755 \${PROG} \${DESTDIR}\${BINDIR}/sh
+	install -c $stripopt -m 755 \${PROG} \${DESTDIR}\${BINDIR}/sh
 	install -c -m 644 sh.1 \${DESTDIR}\${MANDIR}/man1
 EOF
 fi
@@ -756,6 +760,7 @@ curses=1
 instsh=0
 static=0
 lto=0
+strip=1
 
 # Options
 for opt
@@ -819,6 +824,9 @@ do
     --no-link)
 	compileonly=1
 	;;
+    --no-strip)
+	strip=0
+	;;
     --help|-h)
 	echo "Usage: configure [options]"
 	echo ""
@@ -845,6 +853,8 @@ do
 	echo "Skip all configure checks"
 	printf "  --no-link               "
 	echo "Compile only, do not link (requires --no-thanks)"
+	printf "  --no-strip              "
+	echo "Do not strip the executables when installing [default=stripping]"
 	exit 1
 	;;
     *)
