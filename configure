@@ -854,7 +854,7 @@ do
 	printf "  --no-link               "
 	echo "Compile only, do not link (requires --no-thanks)"
 	printf "  --no-strip              "
-	echo "Do not strip the executables when installing [default=stripping]"
+	echo "Do not strip executables at install [default=strip]"
 	exit 1
 	;;
     *)
