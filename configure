@@ -44,7 +44,7 @@ EOF
 
 if [ $compileonly -eq 0 ] ; then
 cat << EOF >> Makefile
-	\${CC} \${LDFLAGS} -o \${PROG} \${OBJS} $libs
+	\${CC} \${LDFLAGS} -o \${PROG} \${OBJS} $libs \${LIBS}
 EOF
 fi
 
