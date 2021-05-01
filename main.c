@@ -301,7 +301,7 @@ main(int argc, char *argv[])
 	setint(global("PPID"), (int64_t) ppid);
 	/* setstr can't fail here */
 	setstr(global(version_param), ksh_version, KSH_RETURN_ERROR);
-	setstr(global("OKSH_VERSION"), "oksh 6.8.1", KSH_RETURN_ERROR);
+	setstr(global("OKSH_VERSION"), "oksh 6.9", KSH_RETURN_ERROR);
 
 	/* execute initialization statements */
 	for (wp = (char**) initcoms; *wp != NULL; wp++) {
