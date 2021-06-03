@@ -88,8 +88,8 @@
 #define	RLIMIT_NPROC	7		/* number of processes */
 #endif /* !RLIMIT_NPROC */
 
-/* Convert clock_gettime() to clock_get_time() on Max OS X */
-#ifdef __APPLE__
+/* Convert clock_gettime() to clock_get_time() on Max OS X < 10.12 */
+#if defined(__APPLE__) && defined(__MACH__) && __MAC_OS_X_VERSION_MIN_REQUIRED < 101200
 #define clock_gettime(x, y)						\
 	clock_serv_t cclock;						\
 	mach_timespec_t mts;						\
@@ -98,7 +98,7 @@
 	mach_port_deallocate(mach_task_self(), cclock);			\
 	(y)->tv_sec = mts.tv_sec;					\
 	(y)->tv_nsec = mts.tv_nsec;
-#endif /* __APPLE__ */
+#endif /* __APPLE__ && __MACH__ && < 10.12 */
 
 #ifdef _AIX
 #define VWERASE VWERSE

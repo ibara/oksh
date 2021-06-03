@@ -200,6 +200,27 @@ EOF
   fi
 }
 
+clockgettimemacoscheck() {
+  cat << EOF > conftest.c
+int main(void) {
+#if defined(__APPLE__) && defined(__MACH__) && __MAC_OS_X_VERSION_MIN_REQUIRED < 101200
+return 0;
+#else
+return 1;
+#endif
+}
+EOF
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.o conftest.c
+    return 0
+  else
+    rm -f conftest conftest.o conftest.c
+    return 1
+  fi
+}
+
 clockgettimertcheck() {
   cat << EOF > conftest.c
 #include <stdio.h>
@@ -1084,8 +1105,14 @@ else
     echo "yes"
   else
     echo "no"
-    echo "Error: oksh requires clock_gettime()"
-    exit 1
+    printf "checking if we are Mac OS X 10.11 or older... "
+    clockgettimemacoscheck
+    if [ $? -eq 0 ] ; then
+      echo "yes"
+    else
+      echo "Error: oksh requires clock_gettime()"
+      exit 1
+    fi
   fi
 fi
 
