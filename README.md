@@ -31,7 +31,7 @@ Supported systems
 * WSL2
 * Unixware 7
 * Haiku
-* HP-UX (only gcc tested)
+* HP-UX (gcc only)
 * SerenityOS
 
 Running on a system not listed here? Add it and send a pull request!
@@ -45,17 +45,18 @@ Help is greatly appreciated and encouraged!
 Supported compilers
 -------------------
 `oksh` is known to build with the following C compilers:
-* clang (https://llvm.org/)
-* gcc (https://gcc.gnu.org/)
-* pcc (http://pcc.ludd.ltu.se/)
-* cparser (https://pp.ipd.kit.edu/firm/)
-* xlc (https://www.ibm.com/us-en/marketplace/ibm-c-and-c-plus-plus-compiler-family)
-* Sun Studio compiler (https://www.oracle.com/technetwork/server-storage/developerstudio/overview/index.html)
-* lacc (https://github.com/larmel/lacc)
+* [clang](https://llvm.org/)
+* [gcc](https://gcc.gnu.org/)
+* [pcc](http://pcc.ludd.ltu.se/)
+* [cparser](https://pp.ipd.kit.edu/firm/)
+* [xlc](https://www.ibm.com/us-en/marketplace/ibm-c-and-c-plus-plus-compiler-family)
+* [Sun Studio compiler](https://www.oracle.com/technetwork/server-storage/developerstudio/overview/index.html)
+* [lacc](https://github.com/larmel/lacc)
 * Optimizing C Compilation System  (CCS) 4.2  03/27/14 (uw714mp5.bl4s)
-* Tiny C Compiler (https://bellard.org/tcc/)
-* CompCert (https://compcert.org/)
-* Nils Weller's C compiler (http://nwcc.sourceforge.net/)
+* [Tiny C Compiler](https://bellard.org/tcc/)
+* [CompCert](https://compcert.org/)
+* [Nils Weller's C compiler](http://nwcc.sourceforge.net/)
+* [cproc](https://sr.ht/~mcf/cproc/) (Currently requires a small tweak to ignore a volatile store error)
 
 Building with a compiler not listed here? Add it and send a pull request!
 
@@ -129,5 +130,5 @@ for details.
 
 Get a tarball
 -------------
-See releases tab. The latest release is oksh-6.9, which matches the ksh(1)
-from OpenBSD 6.9, released May 1, 2021.
+See releases tab. The latest release is oksh-7.0, which matches the ksh(1)
+from OpenBSD 7.0, released October 14, 2021.
