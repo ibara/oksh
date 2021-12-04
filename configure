@@ -963,6 +963,11 @@ else
   echo "$cc"
 fi
 
+if [ "x$cc" = "xvc" ] ; then
+  echo "using vbcc, setting CFLAGS to -g -O=990"
+  cflags="-g -O=990 -DEMACS -DVI"
+fi
+
 if [ "x$cflags" = "x-DEMACS -DVI" ] ; then
   printf "checking if the compiler accepts -g -O2... "
   defaultcflagscheck
@@ -1029,6 +1034,9 @@ case "x$os" in
 	;;
       "xnwcc")
 	ldflags="$ldflags -Wl,-nopie"
+	;;
+      "xvc")
+	cflags="$cflags -D_ANSI_LIBRARY"
 	;;
     esac
     ;;
