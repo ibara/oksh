@@ -487,7 +487,7 @@ setresgidcheck() {
   cat << EOF > conftest.c
 #include <sys/types.h>
 #include <unistd.h>
-int main(void){setresgid(NULL, NULL, NULL);return 0;}
+int main(void){setresgid(0, 0, 0);return 0;}
 EOF
   $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
   $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
@@ -504,7 +504,7 @@ setresuidcheck() {
   cat << EOF > conftest.c
 #include <sys/types.h>
 #include <unistd.h>
-int main(void){setresuid(NULL, NULL, NULL);return 0;}
+int main(void){setresuid(0, 0, 0);return 0;}
 EOF
   $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
   $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
