@@ -89,6 +89,13 @@ $ ./configure
 $ make && sudo make install
 ```
 
+Out-of-tree builds
+------------------
+The `configure` script will detect out-of-tree builds if you prefer to
+build out-of-tree. In order for this to work, the `VPATH` make extension
+is used. While not POSIX, `VPATH` is known to work with BSD make and GNU
+make. In-tree builds create a fully POSIX `Makefile`.
+
 Cross compiling
 ---------------
 Cross compiling can be achieved by running `configure` as follows:

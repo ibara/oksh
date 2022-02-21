@@ -24,6 +24,13 @@ LDFLAGS =	$ldflags
 EOF
 fi
 
+if [ ! -z "$vpath" ] ; then
+cat << EOF >> Makefile
+
+VPATH =		$vpath
+EOF
+fi
+
 cat << EOF >> Makefile
 
 PREFIX =	$prefix
@@ -1357,6 +1364,17 @@ if [ $? -eq 0 ] ; then
   echo "yes"
 else
   echo "no"
+fi
+
+printf "checking for out-of-tree build... "
+if [ "x$(dirname $0)" = "x." ] ; then
+  echo "no"
+elif [ "x$(dirname $0)" = "x$(pwd)" ] ; then
+  echo "no"
+else
+  echo "yes"
+  vpath="$(dirname $0)"
+  cflags="$cflags -I$(pwd)"
 fi
 
 printf "creating Makefile... "
