@@ -15,8 +15,16 @@
 #include <stdlib.h>
 #include <string.h>
 #if !defined(SMALL) && !defined(NO_CURSES)
+#ifdef HAVE_CURSES
 # include <term.h>
 # include <curses.h>
+#elif defined(HAVE_NCURSES)
+# include <term.h>
+# include <ncurses.h>
+#elif defined(HAVE_NCURSESNCURSES)
+# include <ncurses/term.h>
+# include <ncurses/ncurses.h>
+#endif
 #endif
 
 #include "sh.h"
