@@ -781,6 +781,7 @@ curses=1
 instsh=0
 static=0
 lto=0
+small=0
 strip=1
 
 # Options
@@ -823,6 +824,14 @@ do
 	  instsh=1
 	else
 	  instsh=0
+	fi
+	;;
+    --disable-small|--enable-small)
+	if [ "x$opt" = "x--enable-small" ] ; then
+	  small=1
+	  curses=0
+	else
+	  small=0
 	fi
 	;;
     --disable-static|--enable-static)
@@ -868,6 +877,8 @@ do
 	echo "Enable link-time optimization [default=no]"
 	printf "  --enable-sh             "
 	echo "Install additional sh executable [default=no]"
+	printf "  --enable-small          "
+	echo "Disable curses and extended history [default=no]"
 	printf "  --enable-static         "
 	echo "Statically link executables [default=no]"
 	printf "  --no-thanks             "
@@ -1058,6 +1069,10 @@ else
     ldflags="$ldflags -flto -Wl,-O3"
     echo "yes"
   fi
+fi
+
+if [ $small -ne 0 ] ; then
+  cflags="$cflags -DSMALL"
 fi
 
 cat << EOF > pconfig.h
