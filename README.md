@@ -58,6 +58,7 @@ Supported compilers
 * [Nils Weller's C compiler](http://nwcc.sourceforge.net/)
 * [cproc](https://sr.ht/~mcf/cproc/) (Currently requires a small tweak to ignore a volatile store error)
 * [vbcc](http://www.compilers.de/vbcc.html) (Only tested on OpenBSD/i386)
+* [chibicc](https://github.com/rui314/chibicc)
 
 Building with a compiler not listed here? Add it and send a pull request!
 
