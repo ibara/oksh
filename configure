@@ -1050,6 +1050,9 @@ case "x$os" in
 	cflags="$cflags -D_ANSI_LIBRARY"
 	ldflags="$ldflags -Wl,-nopie"
 	;;
+      "xchibicc")
+	cflags="$cflags -D_ANSI_LIBRARY"
+	;;
       "xnwcc")
 	ldflags="$ldflags -Wl,-nopie"
 	;;
