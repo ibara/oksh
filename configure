@@ -126,6 +126,22 @@ EOF
   fi
 }
 
+c11noreturncheck() {
+  cat << EOF > conftest.c
+#include <stdlib.h>
+_Noreturn int usage(void){exit(1);}int main(void){usage();return 0;}
+EOF
+  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
+  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    rm -f conftest conftest.o conftest.c
+    return 0
+  else
+    rm -f conftest conftest.o conftest.c
+    return 1
+  fi
+}
+
 c99check() {
   cat << EOF > conftest.c
 #include <stdio.h>
@@ -1109,9 +1125,21 @@ else
       echo "#define __dead __attribute__((__noreturn__))" >> pconfig.h
       echo "yes"
     else
-      echo "#define __dead" >> pconfig.h
-      echo "#define __attribute__(x)" >> pconfig.h
       echo "no"
+      printf "checking for _Noreturn... "
+      c11noreturncheck
+      if [ $? -eq 0 ] ; then
+	echo "#ifdef __dead" >> pconfig.h
+	echo "#undef __dead" >> pconfig.h
+	echo "#endif" >> pconfig.h
+	echo "#define __dead _Noreturn" >> pconfig.h
+	echo "#define __attribute__(x)" >> pconfig.h
+	echo "yes"
+      else
+	echo "#define __dead" >> pconfig.h
+	echo "#define __attribute__(x)" >> pconfig.h
+	echo "no"
+      fi
     fi
   fi
 fi
