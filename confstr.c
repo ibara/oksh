@@ -28,7 +28,7 @@
  * SUCH DAMAGE.
  */
 
-#include "portable.h"
+#include "pconfig.h"
 
 #ifndef HAVE_CONFSTR
 
