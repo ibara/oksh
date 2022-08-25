@@ -828,6 +828,12 @@ do
 	mandir=${opt#*=}
 	mandirset=1
 	;;
+    --cc=*)
+	CC=${opt#*=}
+	;;
+    --cflags=*)
+	CFLAGS=${opt#*=}
+	;;
     --disable-curses|--enable-curses)
 	if [ "x$opt" = "x--disable-curses" ] ; then
 	  curses=0
@@ -892,6 +898,10 @@ do
 	echo "Install executable to BINDIR [$bindir]"
 	printf "  --mandir=MANDIR         "
 	echo "Install manual pages to MANDIR [$mandir]"
+	printf "  --cc=CC                 "
+	echo "Use specified C compiler [default=cc]"
+	printf "  --cflags=CFLAGS         "
+        echo "Use specified CFLAGS [default=\"-g -O2\"]"
 	printf "  --enable-curses         "
 	echo "Use curses library for screen clear [default=yes]"
 	printf "  --enable-ksh            "
