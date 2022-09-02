@@ -158,7 +158,7 @@ const unsigned char	classify[128] = {
 static char		undocbuf[LINE];
 
 static struct edstate	*save_edstate(struct edstate *old);
-static void		restore_edstate(struct edstate *old, struct edstate *new);
+static void		restore_edstate(struct edstate *new, struct edstate *old);
 static void		free_edstate(struct edstate *old);
 
 static struct edstate	ebuf;
