@@ -1,8 +1,8 @@
-.\"	$OpenBSD: ksh.1,v 1.215 2021/05/04 21:03:30 naddy Exp $
+.\"	$OpenBSD: ksh.1,v 1.217 2022/09/13 20:26:26 kn Exp $
 .\"
 .\"	Public Domain
 .\"
-.Dd $Mdocdate: May 4 2021 $
+.Dd $Mdocdate: September 13 2022 $
 .Dt OKSH 1
 .Os
 .Sh NAME
@@ -745,9 +745,10 @@ Operators (e.g.\&
 must be unquoted.
 .It
 The second operand of the
-.Sq !=
+.Sq = ,
+.Sq ==
 and
-.Sq =
+.Sq !=
 expressions are patterns (e.g. the comparison
 .Ic [[ foobar = f*r ]]
 succeeds).
@@ -4012,7 +4013,7 @@ Times are reported to standard error; the format of the output is:
 .Pp
 If the
 .Fl p
-option is given the output is slightly longer:
+option is given, the output is slightly longer:
 .Bd -literal -offset indent
 real     0.00
 user     0.00
