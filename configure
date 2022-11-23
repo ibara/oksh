@@ -454,7 +454,7 @@ EOF
 noreturncheck() {
   cat << EOF > conftest.c
 #include <stdlib.h>
-__attribute__((__noreturn__)) usage(void){exit(1);}int main(void){usage();return 0;}
+__attribute__((__noreturn__)) int usage(void){exit(1);}int main(void){usage();return 0;}
 EOF
   $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
   $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
