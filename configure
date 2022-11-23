@@ -129,7 +129,7 @@ EOF
 c11noreturncheck() {
   cat << EOF > conftest.c
 #include <stdlib.h>
-_Noreturn int usage(void){exit(1);}int main(void){usage();return 0;}
+_Noreturn void usage(void){exit(1);}int main(void){usage();return 0;}
 EOF
   $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
   $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
@@ -297,7 +297,7 @@ EOF
 deadcheck() {
   cat << EOF > conftest.c
 #include <stdlib.h>
-__dead usage(void){exit(1);}int main(void){usage();return 0;}
+__dead void usage(void){exit(1);}int main(void){usage();return 0;}
 EOF
   $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
   $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
@@ -313,7 +313,7 @@ EOF
 dead2check() {
   cat << EOF > conftest.c
 #include <stdlib.h>
-__dead2 usage(void){exit(1);}int main(void){usage();return 0;}
+__dead2 void usage(void){exit(1);}int main(void){usage();return 0;}
 EOF
   $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
   $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
@@ -454,7 +454,7 @@ EOF
 noreturncheck() {
   cat << EOF > conftest.c
 #include <stdlib.h>
-__attribute__((__noreturn__)) usage(void){exit(1);}int main(void){usage();return 0;}
+__attribute__((__noreturn__)) void usage(void){exit(1);}int main(void){usage();return 0;}
 EOF
   $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
   $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
