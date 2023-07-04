@@ -162,8 +162,19 @@ cccheck() {
 cat << EOF > conftest.c
 int main(void){return 0;}
 EOF
-    $CC $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
-    $CC $ldflags -o conftest conftest.o > /dev/null 2>&1
+    if [ "x$CC" = "xkefir" ] ; then
+      ccos=`uname -s`
+      case "x$ccos" in
+	"xOpenBSD")
+	  ccenv="KEFIR_OPENBSD_DYNAMIC_LINKER=/usr/libexec/ld.so KEFIR_OPENBSD_INCLUDE=/usr/include KEFIR_OPENBSD_LIB=/usr/lib"
+	  export KEFIR_OPENBSD_DYNAMIC_LINKER=/usr/libexec/ld.so
+	  export KEFIR_OPENBSD_INCLUDE=/usr/include
+	  export KEFIR_OPENBSD_LIB=/usr/lib
+	  ;;
+      esac
+    fi
+    $CC $cflags -o conftest.o -c conftest.c
+    $CC $ldflags -o conftest conftest.o
     if [ $? -eq 0 ] ; then
       ./conftest
       if [ $? -eq 0 ] ; then
@@ -934,13 +945,13 @@ else
 fi
 
 if [ ! -z "$LDFLAGS" ] ; then
-  ldflags="$LDFLAGS "
+  ldflags="$LDFLAGS"
 else
   ldflags=""
 fi
 
 if [ $static -ne 0 ] ; then
-  ldflags="${ldflags}-static"
+  ldflags="$ldflags -static"
 fi
 
 if [ $compileonly -eq 1 ] ; then
@@ -1077,6 +1088,9 @@ case "x$os" in
 	ldflags="$ldflags -Wl,-nopie"
 	;;
       "xchibicc")
+	cflags="$cflags -D_ANSI_LIBRARY"
+	;;
+      "xkefir")
 	cflags="$cflags -D_ANSI_LIBRARY"
 	;;
       "xnwcc")
@@ -1418,6 +1432,17 @@ else
   cflags="$cflags -I$(pwd)"
 fi
 
+if [ ! -z "$cflags" ] ; then
+  cflags="${cflags## }"
+fi
+
+if [ ! -z "$ldflags" ] ; then
+  ldflags="${ldflags## }"
+fi
+
 printf "creating Makefile... "
+if [ "x$cc" = "xkefir" ] ; then
+  cc="$ccenv $cc"
+fi
 Makefile
 echo "done"
