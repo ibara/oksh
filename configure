@@ -755,6 +755,9 @@ EOF
 }
 
 wflagcheck() {
+  if [ "x$cc" = "xkefir" ] ; then
+    return 0
+  fi
   cat << EOF > conftest.c
 int main(void){return 0;}
 EOF
@@ -994,6 +997,11 @@ fi
 if [ "x$cc" = "xvc" ] ; then
   echo "using vbcc, setting CFLAGS to -g -O=990"
   cflags="-g -O=990 -DEMACS -DVI"
+fi
+
+if [ "x$cc" = "xkefir" ] ; then
+  echo "using kefir, setting CFLAGS to -O2"
+  cflags="-O2 -DEMACS -DVI"
 fi
 
 if [ "x$cflags" = "x-DEMACS -DVI" ] ; then
