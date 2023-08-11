@@ -60,6 +60,7 @@ Supported compilers
 * [cproc](https://sr.ht/~mcf/cproc/) (Currently requires a small tweak to ignore a volatile store error)
 * [vbcc](http://www.compilers.de/vbcc.html) (Only tested on OpenBSD/i386)
 * [chibicc](https://github.com/rui314/chibicc)
+* [kefir](https://git.sr.ht/~jprotopopov/kefir)
 
 Building with a compiler not listed here? Add it and send a pull request!
 

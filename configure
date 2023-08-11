@@ -126,22 +126,6 @@ EOF
   fi
 }
 
-c11noreturncheck() {
-  cat << EOF > conftest.c
-#include <stdlib.h>
-_Noreturn void usage(void){exit(1);}int main(void){usage();return 0;}
-EOF
-  $cc $cflags -o conftest.o -c conftest.c > /dev/null 2>&1
-  $cc $ldflags -o conftest conftest.o > /dev/null 2>&1
-  if [ $? -eq 0 ] ; then
-    rm -f conftest conftest.o conftest.c
-    return 0
-  else
-    rm -f conftest conftest.o conftest.c
-    return 1
-  fi
-}
-
 c99check() {
   cat << EOF > conftest.c
 #include <stdio.h>
@@ -162,17 +146,6 @@ cccheck() {
 cat << EOF > conftest.c
 int main(void){return 0;}
 EOF
-    if [ "x$CC" = "xkefir" ] ; then
-      ccos=`uname -s`
-      case "x$ccos" in
-	"xOpenBSD")
-	  ccenv="KEFIR_OPENBSD_DYNAMIC_LINKER=/usr/libexec/ld.so KEFIR_OPENBSD_INCLUDE=/usr/include KEFIR_OPENBSD_LIB=/usr/lib"
-	  export KEFIR_OPENBSD_DYNAMIC_LINKER=/usr/libexec/ld.so
-	  export KEFIR_OPENBSD_INCLUDE=/usr/include
-	  export KEFIR_OPENBSD_LIB=/usr/lib
-	  ;;
-      esac
-    fi
     $CC $cflags -o conftest.o -c conftest.c
     $CC $ldflags -o conftest conftest.o
     if [ $? -eq 0 ] ; then
@@ -1149,21 +1122,9 @@ else
       echo "#define __dead __attribute__((__noreturn__))" >> pconfig.h
       echo "yes"
     else
+      echo "#define __attribute__(x)" >> pconfig.h
+      echo "#define __dead" >> pconfig.h
       echo "no"
-      printf "checking for _Noreturn... "
-      c11noreturncheck
-      if [ $? -eq 0 ] ; then
-	echo "#ifdef __dead" >> pconfig.h
-	echo "#undef __dead" >> pconfig.h
-	echo "#endif" >> pconfig.h
-	echo "#define __dead _Noreturn" >> pconfig.h
-	echo "#define __attribute__(x)" >> pconfig.h
-	echo "yes"
-      else
-	echo "#define __dead" >> pconfig.h
-	echo "#define __attribute__(x)" >> pconfig.h
-	echo "no"
-      fi
     fi
   fi
 fi
@@ -1441,8 +1402,5 @@ if [ ! -z "$ldflags" ] ; then
 fi
 
 printf "creating Makefile... "
-if [ "x$cc" = "xkefir" ] ; then
-  cc="$ccenv $cc"
-fi
 Makefile
 echo "done"
