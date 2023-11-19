@@ -312,7 +312,7 @@ main(int argc, char *argv[])
 #ifndef SMALL
 	/* setstr can't fail here */
 	setstr(global(version_param), ksh_version, KSH_RETURN_ERROR);
-	setstr(global("OKSH_VERSION"), "oksh 7.3", KSH_RETURN_ERROR);
+	setstr(global("OKSH_VERSION"), "oksh 7.4", KSH_RETURN_ERROR);
 #endif /* SMALL */
 
 	/* execute initialization statements */
