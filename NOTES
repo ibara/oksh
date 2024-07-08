@@ -33,7 +33,7 @@ Known bugs (see also PROJECTS files):
 	  in pdksh (ie, the read is done in a separate process in pdksh).
 
 Known problems not caused by ksh:
-    - after stoping a job, emacs/vi is not re-entered.  Hitting return
+    - after stopping a job, emacs/vi is not re-entered.  Hitting return
       prints the prompt and everything is fine again.  Problem (often
       involving a pager like less) is related to order of process
       scheduling (shell runs before `stop'ed (sub) processes have had a chance
@@ -181,7 +181,7 @@ Known differences between pdksh & at&t ksh (that are not likely to change)
       done.
     - pwd: in at&t ksh, it ignores arguments; in pdksh, it complains when given
       arguments.
-    - the at&t ksh does not do command substition on PS1, pdksh does.
+    - the at&t ksh does not do command substitution on PS1, pdksh does.
     - ksh93 allows ". foo" to run the function foo if there is no file
       called foo (go figure).
     - field splitting (IFS): ksh88/ksh93 strip leading non-white space IFS
@@ -253,7 +253,7 @@ POSIX sh questions (references are to POSIX 1003.2-1992)
 	- what action should be taken if there is an error doing a dup due
 	  to system limits (eg, not enough file destriptors): is this
 	  a "redirection error" (in which case a script will exit iff the
-	  error occured while executing a special built-in)?
+	  error occurred while executing a special built-in)?
 	  IMHO, shell should exit script.  Couldn't find a blanket statement
 	  like "if shell encounters an unexpected system error, it shall
 	  exit non-interactive scripts"...
