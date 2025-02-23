@@ -61,6 +61,7 @@ Supported compilers
 * [vbcc](http://www.compilers.de/vbcc.html) (Only tested on OpenBSD/i386)
 * [chibicc](https://github.com/rui314/chibicc)
 * [kefir](https://git.sr.ht/~jprotopopov/kefir)
+* IBM XL C/C++ Advanced Edition Version 6.0 for Mac OS X (tested on Tiger)
 
 Building with a compiler not listed here? Add it and send a pull request!
 

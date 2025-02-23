@@ -794,6 +794,8 @@ lto=0
 small=0
 strip=1
 
+xlc=0
+
 # Options
 for opt
 do
@@ -1004,6 +1006,13 @@ if [ "x$cc" = "xkefir" ] ; then
   cflags="-O2 -DEMACS -DVI"
 fi
 
+$cc -qversion 2>&1 | grep -q "IBM XL"
+if [ $? -eq 0 ] ; then
+  echo "using xlc, setting CFLAGS to -g -O3 -qstrict"
+  cflags="-g -O3 -qstrict -DEMACS -DVI"
+  xlc=1
+fi
+
 if [ "x$cflags" = "x-DEMACS -DVI" ] ; then
   printf "checking if the compiler accepts -g -O2... "
   defaultcflagscheck
@@ -1085,6 +1094,28 @@ case "x$os" in
   "xAIX"|"xOS400")
     cflags="$cflags -D_ALL_SOURCE"
     ldflags="-lbsd"
+    ;;
+  "xDarwin")
+    if [ $xlc -eq 1 ] ; then
+      echo "warning: Detected xlc on Darwin."
+      echo "You may need this stddef.h fix."
+      echo "warning: Copy and paste the following into a new file named:"
+      echo "/opt/ibmcmp/vac/6.0/include/stddef.h"
+      cat << EOF
+#ifndef __IBM_VAC_stddef_h
+#define __IBM_VAC_stddef_h
+
+#include_next <stddef.h>
+
+#if !__cplusplus
+#undef offsetof
+#define offsetof(st, m) \\
+	((size_t)&(((st *)0)->m))
+#endif /* !__cplusplus */
+
+#endif  /* __IBM_VAC_stddef_h */
+EOF
+    fi
     ;;
 esac
 
