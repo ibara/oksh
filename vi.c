@@ -1,4 +1,4 @@
-/*	$OpenBSD: vi.c,v 1.60 2021/03/12 02:10:25 millert Exp $	*/
+/*	$OpenBSD: vi.c,v 1.63 2025/04/27 17:06:58 schwarze Exp $	*/
 
 /*
  *	vi command editing
@@ -703,7 +703,6 @@ vi_cmd(int argcnt, const char *cmd)
 {
 	int		ncursor;
 	int		cur, c1, c2, c3 = 0;
-	int		any;
 	struct edstate	*t;
 
 	if (argcnt == 0 && !is_zerocount(*cmd))
@@ -842,23 +841,25 @@ vi_cmd(int argcnt, const char *cmd)
 
 		case 'p':
 			modified = 1; hnum = hlast;
-			if (es->linelen != 0)
-				es->cursor++;
+			while (es->cursor < es->linelen)
+				if (!isu8cont(es->cbuf[++es->cursor]))
+					break;
 			while (putbuf(ybuf, yanklen, 0) == 0 && --argcnt > 0)
 				;
-			if (es->cursor != 0)
-				es->cursor--;
+			while (es->cursor > 0)
+				if (!isu8cont(es->cbuf[--es->cursor]))
+					break;
 			if (argcnt != 0)
 				return -1;
 			break;
 
 		case 'P':
 			modified = 1; hnum = hlast;
-			any = 0;
 			while (putbuf(ybuf, yanklen, 0) == 0 && --argcnt > 0)
-				any = 1;
-			if (any && es->cursor != 0)
-				es->cursor--;
+				continue;
+			while (es->cursor > 0)
+				if (!isu8cont(es->cbuf[--es->cursor]))
+					break;
 			if (argcnt != 0)
 				return -1;
 			break;
@@ -872,8 +873,6 @@ vi_cmd(int argcnt, const char *cmd)
 		case 'D':
 			yank_range(es->cursor, es->linelen);
 			del_range(es->cursor, es->linelen);
-			if (es->cursor != 0)
-				es->cursor--;
 			break;
 
 		case 'g':
