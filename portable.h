@@ -113,7 +113,6 @@
 #define _PATH_DEFPATH ".:/boot/home/config/non-packaged/bin:/boot/home/config/bin:/boot/system/non-packaged/bin:/bin:/boot/system/apps:/boot/system/preferences"
 #define WCOREFLAG 0200
 #define WCOREDUMP(x) ((x) & WCOREFLAG)
-#define nice(x) (int)0
 #endif /* __HAIKU__ */
 
 #ifndef HAVE_SETRESGID
