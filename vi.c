@@ -1,4 +1,4 @@
-/*	$OpenBSD: vi.c,v 1.63 2025/04/27 17:06:58 schwarze Exp $	*/
+/*	$OpenBSD: vi.c,v 1.67 2025/07/20 21:24:07 schwarze Exp $	*/
 
 /*
  *	vi command editing
@@ -1243,7 +1243,8 @@ domove(int argcnt, const char *cmd, int sub)
 		if (!sub && es->cursor + 1 >= es->linelen)
 			return -1;
 		for (ncursor = es->cursor; ncursor < es->linelen; ncursor++)
-			if (!isu8cont(es->cbuf[ncursor]))
+			if (ncursor == es->cursor ||
+			    !isu8cont(es->cbuf[ncursor]))
 				if (argcnt-- == 0)
 					break;
 		break;
@@ -1796,25 +1797,61 @@ outofwin(void)
 static void
 rewindow(void)
 {
-	int	tcur, tcol;
-	int	holdcur1, holdcol1;
-	int	holdcur2, holdcol2;
+	int		cur;	/* byte# in the main command line buffer */
+	int		col;	/* corresponding display column */
+	int		tabc;	/* columns a tab character can take up */
+	int		thisc;	/* columns the current character requires */
+	unsigned char	uc;	/* the current byte */
 
-	holdcur1 = holdcur2 = tcur = 0;
-	holdcol1 = holdcol2 = tcol = 0;
-	while (tcur < es->cursor) {
-		if (tcol - holdcol2 > winwidth / 2) {
-			holdcur1 = holdcur2;
-			holdcol1 = holdcol2;
-			holdcur2 = tcur;
-			holdcol2 = tcol;
+	/* The desired cursor position is near the middle of the window. */
+	cur = es->cursor;
+	col = winwidth / 2;
+	tabc = 0;
+
+	/* Step left to find the desired left margin. */
+	while (cur > 0 && col > 0) {
+		uc = es->cbuf[--cur];
+
+		/* Never start the window on a continuation byte. */
+		if (isu8cont(uc))
+			continue;
+
+		if (uc == '\t') {
+			/*
+			 * If two tabs occur close together,
+			 * count the right one, including optional
+			 * characters between both, as 8 columns.
+			 */
+			if (tabc > 0) {
+				col -= 8;
+				/* Prefer starting after a tab. */
+				if (col <= 0)
+					cur++;
+			}
+
+			/*
+			 * A tab can be preceded by up to 7 characters
+			 * without taking up additional space.
+			 */
+			tabc = 7;
+			continue;
 		}
-		tcol = newcol((unsigned char) es->cbuf[tcur++], tcol);
+		thisc = char_len(uc);
+		if (tabc > 0) {
+			if (tabc > thisc) {
+				/* The character still fits in the tab. */
+				tabc -= thisc;
+				continue;
+			}
+			col -= 8;	/* The tab is now full. */
+			thisc -= tabc;	/* This may produce overflow. */
+			tabc = 0;
+		}
+
+		/* Handle a normal character or the overflow. */
+		col -= thisc;
 	}
-	while (tcol - holdcol1 > winwidth / 2)
-		holdcol1 = newcol((unsigned char) es->cbuf[holdcur1++],
-		    holdcol1);
-	es->winleft = holdcur1;
+	es->winleft = cur;
 }
 
 /* Printing the byte ch at display column col moves to which column? */
@@ -1877,7 +1914,7 @@ display(char *wb1, char *wb2, int leftside)
 					}
 				} else {
 					*twb1++ = ch;
-					if (!isu8cont(ch))
+					if (col == 0 || !isu8cont(ch))
 						col++;
 				}
 			}
@@ -1916,8 +1953,9 @@ display(char *wb1, char *wb2, int leftside)
 			 * the previous byte was the last one written.
 			 */
 
-			if (col > 0 && isu8cont(*twb1)) {
-				col--;
+			if (isu8cont(*twb1)) {
+				if (col > pwidth)
+					col--;
 				if (lastb >= 0 && twb1 == wb1 + lastb + 1)
 					cur_col = col;
 				else while (twb1 > wb1 && isu8cont(*twb1)) {
@@ -1941,7 +1979,7 @@ display(char *wb1, char *wb2, int leftside)
 			}
 			lastb = *twb1 & 0x80 ? twb1 - wb1 : -1;
 			cur_col++;
-		} else if (isu8cont(*twb1))
+		} else if (twb1 > wb1 && isu8cont(*twb1))
 			continue;
 
 		/*
@@ -2013,10 +2051,15 @@ ed_mov_opt(int col, char *wb)
 
 	/* Advance the cursor. */
 
-	for (ci = pwidth; ci < col || isu8cont(*wb);
-	     ci = newcol((unsigned char)*wb++, ci))
-		if (ci > cur_col || (ci == cur_col && !isu8cont(*wb)))
+	ci = pwidth;
+	while (ci < col || (ci > pwidth && isu8cont(*wb))) {
+		ci = newcol((unsigned char)*wb, ci);
+		if (ci == pwidth)
+			ci++;
+		if (ci > cur_col)
 			x_putc(*wb);
+		wb++;
+	}
 	cur_col = ci;
 }
 

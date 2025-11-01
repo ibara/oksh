@@ -142,5 +142,5 @@ for details.
 
 Get a tarball
 -------------
-See releases tab. The latest release is oksh-7.7, which matches the ksh(1)
-from OpenBSD 7.7, released April 28, 2025.
+See releases tab. The latest release is oksh-7.8, which matches the ksh(1)
+from OpenBSD 7.8, released October 22, 2025.
