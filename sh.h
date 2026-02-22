@@ -505,7 +505,7 @@ void	j_change(void);
 int	exchild(struct op *, int, volatile int *, int);
 void	startlast(void);
 int	waitlast(void);
-int	waitfor(const char *, int *);
+int	j_waitfor(const char *, int *);
 int	j_kill(const char *, int);
 int	j_resume(const char *, int);
 int	j_jobs(const char *, int, int);

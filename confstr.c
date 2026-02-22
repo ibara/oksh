@@ -35,6 +35,8 @@
 #include <paths.h>
 #include <string.h>
 
+#include "portable.h"
+
 size_t
 confstr(int name, char *buf, size_t len)
 {
