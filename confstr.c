@@ -35,6 +35,14 @@
 #include <paths.h>
 #include <string.h>
 
+#ifndef _PATH_STDPATH
+#ifdef _PATH_DEFPATH
+#define _PATH_STDPATH	_PATH_DEFPATH
+#else
+#define _PATH_STDPATH	"/usr/bin:/bin"
+#endif
+#endif /* !_PATH_STDPATH */
+
 size_t
 confstr(int name, char *buf, size_t len)
 {

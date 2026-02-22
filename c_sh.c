@@ -234,12 +234,12 @@ c_wait(char **wp)
 		return 1;
 	wp += builtin_opt.optind;
 	if (*wp == NULL) {
-		while (waitfor(NULL, &sig) >= 0)
+		while (j_waitfor(NULL, &sig) >= 0)
 			;
 		rv = sig;
 	} else {
 		for (; *wp; wp++)
-			rv = waitfor(*wp, &sig);
+			rv = j_waitfor(*wp, &sig);
 		if (rv < 0)
 			rv = sig ? sig : 127; /* magic exit code: bad job-id */
 	}

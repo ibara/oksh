@@ -604,7 +604,7 @@ waitlast(void)
 
 /* wait for child, interruptable. */
 int
-waitfor(const char *cp, int *sigp)
+j_waitfor(const char *cp, int *sigp)
 {
 	int	rv;
 	Job	*j;
@@ -643,7 +643,7 @@ waitfor(const char *cp, int *sigp)
 	}
 
 	/* at&t ksh will wait for stopped jobs - we don't */
-	rv = j_waitj(j, flags, "jw:waitfor");
+	rv = j_waitj(j, flags, "jw:j_waitfor");
 
 	sigprocmask(SIG_SETMASK, &omask, NULL);
 
