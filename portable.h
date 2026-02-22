@@ -55,10 +55,6 @@
 #define _PATH_BSHELL	"/bin/sh"
 #endif /* !_PATH_BSHELL */
 
-#ifndef _PATH_DEFPATH
-#define _PATH_DEFPATH	"/usr/bin:/bin"
-#endif /* !_PATH_DEFPATH */
-
 #ifndef _PW_NAME_LEN
 #if defined(__linux__) || defined(__CYGWIN__) || defined(_AIX) || defined(__midipix__) || defined(__HAIKU__) || defined(__QNXNTO__)
 #define _PW_NAME_LEN	LOGIN_NAME_MAX
@@ -119,6 +115,14 @@
 #define WCOREFLAG 0200
 #define WCOREDUMP(x) ((x) & WCOREFLAG)
 #endif /* __HAIKU__ */
+
+#ifndef _PATH_DEFPATH
+#define _PATH_DEFPATH	"/usr/bin:/bin"
+#endif /* !_PATH_DEFPATH */
+
+#ifndef _PATH_STDPATH
+#define _PATH_STDPATH	"/usr/bin:/bin:/usr/sbin:/sbin"
+#endif /* !_PATH_STDPATH */
 
 #ifndef HAVE_SETRESGID
 #define setresgid(x, y, z)	setgid(x); setegid(y); setgid(z)
