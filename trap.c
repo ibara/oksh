@@ -40,8 +40,12 @@ inittraps(void)
 			sigtraps[i].mess = sys_siglist[i];
 #else
 			static char *mess[NSIG + 1] = { NULL };
-			if (!mess[i])
-				mess[i] = strdup(strsignal(i));
+			if (!mess[i]) {
+				const char *sigmsg = strsignal(i);
+				if (sigmsg == NULL)
+					sigmsg = "Unknown signal";
+				mess[i] = strdup(sigmsg);
+			}
 			sigtraps[i].mess = mess[i];
 #endif
 		}
