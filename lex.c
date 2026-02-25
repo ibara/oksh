@@ -1282,13 +1282,17 @@ dopprompt(const char *sp, int ntruncate, const char **spp, int doprint)
 				strbuf[1] = '\0';
 				break;
 			case 'h':	/* '\' 'h' shortened hostname */
-				gethostname(strbuf, sizeof strbuf);
-				p = strchr(strbuf, '.');
-				if (p)
-					*p = '\0';
-				break;
 			case 'H':	/* '\' 'H' full hostname */
-				gethostname(strbuf, sizeof strbuf);
+				if (gethostname(strbuf, sizeof strbuf) == -1) {
+					strlcpy(strbuf, "unknown", sizeof strbuf);
+					break;
+				}
+				strbuf[sizeof(strbuf) - 1] = '\0';
+				if (*cp == 'h') {
+					p = strchr(strbuf, '.');
+					if (p)
+						*p = '\0';
+				}
 				break;
 			case 'j':	/* '\' 'j' number of jobs */
 				snprintf(strbuf, sizeof strbuf, "%d",
