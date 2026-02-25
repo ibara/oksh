@@ -37,7 +37,8 @@ inittraps(void)
 			sigtraps[i].name = oksh_sig2str(i);
 #endif
 #if defined(HAVE_SIGLIST) && !defined(__linux__)
-			sigtraps[i].mess = sys_siglist[i];
+			sigtraps[i].mess = (i < NSIG && sys_siglist[i] != NULL) ?
+			    sys_siglist[i] : "Unknown signal";
 #else
 			static char *mess[NSIG + 1] = { NULL };
 			if (!mess[i]) {
