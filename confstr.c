@@ -30,18 +30,37 @@
 
 #include "pconfig.h"
 
-#ifndef HAVE_CONFSTR
+#if !defined(HAVE_CONFSTR) && !defined(__QNXNTO__)
 
+#include <errno.h>
 #include <paths.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "portable.h"
 
 size_t
 confstr(int name, char *buf, size_t len)
 {
+	const char *value;
 
-	return (strlcpy(buf, _PATH_STDPATH, len) + 1);
+	switch (name) {
+#ifdef _CS_PATH
+	case _CS_PATH:
+		value = _PATH_STDPATH;
+		break;
+#endif
+	default:
+		errno = EINVAL;
+		if (len > 0 && buf != NULL)
+			buf[0] = '\0';
+		return (0);
+	}
+
+	if (len > 0 && buf != NULL)
+		strlcpy(buf, value, len);
+
+	return (strlen(value) + 1);
 }
 
-#endif /* !HAVE_CONFSTR */
+#endif /* !HAVE_CONFSTR && !__QNXNTO__ */
