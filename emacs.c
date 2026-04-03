@@ -78,7 +78,7 @@ typedef enum {
 /* keybindings */
 struct kb_entry {
 	TAILQ_ENTRY(kb_entry)	entry;
-	unsigned char		*seq;
+	char			*seq;
 	int			len;
 	struct x_ftab		*ftab;
 	void			*args;
@@ -1343,7 +1343,7 @@ kb_add_string(kb_func func, void *args, char *str)
 	count = strlen(str);
 
 	k = alloc(sizeof *k + count + 1, AEDIT);
-	k->seq = (unsigned char *)(k + 1);
+	k->seq = (char *)(k + 1);
 	k->len = count;
 	k->ftab = xf;
 	k->args = args ? strdup(args) : NULL;
